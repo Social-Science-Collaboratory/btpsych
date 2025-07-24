@@ -1,0 +1,97 @@
+---
+title: "R&R analyses"
+author: "NC and JT"
+output: word_document
+editor_options: 
+  chunk_output_type: console
+---
+This code is where we will work to start addressing reviewer comments
+
+# Setup
+```{r include= F}
+# specify data directory
+data_dir <- Sys.getenv("data_dir")
+
+# source setup file
+source('setup.R')
+```
+
+# Reviewer 1 Comment 1
+```{r}
+# load data
+DF.author <- 
+  readRDS(
+    file.path(data_dir,
+              "openalex",
+              "btpsych24a_data_bib_processed.Rds")
+          )
+
+# identify first authors' listed country
+DF.author$country <- 
+  lapply(DF.author[['author']],
+         function(x) x[["institution_country_code"]][[1]])
+
+# look at five biggest countries
+DF.author %>% 
+  group_by(country) %>% 
+  summarise(n = n()) %>% 
+  arrange(-n) %>% 
+  View()
+
+# look at extent to which five biggest countries control rates of emerging big team science
+tmp <- DF.author %>% 
+  filter(country != 'NA') %>% 
+  mutate(size = 
+           case_when(
+             size.bin == '1 - 4' ~ 'small',
+             size.bin == '5 - 9' ~ 'medium',
+             TRUE ~ 'large'
+           )) %>% 
+  group_by(size, country) %>% 
+  summarise(n = n()) %>% 
+  group_by(size) %>% 
+  mutate(total = sum(n)) %>% 
+  rowwise() %>% 
+  mutate(prop = n / total) %>% 
+  # filter(country == 'US' |
+  #          country == 'GB' |
+  #          country == 'CN' |
+  #          country == 'BR' |
+  #          country == 'CA') %>% 
+  select(size, country, n, prop) %>% 
+  pivot_wider(names_from = 'size',
+              values_from = c('n', 'prop')) %>% 
+  filter(!is.na(n_small),
+         !is.na(n_medium),
+         !is.na(n_large))
+
+cor.test(tmp$small, tmp$medium)
+
+# not surprisingly, things are almost perfectly correlated here'=
+## people who do a lot of small team science also do a lot of medium size
+t.test(paired = T,
+       x = tmp$prop_small, 
+       y = tmp$prop_medium,
+       alternative = 'greater')
+
+# is growth linked to existing dominance?
+tmp <-
+  tmp %>% 
+  rowwise() %>% 
+  mutate(growth = prop_medium - prop_small)
+
+cor.test(x = tmp$prop_small, 
+         y = tmp$growth,
+         alternative = 'greater',
+         method = 'spearman')
+
+tmp <-
+  tmp %>% 
+  rowwise() %>% 
+  mutate(growth = prop_large - prop_medium)
+
+cor.test(x = tmp$prop_medium, 
+         y = tmp$growth,
+         alternative = 'greater',
+         method = 'spearman')
+```
