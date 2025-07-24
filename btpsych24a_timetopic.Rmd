@@ -1,0 +1,597 @@
+---
+title: "Create figure showing the evolution of big teams over time and the topics they study"
+author: "Anonymized for peer review (NC)"
+reviewer: "Anonymized for peer review (JT)"
+output: word_document
+editor_options: 
+  chunk_output_type: console
+---
+
+This code creates a figure illustrating (a) frequency of big team psychology efforts over time, and (b) the topics they study.
+
+# Setup
+```{r setup, include= F}
+# load libaries
+library('tidyverse')
+library('here')
+library('cowplot')
+
+# set plotting theme
+theme_set(theme_classic()) 
+
+# specify directory
+i_am('btpsych24a_timetopic.Rmd')
+```
+
+# Open time data
+```{r open.alex, include = F}
+# open OpenAlex data
+DF <- 
+  readRDS(here("data",
+               "openalex",
+               "btpsych24a_data_bib_processed.Rds"))
+```
+
+## Create percentile labels
+For the plot, we want labels to mention both (a) the numerical range of the authorship category, and (b) what this category means in terms of percentile
+```{r perc.labels, include = F}
+# calculate percentiles
+per.DF <- DF %>% 
+  select(authors.n) %>% 
+  mutate(perc = percent_rank(authors.n) * 100)
+
+# create column for storing bin labels
+DF$bin.label <- NA
+
+# create label for size.bin == 1 - 4
+DF[DF$size.bin == "1 - 4", ]$bin.label <-
+  paste0(per.DF %>% 
+           filter(authors.n >= 1, authors.n < 5) %>%
+           slice_min(perc) %>% max %>%
+           round(0), 
+         " - ",
+         per.DF %>% 
+           filter(authors.n >= 1, authors.n < 5) %>%
+           slice_max(perc) %>% max %>%
+           round(0),
+         " percentile"
+         )
+
+# create label for size.bin == 5 - 9
+DF[DF$size.bin == "5 - 9", ]$bin.label <-
+  paste0(per.DF %>% 
+           filter(authors.n >= 5, authors.n < 10) %>%
+           slice_min(perc) %>% max %>%
+           round(0),
+         " - ",
+         per.DF %>% 
+           filter(authors.n >= 5, authors.n < 10) %>%
+           slice_max(perc) %>% max %>%
+           round(1),
+         " percentile"
+         )
+
+# create label for size.bin == 10 - 19
+DF[DF$size.bin == "10 - 19", ]$bin.label <-
+  paste0(per.DF %>% 
+           filter(authors.n >= 10, authors.n < 20) %>%
+           slice_min(perc) %>% max %>%
+           round(1),
+         " - ",
+         per.DF %>% 
+           filter(authors.n >= 10, authors.n < 20) %>%
+           slice_max(perc) %>% max %>%
+           round(2),
+         " percentile"
+         )
+
+# create label for size.bin == 20 - 29
+DF[DF$size.bin == "20 - 29", ]$bin.label <-
+  paste0(per.DF %>% 
+           filter(authors.n >= 20, authors.n < 30) %>%
+           slice_min(perc) %>% max %>%
+           round(2),
+         " - ",
+         per.DF %>% 
+           filter(authors.n >= 20, authors.n < 30) %>%
+           slice_max(perc) %>% max %>%
+           round(2),
+         " percentile"
+         )
+
+# create label for size.bin == 30 - 39
+DF[DF$size.bin == "30 - 39", ]$bin.label <-
+  paste0(per.DF %>% 
+           filter(authors.n >= 30, authors.n < 40) %>%
+           slice_min(perc) %>% max %>%
+           round(3),
+         " - ",
+         per.DF %>% 
+           filter(authors.n >= 30, authors.n < 40) %>%
+           slice_max(perc) %>% max %>%
+           round(3),
+         " percentile"
+         )
+
+# create label for size.bin == 40 - 49
+DF[DF$size.bin == "40 - 49", ]$bin.label <-
+  paste0(per.DF %>% 
+           filter(authors.n >= 40, authors.n < 50) %>%
+           slice_min(perc) %>% max %>%
+           round(3),
+         " - ",
+         per.DF %>% 
+           filter(authors.n >= 40, authors.n < 50) %>%
+           slice_max(perc) %>% max %>%
+           round(3),
+         " percentile"
+         )
+
+# create label for size.bin == 50 - 59
+DF[DF$size.bin == "50 - 59", ]$bin.label <-
+  paste0(per.DF %>% 
+           filter(authors.n >= 50, authors.n < 60) %>%
+           slice_min(perc) %>% max %>%
+           round(3),
+         " - ",
+         per.DF %>% 
+           filter(authors.n >= 50, authors.n < 60) %>%
+           slice_max(perc) %>% max %>%
+           round(3),
+         " percentile"
+         )
+
+# create label for size.bin == 60 - 69
+DF[DF$size.bin == "60 - 69", ]$bin.label <-
+  paste0(per.DF %>% 
+           filter(authors.n >= 60, authors.n < 70) %>%
+           slice_min(perc) %>% max %>%
+           round(3),
+         " - ",
+         per.DF %>% 
+           filter(authors.n >= 60, authors.n < 70) %>%
+           slice_max(perc) %>% max %>%
+           round(3),
+         " percentile"
+         )
+
+# create label for size.bin == 70 - 79
+DF[DF$size.bin == "70 - 79", ]$bin.label <-
+  paste0(per.DF %>% 
+           filter(authors.n >= 70, authors.n < 80) %>%
+           slice_min(perc) %>% max %>%
+           round(3),
+         " - ",
+         per.DF %>% 
+           filter(authors.n >= 70, authors.n < 80) %>%
+           slice_max(perc) %>% max %>%
+           round(3),
+         " percentile"
+         )
+
+# create label for size.bin == 80 - 89
+DF[DF$size.bin == "80 - 89", ]$bin.label <-
+  paste0(per.DF %>% 
+           filter(authors.n >= 80, authors.n < 90) %>%
+           slice_min(perc) %>% max %>%
+           round(3),
+         " - ",
+         per.DF %>% 
+           filter(authors.n >= 80, authors.n < 90) %>%
+           slice_max(perc) %>% max %>%
+           round(3),
+         " percentile"
+         )
+
+# create label for size.bin == 90 - 99
+DF[DF$size.bin == "90 - 99", ]$bin.label <-
+  paste0(per.DF %>% 
+           filter(authors.n >= 90, authors.n < 100) %>%
+           slice_min(perc) %>% max %>%
+           round(3),
+         " - ",
+         per.DF %>% 
+           filter(authors.n >= 90, authors.n < 100) %>%
+           slice_max(perc) %>% max %>%
+           round(3),
+         " percentile"
+         )
+
+# create label for size.bin == 100 +
+DF[DF$size.bin == "100 +", ]$bin.label <-
+  paste0(" > ",
+         per.DF %>% 
+           filter(authors.n >= 100) %>%
+           slice_min(perc) %>% max %>%
+           round(3),
+         " percentile"
+         )
+
+# combine percentile and bin size information
+DF <- DF %>% 
+  mutate(bin.label = 
+           paste0(size.bin, " co-authors", "\n", 
+                  bin.label)
+         )
+
+# delete vestigial
+rm(per.DF)
+```
+
+## Calculate percent growth
+```{r}
+tmp <- DF %>% 
+  # focus on growth between 2011 and 2020
+  filter(publication_year > 2010,
+         publication_year < 2021) %>% 
+  
+  # distinguish between first and second half of that decade
+  mutate(pub.period =
+           if_else(publication_year > 2015,
+                   "later",
+                   "earlier")) %>% 
+  
+  # calculate change over time for each size.bin
+  group_by(size.bin, pub.period) %>% 
+  summarise(n = n()) %>% 
+  pivot_wider(names_from = 'pub.period',
+              values_from = n,
+              id_cols = 'size.bin') %>% 
+  rowwise() %>% 
+  mutate(per.growth = (later - earlier) / earlier,
+         per.growth = per.growth * 100,
+         per.growth = round(per.growth, 0))
+```
+
+## Create facet labels
+```{r}
+# create facet labels
+f.label <- unique(DF$bin.label)
+names(f.label) <- unique(DF$size.bin)
+
+# reorder labels (move "5 - 9" to second position and "100 +" to end)  #JT: adjusted text
+time.DF <- DF %>%
+  mutate(bin.label = factor(bin.label)) %>% 
+  mutate(bin.label = fct_relevel(bin.label,
+                                 str_subset(levels(bin.label),
+                                            "5 - 9 co-authors"),
+                                 after = 1),
+         bin.label = fct_relevel(bin.label,
+                                 str_subset(levels(bin.label),
+                                          "100 +"),
+                                 after = Inf)
+         )
+
+# calculate n's for facet labels
+n.DF <- time.DF %>% 
+  group_by(bin.label) %>% 
+  summarise(size.bin = unique(size.bin),
+            n = n())
+
+# add proportion for for facet labels
+n.DF <- left_join(n.DF,
+                  tmp,
+                  by = "size.bin")
+
+# delete vestigial
+rm(tmp)
+```
+
+## Identify where to place annotations
+Growth annotations
+```{r}
+# filter data
+label.data <-
+  time.DF %>% 
+  filter(bin.label == 
+           str_subset(levels(bin.label),
+                      "5 - 9 co-authors"))
+
+# estimate density
+label.pos <- 
+  density(label.data$publication_year,
+          bw = 3)
+
+# turn density into counts
+label.pos$y = label.pos$y * nrow(label.data)
+
+# identify position of max point of curve
+label.coord.growth <-
+  data.frame(bin.label = unique(label.data$bin.label),
+             x.early = 2011.059,
+             y.early = 
+               approx(x = label.pos$x, 
+                      y = label.pos$y, 
+                      xout = 2011.059)$y,
+             x.mid = 2015.070,
+             y.mid = 
+               approx(x = label.pos$x, 
+                      y = label.pos$y, 
+                      xout = 2015.070)$y,
+             x.later = 2020.045,
+             y.later = 
+               approx(x = label.pos$x, 
+                      y = label.pos$y, 
+                      xout = 2020.045)$y)
+
+# delete vestigial
+rm(label.data, label.pos)
+```
+
+Indexing lag annotations
+```{r}
+# filter data
+label.data <-
+  time.DF %>% 
+  filter(bin.label == 
+           str_subset(levels(bin.label),                                                  "1 - 4 co-authors"))
+# create density plot
+label.pos <- 
+  density(label.data$publication_year,
+          bw = 3)
+
+# turn density into counts
+label.pos$y = label.pos$y * nrow(label.data)
+
+# identify position of max point of curve
+label.coord.lag <-
+  data.frame(bin.label = unique(label.data$bin.label),
+             x.pos = label.pos$x[which.max(label.pos$y)],
+             y.pos = label.pos$y[which.max(label.pos$y)]
+             )
+
+# delete vestigial
+rm(label.data, label.pos)
+```
+
+## Create time figure
+```{r time.fig}
+fig.tim <- 
+  ggplot(data = time.DF, 
+       aes(x = publication_year,
+           y = ..count..
+           )) +
+  
+  # facet by size.bin
+  facet_wrap(~ bin.label,
+             scales = "free_y") +
+  
+  # overall density
+  geom_line(aes(color = bin.label),
+            stat = "density", 
+            bw = 3,
+            linewidth = 1.25,
+            alpha = 0.4) +
+  
+  # add category sample size labels
+  geom_text(data = n.DF,
+            aes(x = 2000.5,
+                y = Inf,
+                label = paste0("N = ", n)),
+            hjust = 0,
+            vjust = 1.5,
+            size = 2.75) +
+  
+  # add growth labels
+  geom_text(data = n.DF,
+            aes(x = 2000.5,
+                y = Inf,
+                label = paste0(per.growth, 
+                                "% growth")),
+            hjust = 0,
+            vjust = 4,
+            size = 2.75) +
+
+  # add percent growth annotation
+  ## earliest in 10 year mark
+  geom_segment(data = label.coord.growth,
+               aes(x = x.early,
+                   xend = x.early,
+                   y = y.early,
+                   yend = -Inf),
+               linetype = 'dotted',
+               linewidth = .5,
+               color = "grey50") +
+  
+  ## middle
+  geom_segment(data = label.coord.growth,
+               aes(x = x.mid,
+                   xend = x.mid,
+                   y = y.mid,
+                   yend = -Inf),
+               linetype = 'dotted',
+               linewidth = .25,
+               color = "grey50") +
+  
+  ## end of 10 year mark
+  geom_segment(data = label.coord.growth,
+               aes(x = x.later,
+                   xend = x.later,
+                   y = y.later,
+                   yend = -Inf),
+               linetype = 'dotted',
+               linewidth = .5,
+               color = "grey50") +
+  
+  ## annotation
+  geom_text(data = label.coord.growth,
+            aes(x = 2015,
+                y = y.mid - 10000),
+            label = '10-year\ngrowth',
+            color = "grey50",
+            size = 2.5) + 
+
+  # add index lag annotation
+  geom_segment(data = label.coord.lag,
+               aes(x = x.pos,
+                   xend = x.pos,
+                   y = y.pos,
+                   yend = -Inf),
+               linetype = 'dotted',
+               linewidth = .5,
+               color = "grey50") +
+  
+  geom_segment(data = label.coord.lag,
+               aes(x = x.pos,
+                   xend = x.pos + 5,
+                   y = y.pos - 60000,
+                   yend = y.pos - 60000),
+               linetype = "dotted",
+               linewidth = .5,
+               arrow = arrow(length = unit(0.3, "cm"), 
+                             type = "closed"),
+               color = "grey50") +
+  
+  geom_text(data = label.coord.lag,
+            aes(x = x.pos,
+                y = y.pos - 50000),
+            label = 'indexing\nlag',
+            color = "grey50",
+            size = 2.5) +
+  
+  # improve aesthetics
+  xlab("publication year") +
+  theme(legend.position = "none",
+        legend.title = element_blank(),
+        strip.text = element_text(size = 8)) +
+  guides(color = guide_legend(override.aes = list(size = 7))) +
+  scale_x_continuous(n.breaks = 3)
+```
+
+# Topics data
+Open data
+```{r}
+# open
+DF.topics <- read.csv(here('data',
+                           'topic',
+                           'btpsych24a_topic.csv'))
+
+# fix corrupted size bin variable (Excel thought it was a date)
+# to do so, just grab the original size bin labels from DF
+DF.topics <- DF.topics %>%
+  mutate(
+    size.bin = case_when(
+      size.bin == "4-Jan" ~ "1 - 4",
+      size.bin == "9-May" ~ "5 - 9",
+      size.bin == "19-Oct" ~ "10 - 19",
+      TRUE ~ size.bin  # Keep original value if no condition is met
+    )
+  )
+
+# remove incompletes
+DF.topics <- 
+  DF.topics %>% 
+  filter(topic != "N/A",
+         topic != " N/A",
+         topic != "N//A")
+
+# recode topic
+DF.topics <- DF.topics %>% 
+  mutate(
+    # focus on the first two numbers (highest order of the classification scheme)
+    topic.trunc = 
+      substr(topic, 1, 2),
+    
+    # add name to classification scheme
+    # see https://www.apa.org/pubs/databases/training/class-codes#:~:text=Every%20record%20in%20APA%20PsycInfo,retrieval%20to%20a%20specific%20category
+    topic.trunc = 
+      recode(topic.trunc,
+             "21" = 'General Psychology',
+             "22" = 'Psychometrics & Statistics & Methodology',
+             "23" = 'Human Experimental Psychology',
+             "24" = 'Animal Experimental & Comparative Psychology',
+             "25" = 'Physiological Psychology & Neuroscience',
+             "26" = 'Psychology & the Humanities',
+             "27" = 'Communication Systems',
+             "28" = 'Developmental Psychology',
+             "29" = 'Social Processes & Social Issues',
+             "30" = 'Social Psychology',
+             "31" = 'Personality Psychology',
+             "32" = 'Psychological & Physical Disorders',
+             "33" = 'Health & Mental Health Treatment & Prevention',
+             "34" = 'Health & Mental Health Personnel Issues',
+             "35" = 'Educational & School Psychology',
+             "36" = 'Organizational Psychology & Human Resources',
+             "37" = 'Sport Psychology & Leisure',
+             "38" = 'Military Psychology',
+             "39" = 'Consumer Psychology',
+             "40" = 'Engineering & Environmental Psychology',
+             "41" = 'Cognitive Psychology & Intelligent Systems',
+             "42" = 'Forensic Psychology & Legal Issues')
+         )
+```
+
+## Create topic figure
+```{r}
+topic.fig.DF <- 
+  DF.topics %>% 
+  
+  # refactor size.bin
+  mutate(size.bin = factor(size.bin),
+         size.bin = fct_relevel(size.bin,
+                                 "5 - 9",
+                                 after = 1),
+         size.bin = fct_relevel(size.bin,
+                                 "100 +",
+                                 after = Inf)) %>% 
+  
+  # calculate summary statistics (n's and proportions)
+  group_by(topic.trunc, size.bin) %>% 
+  
+  # sort by frequency 
+  mutate(topic.trunc = 
+           factor(topic.trunc,
+                  levels = fct_infreq(.$topic.trunc) %>% 
+                    levels %>% 
+                    rev)
+         ) %>%
+  summarise(n = n()) %>%
+  ungroup() %>% 
+  mutate(n = if_else(size.bin == '1 - 4' |
+                       size.bin == '5 - 9',
+                     true = 0,
+                     false = n)) %>% 
+  mutate(prop = n / sum(n))
+
+# calculate standard errors
+topic.fig.se <- topic.fig.DF %>% 
+  group_by(topic.trunc) %>% 
+  summarise(total.prop = sum(prop),
+            total.n = sum(n)) %>% 
+  mutate(se = sqrt((total.prop * (1 - total.prop )) / sum(total.n)))
+
+topic.fig <-
+  ggplot(data = topic.fig.DF,
+         aes(y = topic.trunc,
+             x = prop)) +
+  
+  # bar chart
+  geom_bar(aes(fill = size.bin),
+           stat = 'identity',
+           alpha = .4) +
+  
+  # error bars
+  geom_errorbar(data = topic.fig.se,
+                aes(x = total.prop,
+                    xmin = total.prop - se, 
+                    xmax = total.prop + se),
+                width = .5,
+                colour = 'grey50') +
+  
+  # improve aesthetics
+  xlab('proportion of big team records') +
+  ylab('topic') +
+  theme(axis.line.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        legend.position = 'none')
+```
+
+# Combine plots
+```{r}
+plot_grid(fig.tim,
+          topic.fig,
+          nrow = 2,
+          ncol = 1,
+          rel_heights = c(.65, .35),
+          labels = c("A", "B"))
+```

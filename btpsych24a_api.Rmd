@@ -1,0 +1,173 @@
+---
+title: "OpenAlex API calls"
+author: "Anonymized for peer review (NC)"
+reviewer: "Anonymized for peer review (JT)"
+output: word_document
+editor_options: 
+  chunk_output_type: console
+---
+
+This code downloads all psychology papers published between 2000 and 2023 from OpenAlex using their API package. It then merges these files and exports as a .RDS file.
+
+# Setup
+```{r set.env}
+# load packages
+library('openalexR')
+library('tidyverse')
+library("jsonlite")
+
+# specify API mailing key
+## Note: mailing key removed for privacy
+options(openalexR.mailto = "insert your API mailing key here")
+```
+
+# Download records
+Note: this was done year-by-year because of API threshold limits
+```{r}
+DF.2000 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2000)
+
+DF.2001 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2001)
+
+DF.2002 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2002)
+
+DF.2003 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2003)
+
+DF.2004 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2004)
+
+DF.2005 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2005)
+
+DF.2006 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2006)
+
+DF.2007 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2007)
+
+DF.2008 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2008)
+
+DF.2009 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2009)
+
+DF.2010 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2010)
+
+DF.2011 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2011)
+
+DF.2012 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2012)
+
+DF.2013 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2013)
+
+DF.2014 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2014)
+
+DF.2015 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2015)
+
+DF.2016 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2016)
+
+DF.2017 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2017)
+
+DF.2018 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2018)
+
+DF.2019 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2019)
+
+DF.2020 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2020)
+
+DF.2021 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2021)
+
+DF.2022 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2022)
+
+DF.2023 <-
+  oa_fetch(entity = "works",
+           primary_topic.field.id = "32",
+           publication_year = 2023)
+```
+
+# Merge and export
+```{r}
+# merge
+DF <- 
+  rbind(DF.2000, DF.2001, 
+        DF.2002, DF.2003, 
+        DF.2004, DF.2005, 
+        DF.2006, DF.2007, 
+        DF.2008, DF.2009, 
+        DF.2010, DF.2011, 
+        DF.2012, DF.2013, 
+        DF.2014, DF.2015, 
+        DF.2016, DF.2017, 
+        DF.2018, DF.2019, 
+        DF.2020, DF.2021, 
+        DF.2022, DF.2023)
+
+# export
+saveRDS(object = DF, 
+        file = 'data/openalex/btpsych24a_data_bib_raw.Rds')
+
+# further compress the export (for sharing)
+saveRDS(object = DF, 
+        file = 'data/openalex/btpsych24a_data_bib_raw2.Rds',
+        compress = "bzip2")
+```

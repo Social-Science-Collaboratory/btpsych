@@ -1,0 +1,87 @@
+---
+title: "Examine reliability of contributorship coding"
+author: "Anonymized for peer review (NC)"
+reviewer: "Anonymized for peer review (JT)"
+output: word_document
+editor_options: 
+  chunk_output_type: console
+---
+This code examines the reliability of contributorship coding by JT and GG
+
+# Setup
+```{r setup, include= F}
+# load libaries
+library('tidyverse')
+library('here')
+
+# specify directory
+i_am('btpsych24a_cont_reliability.Rmd')
+
+# turn off scientific notation
+options(scipen = 999)
+```
+
+# Open and process contributorship data
+```{r}
+# recoded records from GG
+DF.g <- 
+  read.csv(here('data',
+                'contributorship',
+                'btpsych24a_cont_coding_rel.csv'),
+           na.string = "N/A") %>% 
+  
+  # select relevant variables
+  select(id, 
+         conception : draft.writing,
+         Coder)
+
+# original coded records
+DF.j <-
+  read.csv(here('data',
+                'contributorship',
+                'btpsych24a_cont_coding.csv'),
+           na.string = "N/A") %>% 
+  
+  # select relevant variables
+  select(id, 
+         conception : draft.writing,
+         Coder) %>% 
+  
+  # semi join (focusing only on records that have been recoded by GG)
+  semi_join(y = DF.g,
+            by = 'id')
+
+# bind files
+DF <- rbind(DF.g,
+            DF.j) %>% 
+  
+  # pivot data for processing
+  pivot_longer(conception : draft.writing) %>% 
+  
+  # count number of authors who have contributed to each category
+  mutate(
+    n = 
+      # if N/A leave blank, otherwise count number of commas and add 1
+      if_else(is.na(value),
+              NA,
+              
+              # otherwise, count number of commas and add 1  
+              str_count(value,
+                        ",") + 1
+              )
+    ) %>% 
+  
+  select(-value) %>%  
+  
+  # pivot
+  pivot_wider(names_from = Coder,
+              values_from = n) %>% 
+  arrange(G)
+```
+
+# Examine reliability
+```{r}
+library('psych')
+ICC(DF %>% 
+      select(G, J))
+```
