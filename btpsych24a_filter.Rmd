@@ -9,23 +9,23 @@ editor_options:
 This code (a) lightly processes OpenAlex records, (b) exports DOI's to be used in Altmetric data collection, and (c) exports records for contributorship coding.
 
 # Setup
-```{r setup, include= F}
-# load libraries
-library('tidyverse')
-library('here')
+```{r include= F}
+# specify data directory
+data_dir <- Sys.getenv("data_dir")
 
-# specify directory
-i_am('btpsych24a_filter.Rmd')
-
-# set seed
-set.seed(1967)
+# source setup file
+source('setup.R')
 ```
 
 # Open and process OpenAlex data
 ```{r open.alex, include = F}
 # open raw data
 DF <- 
-  readRDS(here("data/openalex/btpsych24a_data_bib_raw.Rds")) %>% 
+  readRDS(
+    file.path(data_dir,
+              'openalex',
+              'btpsych24a_data_bib_raw.Rds')
+    ) %>% 
 
   # filter data
   filter(
@@ -91,16 +91,16 @@ doi <-
 # export data
 ## first million records
 write.csv(doi[1: 1000000, ], 
-          here('data',
-               'altmetric',  
-               'btpsych24a_bib_doi1.csv'),
+          file.path(data_dir,
+                    'altmetric',  
+                    'btpsych24a_bib_doi1.csv'),
           row.names = F)
 
 ## rest of records
 write.csv(doi[1000001 : 1936245, ],
-          here('data',
-               'altmetric', 
-               'btpsych24a_bib_doi2.csv'),
+          file.path(data_dir,
+                    'altmetric', 
+                    'btpsych24a_bib_doi2.csv'),
           row.names = F)
 ```
 
@@ -124,7 +124,7 @@ DF %>%
   
   # export (commented out to not override)
   
-  # write.csv(here('data', 'contributorship',
+  # write.csv(file.path(data_dir,'contributorship',
   #                'btpsych24a_cont_coding.csv'),
   #           row.names = F)
 ```
@@ -156,9 +156,9 @@ rm(DF.na)
 The OpenAlex API labels these papers as only having 100 authors.
 ```{r}
 # create file if it doesn't already exist (it should)
-if (!file.exists(here('data',
-                      'openalex',
-                      'btpsych24a_author.n.correction.csv')
+if (!file.exists(file.path(data_dir,
+                           'openalex',
+                           'btpsych24a_author.n.correction.csv')
                  )
     ){
   DF %>% 
@@ -167,17 +167,17 @@ if (!file.exists(here('data',
     rename('authors.n.orig' = authors.n) %>% 
     mutate(authors.n.fixed = "") %>% 
     write.csv(.,
-              here('data',
-                   'openalex',
-                   'btpsych24a_author.n.correction.csv'), 
+              file.path(data_dir,
+                        'openalex',
+                        'btpsych24a_author.n.correction.csv'), 
               row.names = F)
 }
 
 # load file
 DF.author.correction <- 
-  read.csv(here('data',
-                   'openalex',
-                   'btpsych24a_author.n.correction.csv')
+  read.csv(file.path(data_dir,
+                     'openalex',
+                     'btpsych24a_author.n.correction.csv')
            ) %>% 
   select(-authors.n.orig)
 
@@ -226,9 +226,9 @@ DF <-
 
 # save
 saveRDS(DF, 
-        here('data', 
-             'openalex',
-             'btpsych24a_data_bib_processed.Rds'))
+        file.path(data_dir,
+                  'openalex',
+                  'btpsych24a_data_bib_processed.Rds'))
 
 # optionally re-load
 # DF <- 
@@ -263,8 +263,8 @@ DF.bts <-  DF %>%
 
 # export
 DF.bts %>% 
-  write.csv(here('data', 
-                 'topic',
-                 'btpsych24a_topiccoding.csv'), 
+  write.csv(file.path(data_dir,
+                      'topic',
+                      'btpsych24a_topiccoding.csv'), 
             row.names = F)
 ```
