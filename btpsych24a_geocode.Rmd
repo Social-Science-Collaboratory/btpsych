@@ -1,0 +1,121 @@
+---
+title: "Create map figure"
+author: "Anonymized for peer review (NC)"
+reviewer: "Anonymized for peer review (JT)"
+output: word_document
+editor_options: 
+  chunk_output_type: console
+---
+
+This code creates a figure that (a) illustrates the geographical distribution of big team leadership and participation rates in psychology, and (b) examines links between those rates and indicators of economic wealth (GDP)
+
+# Setup
+```{r setup, include= F}
+# specify data directory
+data_dir <- Sys.getenv("data_dir")
+
+# source setup file
+source('setup.R')
+```
+
+# Prepare OpenAlex data
+## Open and isolate OpenAlex authorship data
+```{r open.alex, include = F}
+DF.author <- 
+  # open data
+  readRDS(file.path(data_dir,
+                    "openalex",
+                    "btpsych24a_data_bib_processed.Rds")) %>% 
+  
+  # isolate big team science records
+  filter(size.bin != "1 - 4",
+         size.bin != "5 - 9")
+
+# focus on author lists
+DF.author <- DF.author$author
+```
+
+## Geocode records
+```{r}
+DF.geo <- 
+  # isolate affiliation information
+  lapply(DF.author,
+         function(sublist)
+           c(sublist['institution_display_name'],
+             sublist['institution_country_code'])
+         ) %>% 
+  
+  # select only instances with full affiliation information
+  ## changed to *any insatance* on Jul 28 2025 following reviewer recommendation
+  ### this drops number of records from 49919 to 41107
+  #Filter(function(sublist) all(!is.na(unlist(sublist))), .) %>% 
+  Filter(function(sublist) any(!is.na(unlist(sublist))), .) %>% 
+  
+  # geocode using institution name and country
+  lapply(.,
+         function(sublist)
+           as_tibble(sublist) %>% 
+           mutate(address = paste0(institution_display_name,
+                                   ", ",
+                                   institution_country_code)
+                  ) %>% 
+           tidygeocoder::geocode(.,
+                                 address = address,
+                                 method = 'arcgis', 
+                                 lat = latitude, 
+                                 long = longitude
+                                 )
+         )
+
+# save geocoded list
+saveRDS(DF.geo,
+        file.path(data_dir,
+                  'location',
+                  'btpsych24a_geocode.Rds')
+        )
+```
+
+## Identify leaders and supporters
+```{r}
+# reload data (if needed)
+DF.geo <- 
+  readRDS(here('data',
+               'location',
+               'btpsych24a_geocode.Rds')
+          )
+
+DF.geo <-
+  
+  # separate leader and supporter location information
+  lapply(DF.geo,
+         function(sublist)
+           sublist %>% 
+           mutate(
+             leader_coun = .[['institution_country_code']][1],
+             leader_lat = .[["latitude"]][1],
+             leader_lon = .[["longitude"]][1],
+             supporter_coun = .[['institution_country_code']],
+             supporter_lat = .[["latitude"]],
+             supporter_lon = .[["longitude"]]
+           )
+         )
+```
+
+## Identify regions
+```{r}
+DF.geo <- 
+  lapply(DF.geo,
+         function(sublist)
+           sublist %>% 
+           mutate(
+             # leader region
+             leader_region = countrycode(.[['leader_coun']], 
+                                         origin = 'iso2c', 
+                                         destination = 'un.regionsub.name'),
+             # supporter region
+             supporter_region = countrycode(.[['supporter_coun']], 
+                                            origin = 'iso2c', 
+                                            destination = 'un.regionsub.name')
+           )
+         )
+```
