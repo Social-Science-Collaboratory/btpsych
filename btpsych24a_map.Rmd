@@ -11,30 +11,11 @@ This code creates a figure that (a) illustrates the geographical distribution of
 
 # Setup
 ```{r setup, include= F}
-# load libaries
-library('tidyverse')
-library('cowplot')
-library('here')
-library('sf')
-library("rnaturalearth")
-library("rnaturalearthdata")
-library("ggspatial")
-library('ggmap')
-library("countrycode")
-library('tidygeocoder')
-library('scales')
-library('circlize')
-library('png')
-library('grid')
+# specify data directory
+data_dir <- Sys.getenv("data_dir")
 
-# set plotting theme
-theme_set(theme_classic()) 
-
-# specify directory
-i_am('btpsych24a_map.Rmd')
-
-# turn off scientific notation
-options(scipen = 999)
+# source setup file
+source('setup.R')
 ```
 
 # Prepare OpenAlex data
@@ -42,9 +23,9 @@ options(scipen = 999)
 ```{r open.alex, include = F}
 DF.author <- 
   # open data
-  readRDS(here("data",
-               "openalex",
-               "btpsych24a_data_bib_processed.Rds")) %>% 
+  readRDS(file.path(data_dir,
+                    "openalex",
+                    "btpsych24a_data_bib_processed.Rds")) %>% 
   
   # isolate big team science records
   filter(size.bin != "1 - 4",
@@ -65,7 +46,10 @@ DF.geo <-
          ) %>% 
   
   # select only instances with full affiliation information
-  Filter(function(sublist) all(!is.na(unlist(sublist))), .) %>% 
+  ## changed to *any insatance* on Jul 28 2025 following reviewer recommendation
+  ### this drops number of records from 49919 to 41107
+  #Filter(function(sublist) all(!is.na(unlist(sublist))), .) %>% 
+  Filter(function(sublist) any(!is.na(unlist(sublist))), .) %>% 
   
   # geocode using institution name and country
   lapply(.,
@@ -85,9 +69,9 @@ DF.geo <-
 
 # save geocoded list
 saveRDS(DF.geo,
-        here('data', 
-             'location',
-             'btpsych24a_geocode.Rds')
+        file.path(data_dir,
+                  'location',
+                  'btpsych24a_geocode.Rds')
         )
 ```
 

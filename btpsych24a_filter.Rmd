@@ -214,6 +214,29 @@ DF <-
     )
 ```
 
+# Examine other filters that Reviewer 2 recommended (July 25)
+```{r}
+tmp <- DF %>% 
+  filter(
+    str_detect(
+      so, 
+      regex("arxiv", 
+            ignore_case = T)
+      )
+    )
+
+DF %>% 
+  filter(
+    str_detect(
+      so, 
+      regex("SSRN", 
+            ignore_case = T)
+      )
+    ) %>% 
+  nrow()
+```
+
+
 # Export processed OpenAlex data
 ```{r}
 # select relevant variables (to reduce size)
@@ -231,10 +254,10 @@ saveRDS(DF,
                   'btpsych24a_data_bib_processed.Rds'))
 
 # optionally re-load
-# DF <- 
-#   readRDS(here('data', 
-#              'openalex',
-#              'btpsych24a_data_bib_processed.Rds'))
+ # DF <- 
+ #    readRDS(file.path(data_dir,
+ #                      'openalex',
+ #                      'btpsych24a_data_bib_processed.Rds'))
 ```
 
 # Export list of big team efforts for topic coding
