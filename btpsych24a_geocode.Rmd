@@ -35,37 +35,63 @@ DF.author <-
 DF.author <- DF.author$author
 ```
 
+## Prepare for parallel processing
+```{r}
+# detect number of cores and create a cluster
+num_cores <- detectCores() - 3  # Leave three cores free
+cl <- makeCluster(num_cores)
+
+# export variables needed for parallel processing
+clusterExport(cl, 
+              varlist = c("DF.author"))
+
+
+# loadlibraries needed
+clusterEvalQ(cl, 
+             {library('tidyverse')
+               library('tidygeocoder')}
+             )
+```
+
 ## Geocode records
 ```{r}
 DF.geo <- 
   # isolate affiliation information
-  lapply(DF.author,
-         function(sublist)
-           c(sublist['institution_display_name'],
-             sublist['institution_country_code'])
-         ) %>% 
-  
-  # select only instances with full affiliation information
-  ## changed to *any insatance* on Jul 28 2025 following reviewer recommendation
-  ### this drops number of records from 49919 to 41107
-  #Filter(function(sublist) all(!is.na(unlist(sublist))), .) %>% 
-  Filter(function(sublist) any(!is.na(unlist(sublist))), .) %>% 
+  parLapply(X = DF.author[1:10],
+            cl = cl,
+            function(sublist)
+              c(sublist['institution_display_name'],
+                sublist['institution_country_code'])
+            )
+# select only instances with full affiliation information
+## changed to *any insatance* on Jul 28 2025 following reviewer recommendation
+### this drops number of records from 49919 to 41107
+DF.geo <- DF.geo %>% 
+  Filter(function(sublist) any(!is.na(unlist(sublist))), .)
+
+# cluster export DF.geo
+clusterExport(cl, 
+              varlist = c("DF.geo"))
   
   # geocode using institution name and country
-  lapply(.,
-         function(sublist)
-           as_tibble(sublist) %>% 
-           mutate(address = paste0(institution_display_name,
-                                   ", ",
-                                   institution_country_code)
-                  ) %>% 
-           tidygeocoder::geocode(.,
-                                 address = address,
-                                 method = 'arcgis', 
-                                 lat = latitude, 
-                                 long = longitude
-                                 )
-         )
+DF.geo <- DF.geo %>% 
+  parLapply(X = .,
+            cl = cl,
+            function(sublist)
+              as_tibble(sublist) %>% 
+              
+              mutate(address = paste0(institution_display_name,
+                                      ", ",
+                                      institution_country_code)
+                     ) %>% 
+              
+              geocode(.,
+                      address = address,
+                      method = 'arcgis', 
+                      lat = latitude, 
+                      long = longitude
+                      )
+            )
 
 # save geocoded list
 saveRDS(DF.geo,

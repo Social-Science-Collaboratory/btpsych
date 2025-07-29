@@ -19,6 +19,7 @@ library('scales')
 library('tidygeocoder')
 library('png')
 library('grid')
+library('parallel')
 
 # set plotting theme
 theme_set(theme_classic())
