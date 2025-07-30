@@ -1,0 +1,185 @@
+---
+title: "Create map figure"
+author: "Anonymized for peer review (NC)"
+reviewer: "Anonymized for peer review (JT)"
+output: word_document
+editor_options: 
+  chunk_output_type: console
+---
+
+This code creates a figure that (a) illustrates the geographical distribution of big team leadership and participation rates in psychology, and (b) examines links between those rates and indicators of economic wealth (GDP)
+
+# Setup
+```{r setup, include= F}
+# specify data directory
+data_dir <- Sys.getenv("data_dir")
+
+# source setup file
+source('setup.R')
+```
+
+# open data files
+```{r}
+DF.d <- 
+  read_csv(file.path(data_dir,
+                     "worlddata",
+                     "demo",
+                     "btpsych24a_demo.csv"),
+           show_col_types = F
+          )
+
+DF.e <- 
+  read_csv(file.path(data_dir,
+                     "worlddata",
+                     "edu",
+                     "btpsych24a_edu.csv"),
+           show_col_types = F,
+           skip = 4
+          )
+
+DF.r <- 
+  read_csv(file.path(data_dir,
+                     "worlddata",
+                     "gdp.pc",
+                     "btpsych24a_worlddata_gdp.pc.csv"),
+           show_col_types = F,
+           skip = 4
+          )
+
+DF.i <- 
+  read.csv(file.path(data_dir,
+                     "worlddata",
+                     "gdp.sector",
+                     "btpsych24a_gdp.sector.csv"),
+           na.strings = c("..")
+           )
+```
+
+# prep for merging
+Consistent variable naming and format
+
+## DF.r
+```{r}
+DF.r <- DF.r %>% 
+  # rename variables
+  rename(iso3 = 'Country Code') %>% 
+  
+  # select necessary variables
+  select(iso3, 
+         `2000` : `2023`) %>% 
+  
+  # pivot longer
+  pivot_longer(cols = c(`2000` : `2023`),
+               names_to = 'year',
+               values_to = 'r', # name of dataset
+               )
+```
+
+## DF.i
+```{r}
+DF.i <- DF.i %>% 
+  # rename variables
+  rename(iso3 = 'Country.Code') %>% 
+  
+  # select necessary variables
+  select(iso3, 
+         `X2000..YR2000.` : `X2024..YR2024.`) %>% 
+  
+  # pivot longer
+  pivot_longer(cols = c(`X2000..YR2000.` : `X2024..YR2024.`),
+               names_to = 'year',
+               values_to = 'i', # name of dataset
+               ) %>% 
+   
+  # fix structure of year variable
+  mutate(year = 
+           substr(x = year,
+                  start = 2,
+                  stop = 5))
+```
+
+## DF.e (to-do)
+```{r}
+DF.e <- DF.e %>%
+  # rename variables
+  rename(iso3 = 'Country Code') %>%
+  
+  # select necessary variables
+  select(iso3,
+         '2000' : '2005') %>%
+  
+  # pivot longer
+  pivot_longer(cols = c('2000' : '2005'),
+               names_to = 'year',
+               values_to = 'e',
+               )
+  
+```
+
+## DF.d (to-do)
+```{r}
+DF.d <- DF.d %>%
+  # rename variables
+  rename(iso3 = 'Code',
+        year = 'Year',
+        d = 'Democracy index') %>%
+
+  # select necessary variables
+  select(iso3,
+         year,
+         d) %>%
+  
+  # fix structure of year variable
+  mutate(year = as.character(year))
+
+```
+
+# join (i.e., merge)
+Note: dataframes need the same variable names, classes, and structures
+
+## DF.r and DF.i = DF.ri
+```{r}
+DF.ri <-
+  full_join(x = DF.r,
+            y = DF.i,
+            by = c('iso3', 
+                   'year'))
+```
+
+## DF.ri and DF.d = DF.rid
+```{r}
+DF.rid <-
+  full_join(x = DF.ri,
+            y = DF.d,
+            by = c('iso3',
+                   'year' ))
+```
+
+## DF.rid and DF.e = DF.ride
+```{r}
+DF.ride <-
+  full_join(x = DF.rid,
+            y = DF.e,
+            by = c('iso3',
+                   'year'))
+```
+
+# Export as .Rds
+```{r}
+DF.ride %>% 
+  saveRDS(file = file.path(data_dir,
+                           "worlddata",
+                           'btpsych24a_weird.Rds')
+          )
+
+# delete vestigial
+rm(DF.d, DF.e, DF.i, #DF.r, 
+   DF.ri, DF.rid)
+```
+
+# Open geocoded data
+```{r}
+f.author <- 
+  DF.ride 
+```
+
