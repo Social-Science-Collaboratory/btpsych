@@ -65,7 +65,7 @@ DF.geo <-
                 sublist['institution_country_code'])
             )
 # select only instances with full affiliation information
-## changed to *any insatance* on Jul 28 2025 following reviewer recommendation
+## changed to *any instance* on Jul 28 2025 following reviewer recommendation
 ### this drops number of records from 49919 to 41107
 DF.geo <- DF.geo %>% 
   Filter(function(sublist) any(!is.na(unlist(sublist))), .)
