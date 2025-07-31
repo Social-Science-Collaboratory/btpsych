@@ -10,7 +10,7 @@ editor_options:
 This code creates a figure that (a) illustrates the geographical distribution of big team leadership and participation rates in psychology, and (b) examines links between those rates and indicators of economic wealth (GDP)
 
 # Setup
-```{r setup, include= F}
+```{r include= F}
 # specify data directory
 data_dir <- Sys.getenv("data_dir")
 
@@ -31,14 +31,14 @@ DF.author <-
   filter(size.bin != "1 - 4",
          size.bin != "5 - 9")
 
-# focus on author lists
+# focus on author listsx`
 DF.author <- DF.author$author
 ```
 
 ## Prepare for parallel processing
 ```{r}
 # detect number of cores and create a cluster
-num_cores <- detectCores() - 3  # Leave three cores free
+num_cores <- 50  # Leave three cores free
 cl <- makeCluster(num_cores)
 
 # export variables needed for parallel processing
@@ -51,13 +51,14 @@ clusterEvalQ(cl,
              {library('tidyverse')
                library('tidygeocoder')}
              )
+
 ```
 
 ## Geocode records
 ```{r}
 DF.geo <- 
   # isolate affiliation information
-  parLapply(X = DF.author[1:10],
+  parLapply(X = DF.author,
             cl = cl,
             function(sublist)
               c(sublist['institution_display_name'],
@@ -74,7 +75,7 @@ clusterExport(cl,
               varlist = c("DF.geo"))
   
   # geocode using institution name and country
-DF.geo <- DF.geo %>% 
+DF.geo2 <- DF.geo %>% 
   parLapply(X = .,
             cl = cl,
             function(sublist)
@@ -94,54 +95,9 @@ DF.geo <- DF.geo %>%
             )
 
 # save geocoded list
-saveRDS(DF.geo,
+saveRDS(DF.geo2,
         file.path(data_dir,
-                  'location',
+                  "location",
                   'btpsych24a_geocode.Rds')
         )
-```
-
-## Identify leaders and supporters
-```{r}
-# reload data (if needed)
-DF.geo <- 
-  readRDS(here('data',
-               'location',
-               'btpsych24a_geocode.Rds')
-          )
-
-DF.geo <-
-  
-  # separate leader and supporter location information
-  lapply(DF.geo,
-         function(sublist)
-           sublist %>% 
-           mutate(
-             leader_coun = .[['institution_country_code']][1],
-             leader_lat = .[["latitude"]][1],
-             leader_lon = .[["longitude"]][1],
-             supporter_coun = .[['institution_country_code']],
-             supporter_lat = .[["latitude"]],
-             supporter_lon = .[["longitude"]]
-           )
-         )
-```
-
-## Identify regions
-```{r}
-DF.geo <- 
-  lapply(DF.geo,
-         function(sublist)
-           sublist %>% 
-           mutate(
-             # leader region
-             leader_region = countrycode(.[['leader_coun']], 
-                                         origin = 'iso2c', 
-                                         destination = 'un.regionsub.name'),
-             # supporter region
-             supporter_region = countrycode(.[['supporter_coun']], 
-                                            origin = 'iso2c', 
-                                            destination = 'un.regionsub.name')
-           )
-         )
 ```
