@@ -25,11 +25,7 @@ DF.author <-
   # open data
   readRDS(file.path(data_dir,
                     "openalex",
-                    "btpsych24a_data_bib_processed.Rds")) %>% 
-  
-  # isolate big team science records
-  filter(size.bin != "1 - 4",
-         size.bin != "5 - 9")
+                    "btpsych24a_data_bib_processed.Rds"))
 
 # focus on author listsx`
 DF.author <- DF.author$author
@@ -38,7 +34,7 @@ DF.author <- DF.author$author
 ## Prepare for parallel processing
 ```{r}
 # detect number of cores and create a cluster
-num_cores <- 50  # Leave three cores free
+num_cores <- 5  # Leave three cores free
 cl <- makeCluster(num_cores)
 
 # export variables needed for parallel processing
@@ -58,17 +54,17 @@ clusterEvalQ(cl,
 ```{r}
 DF.geo <- 
   # isolate affiliation information
-  parLapply(X = DF.author,
+  parLapply(X = DF.author[1:50],
             cl = cl,
             function(sublist)
-              c(sublist['institution_display_name'],
+              c(authors.n = nrow(sublist),
+                sublist['institution_display_name'],
                 sublist['institution_country_code'])
             )
-# select only instances with full affiliation information
-## changed to *any instance* on Jul 28 2025 following reviewer recommendation
-### this drops number of records from 49919 to 41107
+
+# select only instances with affiliation information
 DF.geo <- DF.geo %>% 
-  Filter(function(sublist) any(!is.na(unlist(sublist))), .)
+  Filter(function(sublist) any(!is.na(sublist[['institution_display_name']])), .)
 
 # cluster export DF.geo
 clusterExport(cl, 

@@ -166,6 +166,20 @@ DF.ride <-
                    'year'))
 ```
 
+# Remove entities that are not countries
+```{r}
+# Get valid ISO3 country codes from codelist
+valid_iso3 <- countrycode::codelist %>%
+  filter(!is.na(iso3c), 
+         !is.na(country.name.en)) %>%
+  distinct(iso3c) %>%
+  pull(iso3c)
+
+DF.ride <- DF.ride %>% 
+  filter(.data[['iso3']] %in% valid_iso3)
+```
+
+
 # Export as .Rds
 ```{r}
 DF.ride %>% 
@@ -175,13 +189,6 @@ DF.ride %>%
           )
 
 # delete vestigial
-rm(DF.d, DF.e, DF.i, #DF.r, 
+rm(DF.d, DF.e, DF.i, DF.r, 
    DF.ri, DF.rid)
 ```
-
-# Open geocoded data
-```{r}
-f.author <- 
-  DF.ride 
-```
-
