@@ -195,8 +195,25 @@ table(similarities$score_bin)
  similarities <- readRDS(file.path(data_dir, "deduplication", "similarities_10batches_5%sim.Rds"))
 
 # filter only entries with the same first author ID
-similarities_same_author <- similarities %>%
-  filter(first_author_id_a == first_author_id_b)
+similarities_same_author <- similarities #%>%
+  #filter(first_author_id_a == first_author_id_b)
+
+# -------------
+# NC addition: check whether it is accurate to filter based on first author ID
+similarities %>% 
+  
+  # filter records that have high title similarity scores
+  filter(score > .9) %>% 
+  
+  # indicate whether they have same author
+  mutate(same.auth = first_author_id_a == first_author_id_b) %>% 
+  
+  # inspect instances where it's highly similar but not the same author
+  filter(same.auth == F) %>% 
+  View()
+
+# Conclusion: this is a reasonable approach, but it does miss instances where the author was misclassified
+# -------------  
 
 # Check distribution of similarity scores
 table(similarities_same_author$score_bin)
@@ -216,7 +233,6 @@ similarities_validation %>%
   group_by(score_bin) %>%
   summarize( sensitivity = mean(J_coding))
 
-
 # for each duplicate pair with similarity score > 0.8
 # identify the id with the least citations and add to remove list
 remove_duplicate <- similarities_same_author %>%
@@ -224,10 +240,11 @@ remove_duplicate <- similarities_same_author %>%
   mutate(remove_id = case_when(
     cited_by_count_a > cited_by_count_b ~ id_b,
     cited_by_count_a < cited_by_count_b ~ id_a,
-    cited_by_count_a == cited_by_count_b ~ sample(c(id_a, id_b), size = 1)
-  )) %>%
+    cited_by_count_a == cited_by_count_b ~ id_a)
+    ) %>%
   select(remove_id, score, cited_by_count_a, id_a, cited_by_count_b, id_b) %>%
   distinct()
 
 # save a list with the id's that need to be removed from the original dataframe
-saveRDS(remove_duplicate$remove_id, file.path(data_dir, "deduplication", "remove_list.Rds"))
+saveRDS(remove_duplicate$remove_id, 
+        file.path(data_dir, "deduplication", "remove_list.Rds"))
