@@ -14,65 +14,43 @@ data_dir <- Sys.getenv("data_dir")
 source('setup.R')
 ```
 
-# Open and prepare geocode data
+# Open bibliometric data and identify locations
 ```{r}
-DF.geo <- 
+# open data
+DF.o <- 
   # open data
   readRDS(file.path(data_dir,
-                    "location",
-                    "btpsych24a_geocode.Rds"))
+                    "openalex",
+                    "btpsych24a_data_bib_processed.Rds"))
 
-DF.geo <-
-  
-  # separate leader and supporter location information
-  lapply(DF.geo,
-         function(sublist)
-           sublist %>% 
-           mutate(
-             leader_coun = .[['institution_country_code']][1],
-             leader_lat = .[["latitude"]][1],
-             leader_lon = .[["longitude"]][1],
-             supporter_coun = .[['institution_country_code']],
-             supporter_lat = .[["latitude"]],
-             supporter_lon = .[["longitude"]]
-           )
-         )
-```
+# identify country of first author via indexing
+DF.o$author1.country <- 
+  lapply(c(1 : nrow(DF.o)),
+         function(x){
+           DF[x, ][['author']][[1]][['institution_country_code']][[1]] %>% 
+             return()
+           }
+  )
 
-## Identify first authors
-```{r}
-# prepare data
-f.author <-
-  # isolate first authors
-  lapply(DF.geo,
-         function(sublist)
-           slice(sublist,
-                 1)
-         ) %>% 
-  
-  # bind rows
-  bind_rows() %>% 
-  
-  # select country information
-  select(leader_coun) %>% 
-  rename(iso_a2 = leader_coun) %>% 
-  
-  # convert iso2 to iso3
-  mutate(iso3 =
-           countrycode(iso_a2, 
+# Prepare for merging
+DF.o <- DF.o %>% 
+  mutate(iso3 = 
+           author1.country %>% 
+           
+           # convert to character and identify NAs
+           as.character() %>% 
+           if_else(. == "NA",
+                   NA,
+                   .) %>% 
+           
+           # convert country code iso3 format (to facilitate later merge)
+           countrycode(.,
                        origin = "iso2c", 
                        destination = "iso3c")
          )
-
-# export data
-write.csv(x = f.author,
-          file = file.path(data_dir,
-                           'location',
-                           'btpsych24a_f.author.csv'),
-          row.names = F)
 ```
 
-## Combine first author data with weird indicators
+## Combine with weird indicators
 ```{r}
 # open weird data
 DF.w <-
@@ -80,7 +58,6 @@ DF.w <-
                     'worlddata',
                     'btpsych24a_weird.Rds')
           )
-  
 
 # for simplicity, calculate average 'ride' scores for each country
 DF.w <- DF.w %>% 
@@ -90,16 +67,11 @@ DF.w <- DF.w %>%
             d = mean(d, na.rm = T),
             e = mean(e, na.rm = T))
 
-# left join with f.author
-f.author.w <- 
-  left_join(f.author,
+# left join with DF
+DF.o.w <- 
+  left_join(DF.o,
             DF.w,
-            by = "iso3") %>% 
-  
-  # remove observations with no iso3 country code
-  filter(!is.na(iso3))
-
-rm(f.author, DF.geo)
+            by = "iso3")
 ```
 
 # Create plots comparing population and sample distribution
@@ -110,14 +82,14 @@ DataViz <- function(outcome,
   ggplot(data = DF.w,
          aes(x = .data[[outcome]])) +
   
-  # population distribution
+  # distribution across-countries
   geom_density(color = 'purple4',
                adjust = 2) +
   
-  # sample distribution
-  geom_density(data = f.author.w,
+  # distribution
+  geom_density(data = DF.o.w,
                color = 'blue1',
-               adjust = 5) +
+               adjust = 7) +
   
   xlab(label) +
   theme(axis.text.y = element_blank(),
@@ -144,5 +116,106 @@ plot_grid(r.fig,
           i.fig,
           d.fig,
           e.fig)
+```
+
+# Create plots comparing distribution across different bands of big team science
+Create general plotting function
+```{r}
+DataViz2 <- function(outcome,
+                     label){
+  ggplot(data = DF.o.w,
+         aes(x = .data[[outcome]])) +
+  
+  # small team distribution
+  geom_density(data = DF.o.w %>% 
+                 filter(size.bin == '1 - 4'),
+               color = 'green4',
+               #adjust = 10
+               ) +
+    
+  # medium team distribution
+  geom_density(data = DF.o.w %>% 
+                 filter(size.bin == '5 - 9'),
+               color = 'yellow4',
+               #adjust = 10
+               ) +
+    
+  # big team distribution
+  geom_density(data = DF.o.w %>% 
+                 filter(authors.n > 9),
+               color = 'red4',
+               #adjust = 10
+               ) +
+    
+  # actual distribution
+  geom_density(data = DF.w,
+               linetype = 'dotted',
+               #adjust = 2
+               ) +
+    
+  # fix aes
+  xlab(label) +
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.title.y = element_blank())
+}
+```
+
+Create figures
+```{r}
+r.fig <- DataViz2(outcome = 'r',
+                  label = 'GDP per capita (millions)')
+
+i.fig <- DataViz2(outcome = 'i',
+                  label = 'Industrialization')
+
+d.fig <- DataViz2(outcome = 'd',
+                  label = 'Democratic ratings')
+
+e.fig <- DataViz2(outcome = 'e',
+                  label = 'Educational attainment')
+
+plot_grid(r.fig,
+          i.fig,
+          d.fig,
+          e.fig)
+```
+
+Some analyses
+```{r}
+DF.o.w <- 
+  DF.o.w %>% 
+  mutate(group = 
+           case_when(size.bin == '1 - 4' ~ 'small',
+                     size.bin == '5 - 9' ~ 'medium',
+                     authors.n > 9 ~ 'large')
+         )
+
+# r
+kruskal.test(r ~ group,
+             data = DF.o.w)
+
+cor.test(x = DF.o.w$r,
+         y = DF.o.w$authors.n,
+         alternative = 'two.sided',
+         method = 'spearman')
+
+# i
+kruskal.test(i ~ group,
+             data = DF.o.w)
+
+cor.test(x = DF.o.w$i,
+         y = DF.o.w$authors.n,
+         alternative = 'two.sided',
+         method = 'spearman')
+
+# d
+kruskal.test(d ~ group,
+             data = DF.o.w)
+
+cor.test(x = DF.o.w$d,
+         y = DF.o.w$authors.n,
+         alternative = 'two.sided',
+         method = 'spearman')
 ```
 
