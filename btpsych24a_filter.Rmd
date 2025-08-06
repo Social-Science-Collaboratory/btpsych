@@ -69,7 +69,7 @@ DF <-
 ```
 
 # Prep Altmetric DOIs
-The below code was used to export DOIs, which were used by J. Takayanagi to export Altmetric files in batches of 25,000 
+The below code was used to export DOIs, which were used by JT to export Altmetric files in batches of 25,000 
 ```{r altmetric.prep, include = F, eval = F}
 # bind id information
 ids <- 
