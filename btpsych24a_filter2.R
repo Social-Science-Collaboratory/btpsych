@@ -6,52 +6,51 @@
 ####################################
 ##### set-up
 ####################################
-# specify data directory
-data_dir <- Sys.getenv("data_dir")
-
-# source setup file
-source('setup.R')
-
+library('tidyverse')
 library('textreuse')
 library('stringr')
 library('stringdist')
 library('future.apply')
+library('parallel')
 
-# set multiple cores (if you're on a Mac)
-options(mc.cores = parallel::detectCores() - 2)
+# specify data directory
+data_dir <- Sys.getenv("data_dir")
 
 # open data
-DF <- 
+df <- 
   readRDS(
     file.path(data_dir,
               'openalex',
               'btpsych24a_data_bib_processed.Rds')
     )
 
-# select subset for testing purposes
-#df <- DF[1 : 10000,]
 
-df <- DF
 ####################################
 ##### normalize and remove duplicate titles
 ####################################
 df <- df %>% 
-  
   # remove non-normalized titles (less data to process)
   distinct(title,
            .keep_all = T) %>% 
-  
   # create normalized titles
   mutate(clean_title = title %>%
            str_to_lower() %>%                 # lowercase
-           str_replace_all("[[:punct:]]", " ") %>%  # remove punctuation
+           str_replace_all("[^a-zA-Z0-9\\s]", " ") %>%  # keep only latin letters and numbers
            str_squish()                      # trim + collapse spaces
          ) %>% 
-  
   # remove normalized titles (less data to process)
   distinct(clean_title,
-           .keep_all = T)
-
+           .keep_all = T) %>%
+  # extract the first author's name from the author dataframe
+  mutate(first_author = map_chr(author, ~ .x$au_display_name[[1]]),
+         first_author_id = map_chr(author, ~ .x$au_id[[1]]))%>% 
+  # sort the dataframe by first author name 
+  arrange(first_author) %>%
+  # remove titles with less than 4 words (minhash requires at least 2 engrams of 3 words)
+  filter(str_count(clean_title, "\\S+") >= 4) %>%
+  # select only variables necessary for the task 
+  # (OpenAlex ID, clean title, first author name and id, number of citations)
+  select(id, clean_title, first_author, first_author_id, cited_by_count)
 
 ####################################
 # Generate MinHash signatures
@@ -59,20 +58,22 @@ df <- df %>%
 # generate minhash function
 minhash <- minhash_generator(seed = 1967)
 
+# custom function to apply minhash, locally-sensitive hashing, and flag duplicate candidates
+identify_duplicates <- function(df, minhash) {
+
 # tokenize and hash
-corpus <- 
-  TextReuseCorpus(
-    text = df$clean_title,
-    tokenizer = tokenize_ngrams,
-    n = 3,
-    minhash_func = minhash
+  corpus <- 
+    TextReuseCorpus(
+      text = df$clean_title,
+      tokenizer = tokenize_ngrams,
+      n = 3,
+      minhash_func = minhash
     )
 
-# backup corpus
-corpus %>% 
-  saveRDS(file.path(data_dir,
-                    'openalex',
-                    'corpus.Rds'))
+# rename the corpus documents to their OpenAlex IDs (if no entries were skipped)
+if(length(corpus) == nrow(df)){
+  names(corpus) <- df$id
+} 
 
 # bucket and identify candidates
 buckets <- lsh(corpus, 
@@ -83,17 +84,150 @@ candidates <-
   lsh_candidates(buckets)
 
 ####################################
-# identify similar candidates
+# identify similar candidates and set lower limit of 0.05 similarity
 similarities <- 
   lsh_compare(candidates, 
               corpus, 
-              jaccard_similarity)
+              jaccard_similarity) %>% 
+  filter(score > .05)
 
-# backup similarities
-saveRDS(file.path(data_dir,
-                  'openalex',
-                  'similarities.Rds')
-        )
+return(similarities)
 
-candidates <- similarities %>% 
-  filter(score > .8)
+}
+
+# To speed up min hashing, we divided the data set in batches.
+# Note: similarity comparisons are only made within a batch. 
+# Because of that, we sorted the entries by first author name 
+# and added a 50% overlap among batches
+# to minimize the risk that duplicates end up in different batches
+
+# set up number of batches
+n_batch <- 10
+
+# calculate the amount of entries in each batch (without overlap)
+batch_amount <- ceiling(nrow(df)/n_batch)
+
+# split the dataframe in batches and add 50% of overlap between consecutive batches
+df_list <- lapply(1:n_batch, function(x) {
+  start <- (x - 1) * batch_amount + 1 # set the starting value for each batch
+  end <- min(ceiling(batch_amount * (x+0.5)), nrow(df))  # Cap end at the number of rows
+  if (start > nrow(df)) return(NULL) # Avoid adding empty batches
+  df[start:end, c("id", "clean_title") ]
+}
+)
+
+# Begin parallel processing for min hashing
+
+# Declare the number of cores
+numCores <- 10
+#Create cluster
+cl <- makeCluster(numCores)
+# Export the data frame list and min hash custom function to each cluster 
+print(start_export<- Sys.time())
+clusterExport(cl, varlist = c("identify_duplicates", "df_list", "minhash"))
+print(finish_export <- Sys.time()-start_export)
+
+#Load the libraries in all clusters
+clusterEvalQ(cl, {  library('tidyverse')
+  library('textreuse')
+  library('stringr')
+  library('stringdist')})
+
+
+# use parallel processing to identify duplicate candidates within each batch
+print(start_apply<- Sys.time())
+similarities <- bind_rows(
+  parLapply(cl, df_list, identify_duplicates, minhash = minhash))
+print(finish_apply <- Sys.time()-start_apply)
+
+# Stop cluster after parallel processing is complete
+stopCluster(cl)
+
+similarities <- similarities %>%
+  select(score, id_a, id_b) %>%
+  rename(a = id_a,
+         b = id_b)
+
+# Process similarity dataframe
+similarities <- similarities %>%
+  # remove repeated entries (due to batch overlap)
+  distinct() %>%
+  # Look up document a's information in the original dataframe
+  left_join(df, by = c("a" = "id")) %>%
+  # rename variables for clarity
+  rename(id_a = a,
+         clean_title_a = clean_title,
+         first_author_a = first_author,
+         first_author_id_a = first_author_id,
+         cited_by_count_a = cited_by_count) %>%
+  # Look up document b's information in the original dataframe
+  left_join(df, by = c("b" = "id")) %>%
+  # rename variables for clarity
+  rename(id_b = b,
+         clean_title_b = clean_title,
+         first_author_b = first_author,
+         first_author_id_b = first_author_id,
+         cited_by_count_b = cited_by_count) %>%
+  # Create score bins for quality check
+  mutate(score_bin = cut( score,
+                          breaks = c(0, .1, .2, .3, .4, .5,
+                                     .6, .7, .8, .9, 1),
+                          labels = c("5-10%", "10-20%", "20-30%",
+                                     "30-40%", "40-50%", "50-60%",
+                                     "60-70%", "70-80%", "80-90%",
+                                     "90-100%"))) %>%
+  # reorder variables for readability
+  select(score, score_bin, 
+         clean_title_a, clean_title_b, 
+         first_author_a, first_author_b, 
+         first_author_id_a, first_author_id_b,
+         cited_by_count_a, cited_by_count_b,
+         id_a, id_b) %>%
+  # reorder rows by score
+  arrange(score)
+
+# Check distribution of similarity scores
+table(similarities$score_bin)
+
+# Save duplicate candidates in the data directory (10 batches, 0.05 similarity cutoff)
+ saveRDS(similarities, file.path(data_dir, "deduplication", "similarities_10batches_5%sim.Rds"))
+# Optional: read similarities file
+ similarities <- readRDS(file.path(data_dir, "deduplication", "similarities_10batches_5%sim.Rds"))
+
+# filter only entries with the same first author ID
+similarities_same_author <- similarities %>%
+  filter(first_author_id_a == first_author_id_b)
+
+# Check distribution of similarity scores
+table(similarities_same_author$score_bin)
+
+# randomly sample 20 examples from each score bin to check sensitivity by bin
+similarities_validation <- similarities_same_author %>%
+  group_by(score_bin) %>%
+  slice_sample(n = 20)
+
+# save document with sampled entries for sensitivity analysis
+write_csv(similarities_validation, file.path(data_dir, "deduplication", "similarities_validation_10batches.csv"))
+# reload  document with completed sensitivity analysis
+similarities_validation <- read_csv(file.path(data_dir, "deduplication", "similarities_validation_10batches_J.csv"))
+
+# group by score bin and calculate rate of true positives for duplicate detection
+similarities_validation %>% 
+  group_by(score_bin) %>%
+  summarize( sensitivity = mean(J_coding))
+
+
+# for each duplicate pair with similarity score > 0.8
+# identify the id with the least citations and add to remove list
+remove_duplicate <- similarities_same_author %>%
+  filter(score >= 0.8) %>%
+  mutate(remove_id = case_when(
+    cited_by_count_a > cited_by_count_b ~ id_b,
+    cited_by_count_a < cited_by_count_b ~ id_a,
+    cited_by_count_a == cited_by_count_b ~ sample(c(id_a, id_b), size = 1)
+  )) %>%
+  select(remove_id, score, cited_by_count_a, id_a, cited_by_count_b, id_b) %>%
+  distinct()
+
+# save a list with the id's that need to be removed from the original dataframe
+saveRDS(remove_duplicate$remove_id, file.path(data_dir, "deduplication", "remove_list.Rds"))
