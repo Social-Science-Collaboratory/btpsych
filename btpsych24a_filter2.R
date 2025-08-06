@@ -104,13 +104,11 @@ return(similarities)
 # set up number of batches
 n_batch <- 10
 
-# calculate the amount of entries in each batch (without overlap)
-batch_amount <- ceiling(nrow(df)/n_batch)
-
 # split the dataframe in batches and add 50% of overlap between consecutive batches
-df_list <- lapply(1:n_batch, function(x) {
-  start <- (x - 1) * batch_amount + 1 # set the starting value for each batch
-  end <- min(ceiling(batch_amount * (x+0.5)), nrow(df))  # Cap end at the number of rows
+df_list <- lapply(1:n_batch, function(x,
+                                      batch_size = ceiling(nrow(df)/n_batch)) {
+  start <- (x - 1) * batch_size + 1 # set the starting value for each batch
+  end <- min(ceiling(batch_size * (x+0.5)), nrow(df))  # Cap end at the number of rows
   if (start > nrow(df)) return(NULL) # Avoid adding empty batches
   df[start:end, c("id", "clean_title") ]
 }
@@ -142,11 +140,6 @@ print(finish_apply <- Sys.time()-start_apply)
 
 # Stop cluster after parallel processing is complete
 stopCluster(cl)
-
-similarities <- similarities %>%
-  select(score, id_a, id_b) %>%
-  rename(a = id_a,
-         b = id_b)
 
 # Process similarity dataframe
 similarities <- similarities %>%
@@ -190,13 +183,9 @@ similarities <- similarities %>%
 table(similarities$score_bin)
 
 # Save duplicate candidates in the data directory (10 batches, 0.05 similarity cutoff)
- saveRDS(similarities, file.path(data_dir, "deduplication", "similarities_10batches_5%sim.Rds"))
+# saveRDS(similarities, file.path(data_dir, "deduplication", "similarities_10batches_5%sim.Rds"))
 # Optional: read similarities file
  similarities <- readRDS(file.path(data_dir, "deduplication", "similarities_10batches_5%sim.Rds"))
-
-# filter only entries with the same first author ID
-similarities_same_author <- similarities #%>%
-  #filter(first_author_id_a == first_author_id_b)
 
 # -------------
 # NC addition: check whether it is accurate to filter based on first author ID
@@ -212,20 +201,20 @@ similarities %>%
   filter(same.auth == F) %>% 
   View()
 
-# Conclusion: this is a reasonable approach, but it does miss instances where the author was misclassified
+# Conclusion: filtering pairs with matching author ids is a reasonable approach, 
+# but it does miss instances where the author was misclassified by OpenAlex
+# Decision: do not filter by author id match.
 # -------------  
 
-# Check distribution of similarity scores
-table(similarities_same_author$score_bin)
-
 # randomly sample 20 examples from each score bin to check sensitivity by bin
-similarities_validation <- similarities_same_author %>%
+similarities_validation <- similarities %>%
   group_by(score_bin) %>%
   slice_sample(n = 20)
 
 # save document with sampled entries for sensitivity analysis
-write_csv(similarities_validation, file.path(data_dir, "deduplication", "similarities_validation_10batches.csv"))
-# reload  document with completed sensitivity analysis
+# write_csv(similarities_validation, file.path(data_dir, "deduplication", "similarities_validation_10batches.csv"))
+
+ # reload  document with completed sensitivity analysis
 similarities_validation <- read_csv(file.path(data_dir, "deduplication", "similarities_validation_10batches_J.csv"))
 
 # group by score bin and calculate rate of true positives for duplicate detection
@@ -235,7 +224,7 @@ similarities_validation %>%
 
 # for each duplicate pair with similarity score > 0.8
 # identify the id with the least citations and add to remove list
-remove_duplicate <- similarities_same_author %>%
+remove_duplicate <- similarities %>%
   filter(score >= 0.8) %>%
   mutate(remove_id = case_when(
     cited_by_count_a > cited_by_count_b ~ id_b,
