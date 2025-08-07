@@ -234,6 +234,9 @@ remove_duplicate <- similarities %>%
   select(remove_id, score, cited_by_count_a, id_a, cited_by_count_b, id_b) %>%
   distinct()
 
+# remove repeated ids
+remove_list <- unique(remove_duplicate$remove_id)
+
 # save a list with the id's that need to be removed from the original dataframe
-saveRDS(remove_duplicate$remove_id, 
+saveRDS(remove_list, 
         file.path(data_dir, "deduplication", "remove_list.Rds"))

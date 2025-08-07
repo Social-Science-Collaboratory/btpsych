@@ -6,10 +6,6 @@ output: word_document
 editor_options: 
   chunk_output_type: console
 ---
-NICK'S BIRTHDAY IS TODAY! JULY 30
-happy birthday !! 
-Happy birthday!!
-
 This code creates a figure that (a) illustrates the geographical distribution of big team leadership and participation rates in psychology, and (b) examines links between those rates and indicators of economic wealth (GDP)
 
 # Setup

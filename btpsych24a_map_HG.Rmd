@@ -27,7 +27,7 @@ DF.o <-
 DF.o$author1.country <- 
   lapply(c(1 : nrow(DF.o)),
          function(x){
-           DF[x, ][['author']][[1]][['institution_country_code']][[1]] %>% 
+           DF.o[x, ][['author']][[1]][['institution_country_code']][[1]] %>% 
              return()
            }
   )
