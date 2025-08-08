@@ -18,6 +18,9 @@ library('compute.es')
 # specify directory
 i_am('btpsych24a_paper.refs.Rmd')
 
+# specify data directory
+data_dir <- Sys.getenv("data_dir")
+
 # turn off scientific notation
 options(scipen = 999)
 ```
@@ -27,7 +30,7 @@ options(scipen = 999)
 # open OpenAlex data
 DF.oa.filter <- 
   readRDS(
-    here('data', 
+    file.path(data_dir,
          'openalex',
          'btpsych24a_data_bib_processed.Rds'
          )
@@ -36,7 +39,7 @@ DF.oa.filter <-
 # open Altmetrics data
 DF.alt <- 
   readRDS(
-    here('data', 
+    file.path(data_dir,
          'altmetric',
          'btpsych24a_altmetric_processed.Rds'
          )
@@ -61,7 +64,7 @@ Total number of articles
 # open raw data
 DF.oa.raw <- 
   readRDS(
-    here('data',
+    file.path(data_dir,
          'openalex',
          'btpsych24a_data_bib_raw.Rds'
          )
@@ -131,7 +134,7 @@ DF.oa.raw.nodup %>%
 # final openalex dataset
 DF.oa.filter <- 
   readRDS(
-    here('data', 
+    file.path(data_dir,
          'openalex',
          'btpsych24a_data_bib_processed.Rds'
          )
@@ -306,9 +309,10 @@ rm(per.DF, DF)
 ```{r}
 # total number
 DF.topics <- 
-  read.csv(here('data',
-                'topic',
-                'btpsych24a_topic.csv'))
+  read.csv(
+    file.path(data_dir,
+              'topic',
+              'btpsych24a_topic.csv'))
 
 nrow(DF.topics)
 
@@ -346,13 +350,13 @@ Number of records searched in AltMetric DOI's
 ```{r}
 rbind(
   read.csv(
-    here('data',
+    file.path(data_dir,
          'altmetric',
          'btpsych24a_bib_doi1.csv')
       ) %>% 
     select(doi),
   read.csv(
-    here('data',
+    file.path(data_dir,
          'altmetric',
          'btpsych24a_bib_doi2.csv')
     )  %>% 
@@ -366,12 +370,12 @@ Number of Altmetric data points
 DF.alt <-
   rbind(
     read.csv(
-      here('data',
+      file.path(data_dir,
            'altmetric',
            'btpsych24a_altmetric1_raw.csv')
       ),
     read.csv(
-      here('data',
+      file.path(data_dir,
            'altmetric',
            'btpsych24a_altmetric2_raw.csv')
       )
@@ -385,10 +389,11 @@ nrow(DF.alt)
 # number of records included in coding
 DF.c <-
   # open data
-  read.csv(here('data',
-                'contributorship',
-                'btpsych24a_cont_coding.csv'),
-           na.string = "N/A")
+  read.csv(
+    file.path(data_dir,
+              'contributorship',
+              'btpsych24a_cont_coding.csv'),
+    na.string = "N/A")
 
 nrow(DF.c)
 
@@ -426,9 +431,10 @@ DF.oa.filter %>%
   nrow()
 
 # number of geocoded efforts (i.e., ones with complete authorship info)
-DF.geo <- readRDS(here('data',
-                       'location',
-                       'btpsych24a_geocode.Rds'))
+DF.geo <- readRDS(
+  file.path(data_dir,
+            'location',
+            'btpsych24a_geocode.Rds'))
 
 DF.geo %>% length()
 ```
@@ -857,9 +863,10 @@ oa.sens <- DF.oa.filter %>%
 ### Alternative statistical operationalization of impact Altmetric
 ```{r}
 # open Altmetric data
-DF.alt <- readRDS(here('data',
-                       'altmetric',
-                       'btpsych24a_altmetric_processed.Rds'))
+DF.alt <- readRDS(
+  file.path(data_dir,
+            'altmetric',
+            'btpsych24a_altmetric_processed.Rds'))
 ```
 
 ```{r}
@@ -967,9 +974,10 @@ DF.alt %>%
 
 ## Big teams are mobilized (supplemental analysis)
 ```{r}
-DF.c <- readRDS(here('data',
-                     'contributorship',
-                     'btpsych24a_cont_processed.Rds')
+DF.c <- readRDS(
+  file.path(data_dir,
+            'contributorship',
+            'btpsych24a_cont_processed.Rds')
                 )
 
 # proportion
@@ -1004,9 +1012,9 @@ First author positions
 ```{r}
 # open data
 f.author <-
-  read.csv(file = here('data',
-                       'worlddata',
-                       'btpsych24a_f.author_gdp.csv')
+  read.csv(file = file.path(data_dir,
+                            'worlddata',
+                            'btpsych24a_f.author_gdp.csv')
            )
 
 # look at top contributors
@@ -1029,9 +1037,9 @@ Non-first author positions
 ```{r}
 # open data
 s.author <-
-  read.csv(file = here('data',
-                       'worlddata',
-                       'btpsych24a_s.author_gdp.csv')
+  read.csv(file = file.path(data_dir,
+                            'worlddata',
+                            'btpsych24a_s.author_gdp.csv')
            )
 
 # look at top contributors

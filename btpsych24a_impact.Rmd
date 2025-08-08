@@ -25,6 +25,9 @@ theme_set(theme_classic())
 
 # specify directory
 i_am('btpsych24a_impact.Rmd')
+
+# specify data directory
+data_dir <- Sys.getenv("data_dir")
 ```
 
 # Open and process data
@@ -33,7 +36,7 @@ i_am('btpsych24a_impact.Rmd')
 ```{r open.alex, include = F}
 # open data
 DF <- 
-  readRDS(here("data",
+  readRDS(file.path(data_dir,
                "openalex",
                "btpsych24a_data_bib_processed.Rds"))
 ```
@@ -74,13 +77,13 @@ DF.ident <-
 DF.alt <-  
   rbind(
     # change to btpsych24a_altmetric1_scramble.csv if you were not provided access to raw, proprietary data
-    read.csv(here("data",
+    read.csv(file.path(data_dir,
                   "altmetric",
                   "btpsych24a_altmetric1_raw.csv")
              ),
     
     # change to btpsych24a_altmetric2_scramble.csv if you were not provided access to raw, proprietary data
-    read.csv(here("data",
+    read.csv(file.path(data_dir,
                   "altmetric",
                   "btpsych24a_altmetric2_raw.csv")
              )
@@ -124,7 +127,7 @@ DF.alt <-
   select(id : gen.p.y, Policy.mentions)
 
 saveRDS(DF.alt,
-        here('data',
+        file.path(data_dir,
              'altmetric',
              'btpsych24a_altmetric_processed.Rds')
         )

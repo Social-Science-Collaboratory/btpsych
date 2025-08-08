@@ -17,13 +17,13 @@ library('here')
 # set seed
 set.seed(1967)
 
-# specify directory
-i_am('btpsych24a_cont_reliability_prep.Rmd')
+# specify data directory
+data_dir <- Sys.getenv("data_dir")
 
 # open and process data
 DF.c <-
   # open data
-  read.csv(here('data',
+  read.csv(file.path(data_dir,
                 'contributorship',
                 'btpsych24a_cont_coding.csv'),
            na.string = "N/A") %>% 
@@ -67,13 +67,13 @@ DF.c <-
 Export
 ```{r}
 # if file doesn't exist (it should), create it
-if (!file.exists(here('data',
+if (!file.exists(file.path(data_dir,
                       'contributorship',
                       'btpsych24a_cont_coding_rel.csv')
                  )
     ){
   write.csv(DF.c,
-          here('data',
+          file.path(data_dir,
                'contributorship',
                'btpsych24a_cont_coding_rel.csv'),
           row.names = F)

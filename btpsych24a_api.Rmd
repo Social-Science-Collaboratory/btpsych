@@ -16,6 +16,9 @@ library('openalexR')
 library('tidyverse')
 library("jsonlite")
 
+# specify data directory
+data_dir <- Sys.getenv("data_dir")
+
 # specify API mailing key
 ## Note: mailing key removed for privacy
 options(openalexR.mailto = "insert your API mailing key here")
@@ -164,10 +167,10 @@ DF <-
 
 # export
 saveRDS(object = DF, 
-        file = 'data/openalex/btpsych24a_data_bib_raw.Rds')
+        file = file.path(data_dir, 'openalex/btpsych24a_data_bib_raw.Rds'))
 
 # further compress the export (for sharing)
 saveRDS(object = DF, 
-        file = 'data/openalex/btpsych24a_data_bib_raw2.Rds',
+        file = file.path(data_dir, 'openalex/btpsych24a_data_bib_raw2.Rds'),
         compress = "bzip2")
 ```

@@ -16,6 +16,9 @@ library('tidyverse')
 library('here')
 library('cowplot')
 
+# specify data directory
+data_dir <- Sys.getenv("data_dir")
+
 # set plotting theme
 theme_set(theme_classic()) 
 
@@ -27,9 +30,9 @@ i_am('btpsych24a_timetopic.Rmd')
 ```{r open.alex, include = F}
 # open OpenAlex data
 DF <- 
-  readRDS(here("data",
-               "openalex",
-               "btpsych24a_data_bib_processed.Rds"))
+  readRDS(file.path(data_dir,
+                    "openalex",
+                    "btpsych24a_data_bib_processed.Rds"))
 ```
 
 ## Create percentile labels
@@ -462,9 +465,9 @@ fig.tim <-
 Open data
 ```{r}
 # open
-DF.topics <- read.csv(here('data',
-                           'topic',
-                           'btpsych24a_topic.csv'))
+DF.topics <- read.csv(file.path(data_dir,
+                                'topic',
+                                'btpsych24a_topic.csv'))
 
 # fix corrupted size bin variable (Excel thought it was a date)
 # to do so, just grab the original size bin labels from DF

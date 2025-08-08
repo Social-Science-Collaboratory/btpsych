@@ -14,8 +14,8 @@ This code examines the reliability of contributorship coding by JT and GG
 library('tidyverse')
 library('here')
 
-# specify directory
-i_am('btpsych24a_cont_reliability.Rmd')
+# specify data directory
+data_dir <- Sys.getenv("data_dir")
 
 # turn off scientific notation
 options(scipen = 999)
@@ -25,7 +25,7 @@ options(scipen = 999)
 ```{r}
 # recoded records from GG
 DF.g <- 
-  read.csv(here('data',
+  read.csv(file.path(data_dir,
                 'contributorship',
                 'btpsych24a_cont_coding_rel.csv'),
            na.string = "N/A") %>% 
@@ -37,7 +37,7 @@ DF.g <-
 
 # original coded records
 DF.j <-
-  read.csv(here('data',
+  read.csv(file.path(data_dir,
                 'contributorship',
                 'btpsych24a_cont_coding.csv'),
            na.string = "N/A") %>% 

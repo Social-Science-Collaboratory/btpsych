@@ -18,8 +18,8 @@ library('cowplot')
 # set plotting theme
 theme_set(theme_classic()) 
 
-# specify directory
-i_am('btpsych24a_contributorship.Rmd')
+# specify data directory
+data_dir <- Sys.getenv("data_dir")
 
 # turn off scientific notation
 options(scipen = 999)
@@ -29,9 +29,9 @@ options(scipen = 999)
 ```{r open.alex, include = F}
 DF.oa <- 
   # open data
-  readRDS(here("data",
-               "openalex",
-               "btpsych24a_data_bib_processed.Rds")) %>% 
+  readRDS(file.path(data_dir, 
+                    "openalex",
+                    "btpsych24a_data_bib_processed.Rds")) %>% 
   
   # select variables of interest
   select(id, authors.n, size.bin, citation.p.y)
@@ -42,7 +42,7 @@ Keep in mind that there are some instances where you couldn't actually code
 ```{r}
 DF.c <-
   # open data
-  read.csv(here('data',
+  read.csv(file.path(data_dir, 
                 'contributorship',
                 'btpsych24a_cont_coding.csv'),
            na.string = "N/A") %>% 
@@ -190,7 +190,7 @@ DF.2 <-
 
 # export processed data
 saveRDS(DF.2,
-        here('data',
+        file.path(data_dir, 
              'contributorship',
              'btpsych24a_cont_processed.Rds'))
 ```

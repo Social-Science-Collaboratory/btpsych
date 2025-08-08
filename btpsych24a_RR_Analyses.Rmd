@@ -14,6 +14,9 @@ data_dir <- Sys.getenv("data_dir")
 
 # source setup file
 source('setup.R')
+
+# specify directory
+i_am('btpsych24a_RR_Analyses.Rmd')
 ```
 
 # Reviewer 1 Comment 1
