@@ -83,12 +83,12 @@ DataViz <- function(outcome,
          aes(x = .data[[outcome]])) +
   
   # distribution across-countries
-  geom_density(color = 'purple4',
+  geom_density(color = '#0066CC',
                adjust = 2) +
   
   # distribution
   geom_density(data = DF.o.w,
-               color = 'blue1',
+               color = '#ff2917',
                adjust = 7) +
   
   xlab(label) +
@@ -112,10 +112,55 @@ d.fig <- DataViz(outcome = 'd',
 e.fig <- DataViz(outcome = 'e',
                  label = 'Educational attainment')
 
-plot_grid(r.fig,
+# Save combined base plot
+base_plot <- plot_grid(r.fig,
           i.fig,
           d.fig,
           e.fig)
+
+
+
+# Define labels and colors
+labels <- c("Countries", "Published papers")
+colors <- c("Countries" = "#0066CC", "Published papers" = "#ff2917")
+
+
+# Generate a dummy dataframe to create legend only
+legend_df <- data.frame(
+  x = 1:2,
+  y = 1:2,
+  group = factor(labels, levels = labels)
+)
+
+dummy_plot <- ggplot(legend_df, aes(x = x, y = y, color = group)) +
+  geom_line(linewidth = 0.5) +
+  scale_color_manual(values = colors, name = NULL) +  # no legend title or add if you want
+  theme_minimal() +
+  theme(
+    legend.position = "right",
+    legend.text = element_text(size = 10),
+    legend.key.size = unit(1.5, "lines"),
+    legend.title = element_text(face = "bold")
+  )
+
+# Extract legend grob
+legend_grob <- get_legend(dummy_plot)
+
+# Add legends to 
+legend_plot <- plot_grid(
+  base_plot,
+  legend_grob,
+  ncol = 2,
+  rel_widths = c(1, 0.2)
+)
+
+print(legend_plot)
+
+final_plot <- ggdraw() +
+  draw_label("Country and Published Papers by Socioeconomic Indices", fontface = "bold", size = 12, x = 0.5, hjust = 0.5, y = 0.95) +
+  draw_plot(legend_plot, y = 0, height = 0.9)
+
+print(final_plot)
 ```
 
 # Create plots comparing distribution across different bands of big team science
@@ -129,21 +174,21 @@ DataViz2 <- function(outcome,
   # small team distribution
   geom_density(data = DF.o.w %>% 
                  filter(size.bin == '1 - 4'),
-               color = 'green4',
+               color = '#F8766D',
                #adjust = 10
                ) +
     
   # medium team distribution
   geom_density(data = DF.o.w %>% 
                  filter(size.bin == '5 - 9'),
-               color = 'yellow4',
+               color = '#DE8C00',
                #adjust = 10
                ) +
     
   # big team distribution
   geom_density(data = DF.o.w %>% 
                  filter(authors.n > 9),
-               color = 'red4',
+               color = '#00BFC4',
                #adjust = 10
                ) +
     
@@ -175,10 +220,81 @@ d.fig <- DataViz2(outcome = 'd',
 e.fig <- DataViz2(outcome = 'e',
                   label = 'Educational attainment')
 
-plot_grid(r.fig,
+base_plot <- plot_grid(r.fig,
           i.fig,
           d.fig,
           e.fig)
+
+legend_levels <- c("Small teams (1–4)", "Medium teams (5–9)", "Big teams (10+)", "Country distribution")
+
+# dummy df
+legend_df <- data.frame(
+  size.bin = factor(legend_levels, levels = legend_levels),
+  x = c(1,2,3,4),
+  y = c(1,1,1,1)
+)
+
+# color & linetype mapping (named vector ensures mapping by name)
+my_colors <- c(
+  "Small teams (1–4)" = "#F8766D",
+  "Medium teams (5–9)" = "#DE8C00",
+  "Big teams (10+)"    = "#00BFC4",
+  "Country distribution" = "black"
+)
+
+my_linetypes <- c(
+  "Small teams (1–4)" = "solid",
+  "Medium teams (5–9)" = "solid",
+  "Big teams (10+)"    = "solid",
+  "Country distribution" = "dotted"
+)
+
+# 2. Build dummy plot mapping BOTH aesthetics at top-level
+dummy_plot <- ggplot(legend_df, aes(x = x, y = y, color = size.bin, linetype = size.bin)) +
+  geom_line(size = 1.2) +
+  # IMPORTANT: give both scales the same name (or both name = "")
+  scale_color_manual(
+    name = "",                      # same name for both scales => combined legend
+    values = my_colors,
+    breaks = legend_levels          # enforce order
+  ) +
+  scale_linetype_manual(
+    name = "",                      # same name
+    values = my_linetypes,
+    breaks = legend_levels
+  ) +
+  guides(
+    color = guide_legend(override.aes = list(size = 1.2)),   # ensure line is visible in key
+    linetype = guide_legend(override.aes = list(size = 1.2)) # won't make a second legend because names match
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "right",      # will be right when you extract / display
+    legend.key.width = unit(1.2, "cm"),
+    legend.text = element_text(size = 11)
+  )
+
+# 3. Extract legend grob
+legend_grob <- get_legend(dummy_plot)
+
+# Add legends to 
+legend_plot <- plot_grid(
+  base_plot,
+  legend_grob,
+  ncol = 2,
+  rel_widths = c(1, 0.3)
+)
+
+print(legend_plot)
+
+final_plot <- ggdraw() +
+  draw_label("Comparison of Small, Medium and Big Team Papers by Socioeconomic Indices", fontface = "bold", size = 12, x = 0.5, hjust = 0.5, y = 0.95) +
+  draw_plot(legend_plot, y = 0, height = 0.9)
+
+print(final_plot)
+
+
+
 ```
 
 Some analyses
@@ -219,3 +335,97 @@ cor.test(x = DF.o.w$d,
          method = 'spearman')
 ```
 
+# John exploratory analysis
+
+```{r}
+
+# For each team size, calculate the percentage of scientific papers of produced by each country
+
+#identify the list of countries in DF.o.w
+country_list <- unique(DF.o.w$iso3)
+
+DF.percent <- DF.o.w %>%
+  # group by number of authors and country
+  group_by(authors.n, iso3) %>%
+  # calculate the total number of papers of each team size produced by country
+  summarise(n_papers = n(), .groups = "drop_last") %>%
+  ungroup() %>%
+  # fill in missing authors.n × countries combos with n_papers = NA
+  complete(authors.n, iso3 = country_list, fill = list(n_papers = 0)) %>%
+  # calculate the percentage of papers produced by that country
+  group_by(authors.n) %>%
+  mutate(percent = 100 * n_papers / sum(n_papers)) %>%
+  ungroup() %>%   
+  #remove entries without country data
+  filter(!is.na(iso3))
+
+# add country socioeconomic data 
+DF.percent <- left_join(DF.percent, DF.w, by = "iso3")
+
+# model the impact of team size and socioeconomic factors on scientific participation
+model.percent <- lm(data = DF.percent, 
+                    percent ~ authors.n*(
+                        scale(r) + # standardize socioeconomic indices
+                        scale(i) + 
+                        scale(d) + 
+                        scale(e)) )
+summary(model.percent)
+
+# analyze the 5 countries with the most scietific output
+# list the countries in iso3 code
+top_countries <- c("USA", "CHN", "GBR", "DEU", "ITA")
+
+# filter the countries of interest and restrict analysis to teamsize <=100
+DF.percent.top <- DF.percent %>%
+  filter(iso3 %in% top_countries &
+         authors.n <=100) %>%
+  select(authors.n, iso3, percent)
+
+
+model.percent.top <- DF.percent.top %>%
+  lm(data = ., percent ~ authors.n*iso3)
+summary(model.percent.top)
+
+# calculate the sum of the 5 countries' scientific participation for data visualization
+ DF.totals <- DF.percent.top %>%
+  group_by(authors.n) %>%
+  summarise(percent = sum(percent, na.rm = TRUE), .groups = "drop") %>%
+  mutate(iso3 = "Combined") %>%
+  select(authors.n, iso3, percent)
+
+# add combined participation to dataframe
+DF.percent.top <- rbind(DF.percent.top, DF.totals)
+
+DF.percent.top$iso3 <- factor(DF.percent.top$iso3, 
+                              levels = c("USA", "GBR", "DEU", 
+                                         "CHN", "ITA", "Combined"))
+
+# plot scientific participation data for the highest output countries
+ggplot(DF.percent.top, aes(x = authors.n, y = percent, color = iso3, group = iso3)) +
+  geom_smooth(method = "lm",
+              fill = "lightgrey", 
+              alpha = 0.35) +
+  geom_point() +
+  labs(
+    x = "Number of Authors",
+    y = "SCientific Participation (%)",
+    title = "Scientific Output Percentage by Country and Team Size"
+  ) +
+  scale_color_manual(
+    name = "Country",
+    labels = c("United States", "Great Britain", 
+               "Germany", "China",
+               "Italy", "Combined"),
+    values = c("USA" = "#F8766D",
+               "GBR" ="#B79F00", 
+               "DEU" =  "#7CAE00",
+               "CHN" = "#00BFC4", 
+               "ITA" = "#619CFF", 
+               "Combined" = "#F564E3"
+      )
+  ) +
+  theme_minimal()
+
+
+
+```
