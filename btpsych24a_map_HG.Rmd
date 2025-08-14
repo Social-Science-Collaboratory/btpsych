@@ -10,6 +10,9 @@ editor_options:
 # specify data directory
 data_dir <- Sys.getenv("data_dir")
 
+# Corrplot package for correlation plot
+library(corrplot)
+
 # source setup file
 source('setup.R')
 ```
@@ -307,32 +310,61 @@ DF.o.w <-
                      authors.n > 9 ~ 'large')
          )
 
+WEIRD_correlations <- c(NA, NA, NA, NA)
+
 # r
 kruskal.test(r ~ group,
              data = DF.o.w)
 
-cor.test(x = DF.o.w$r,
-         y = DF.o.w$authors.n,
-         alternative = 'two.sided',
-         method = 'spearman')
+WEIRD_correlations[1] <- cor.test(x = DF.o.w$r,
+                                  y = DF.o.w$authors.n,
+                                  alternative = 'two.sided',
+                                  method = 'spearman')$estimate[[1]]
 
 # i
 kruskal.test(i ~ group,
              data = DF.o.w)
 
-cor.test(x = DF.o.w$i,
-         y = DF.o.w$authors.n,
-         alternative = 'two.sided',
-         method = 'spearman')
+WEIRD_correlations[2] <- cor.test(x = DF.o.w$i,
+                                  y = DF.o.w$authors.n,
+                                  alternative = 'two.sided',
+                                  method = 'spearman')$estimate[[1]]
 
 # d
 kruskal.test(d ~ group,
              data = DF.o.w)
 
-cor.test(x = DF.o.w$d,
-         y = DF.o.w$authors.n,
-         alternative = 'two.sided',
-         method = 'spearman')
+WEIRD_correlations[3] <- cor.test(x = DF.o.w$d,
+                                  y = DF.o.w$authors.n,
+                                  alternative = 'two.sided',
+                                  method = 'spearman')$estimate[[1]]
+
+# e
+kruskal.test(e ~ group,
+             data = DF.o.w)
+
+WEIRD_correlations[4] <- cor.test(x = DF.o.w$e,
+                                  y = DF.o.w$authors.n,
+                                  alternative = 'two.sided',
+                                  method = 'spearman')$estimate[[1]]
+
+
+WEIRD_matrix <- t(matrix(WEIRD_correlations))
+
+rownames(WEIRD_matrix) <- "Team size"
+colnames(WEIRD_matrix) <- c("GDP per capita",
+                            "Industrialization",
+                            "Democratic ratings",
+                            "Educational attainment")
+
+
+corrplot(WEIRD_matrix, method = "ellipse",
+        addCoef.col = "#36454F", number.cex = 0.9, number.digits = 3,
+         tl.cex = 0.9, tl.col = "#36454F", 
+         col = colorRampPalette(c("#0066CC", "white", "#ff2917"))(200),
+         mar = c(1,0,1,1))
+
+
 ```
 
 # John exploratory analysis
@@ -408,7 +440,7 @@ ggplot(DF.percent.top, aes(x = authors.n, y = percent, color = iso3, group = iso
   geom_point() +
   labs(
     x = "Number of Authors",
-    y = "SCientific Participation (%)",
+    y = "Scientific Participation (%)",
     title = "Scientific Output Percentage by Country and Team Size"
   ) +
   scale_color_manual(
