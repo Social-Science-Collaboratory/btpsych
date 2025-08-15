@@ -107,7 +107,7 @@ cor.test(x = tmp$prop_medium,
 DF <- readRDS(file.path(
   data_dir,
   "openalex",
-  "btpsych_data_bib_processed.Rds"
+  "btpsych24a_data_bib_processed.Rds"
 ))
 
 # Test correlation between team size and journal h-index
@@ -128,5 +128,35 @@ h_index_plot_limit <- ggplot(DF, aes(x = authors.n, y = h_index)) +
   theme_minimal()
 
 print(h_index_plot_limit)
+
+hindex_median <- DF %>%
+  group_by(authors.n) %>%
+  summarize(
+    h_index_median = median(h_index, na.rm = TRUE)
+  )
+
+hindex_median_plot <- ggplot(hindex_median, aes(x = authors.n, y = h_index_median)) +
+  geom_point(color = "blue", size = 1) +
+  labs(title = "Journal Impact by Team Size",
+       x = "Number of authors",
+       y = "Median H-index") +
+  coord_cartesian(xlim = c(0, 100), ylim = c(0,700)) + 
+  theme_minimal()
+  
+print(hindex_median_plot)
+
+hindex_median <- hindex_median %>%
+  mutate(log.authors.n = log(authors.n))
+
+hindex_median_log_plot <- ggplot(hindex_median, aes(x = log.authors.n, y = h_index_median)) +
+  geom_point(color = "blue", size = 1) +
+  labs(title = "Journal Impact by Team Size",
+       x = "Number of authors (log)",
+       y = "Median H-index") +
+  coord_cartesian(ylim = c(0,700)) + 
+  theme_minimal()
+  
+print(hindex_median_log_plot)
+
 
 ```
