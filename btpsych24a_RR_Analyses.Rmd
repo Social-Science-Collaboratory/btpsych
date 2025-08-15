@@ -98,3 +98,35 @@ cor.test(x = tmp$prop_medium,
          alternative = 'greater',
          method = 'spearman')
 ```
+
+
+# analyzing the correlation between team size and journal impact
+```{r}
+
+# read OpenAlex processed data
+DF <- readRDS(file.path(
+  data_dir,
+  "openalex",
+  "btpsych_data_bib_processed.Rds"
+))
+
+# Test correlation between team size and journal h-index
+cor.test(x = DF$authors.n, 
+         y = DF$h_index,
+         alternative = 'greater',
+         method = 'spearman')
+
+# print H-index scatterplot
+
+h_index_plot_limit <- ggplot(DF, aes(x = authors.n, y = h_index)) +
+  geom_point(color = "blue", size = 1, alpha = 0.1) +
+  geom_smooth(color = "red", method = "lm") +
+  labs(title = "Journal Impact by Team Size",
+       x = "Number of authors",
+       y = "H-index") +
+  coord_cartesian(xlim = c(0, 100)) + 
+  theme_minimal()
+
+print(h_index_plot_limit)
+
+```
