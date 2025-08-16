@@ -97,7 +97,7 @@ DF.i <- DF.i %>%
                   stop = 5))
 ```
 
-## DF.e (to-do)
+## DF.e
 ```{r}
 DF.e <- DF.e %>%
   # rename variables
@@ -105,23 +105,23 @@ DF.e <- DF.e %>%
   
   # select necessary variables
   select(iso3,
-         '2000' : '2005') %>%
+         '2000' : '2024') %>%
   
   # pivot longer
-  pivot_longer(cols = c('2000' : '2005'),
+  pivot_longer(cols = c('2000' : '2024'),
                names_to = 'year',
                values_to = 'e',
                )
   
 ```
 
-## DF.d (to-do)
+## DF.d
 ```{r}
 DF.d <- DF.d %>%
   # rename variables
   rename(iso3 = 'Code',
-        year = 'Year',
-        d = 'Democracy index') %>%
+         year = 'Year',
+         d = 'Democracy index') %>%
 
   # select necessary variables
   select(iso3,
@@ -130,7 +130,6 @@ DF.d <- DF.d %>%
   
   # fix structure of year variable
   mutate(year = as.character(year))
-
 ```
 
 # join (i.e., merge)
@@ -175,7 +174,6 @@ valid_iso3 <- countrycode::codelist %>%
 DF.ride <- DF.ride %>% 
   filter(.data[['iso3']] %in% valid_iso3)
 ```
-
 
 # Export as .Rds
 ```{r}

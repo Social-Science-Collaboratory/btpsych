@@ -425,7 +425,4 @@ ggplot(DF.percent.top, aes(x = authors.n, y = percent, color = iso3, group = iso
       )
   ) +
   theme_minimal()
-
-
-
 ```

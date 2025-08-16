@@ -524,6 +524,44 @@ DF.topics <- DF.topics %>%
          )
 ```
 
+## Examine whether topic distribution varies
+```{r}
+m.0 <-
+  multinom(topic.trunc ~ 1,
+           data = DF.topics)
+
+m.1 <-
+  multinom(topic.trunc ~ size.bin,
+         data = DF.topics)
+
+anova(m.0, m.1)
+
+topic.dist <- 
+  table(DF.topics$size.bin, 
+        DF.topics$topic.trunc) %>% 
+  as.data.frame() %>% 
+  pivot_wider(names_from = 'Var2',
+              values_from = 'Freq')
+
+rm(m.0, m.1)
+```
+
+## Examine whether mentions of terms varies
+```{r}
+DF %>% 
+  mutate(rep = str_detect(string = title,
+                          pattern = 'replication')) %>% 
+  filter(rep == T) %>% 
+  nrow()
+
+DF %>% 
+  mutate(rep = str_detect(string = title,
+                          pattern = 'meta-analysis')) %>% 
+  filter(rep == T) %>% 
+  nrow()
+```
+
+
 ## Create topic figure
 ```{r}
 topic.fig.DF <- 
