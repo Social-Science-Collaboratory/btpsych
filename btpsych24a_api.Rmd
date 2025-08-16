@@ -21,7 +21,8 @@ data_dir <- Sys.getenv("data_dir")
 
 # specify API mailing key
 ## Note: mailing key removed for privacy
-options(openalexR.mailto = "insert your API mailing key here")
+#options(openalexR.mailto = "insert your API mailing key here")
+
 ```
 
 # Download records
@@ -173,4 +174,32 @@ saveRDS(object = DF,
 saveRDS(object = DF, 
         file = file.path(data_dir, 'openalex/btpsych24a_data_bib_raw2.Rds'),
         compress = "bzip2")
+```
+
+# API call for suplementary analysis: team size vs journal impact measure
+
+```{r}
+
+# API call to download all OpenAlex sources (publication venues)
+# Since oa_fetch requires a filter, we included the filter works count >-1
+
+OA_sources_workcount <- oa_fetch(entity = "sources", # select sources
+                       works_count = ">-1", # create an all-inclusive filter
+                       options = list( # select variables of interest
+                         select = c("id", "summary_stats", "works_count"))) %>% 
+  # convert to dataframe
+  as.data.frame() %>%
+  # extract h_index from the summary_stats column
+  mutate(h_index = sapply(summary_stats, function(x) x[["h_index"]])) %>%
+  # select variables of interest
+  select("id", "h_index", "works_count")
+
+# save sources dataframe
+saveRDS(OA_sources_workcount, 
+        file.path(
+          data_dir, 
+          "openalex",
+          "OA_sources.Rds"))
+
+
 ```
