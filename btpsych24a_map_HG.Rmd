@@ -170,100 +170,90 @@ print(final_plot)
 Create general plotting function
 ```{r}
 DataViz2 <- function(outcome,
-                     label,
-                     adjust = 1){
+                     label){
   ggplot(data = DF.o.w,
          aes(x = .data[[outcome]])) +
   
-  # author.n < 10
+  # small team distribution
   geom_density(data = DF.o.w %>% 
-                 filter(authors.n < 10),
-               color = '#4cc9f0',
-               adjust = adjust,
-               alpha = 0.4) +
+                 filter(size.bin == '1 - 4'),
+               color = '#F8766D',
+               #adjust = 10
+               ) +
     
-  # author.n > 10
+  # medium team distribution
   geom_density(data = DF.o.w %>% 
-                 filter(authors.n > 10),
-               color = '#7b2cbf',
-               adjust = adjust,
-               alpha = 0.4) +
+                 filter(size.bin == '5 - 9'),
+               color = '#DE8C00',
+               #adjust = 10
+               ) +
+    
+  # big team distribution
+  geom_density(data = DF.o.w %>% 
+                 filter(authors.n > 9),
+               color = '#00BFC4',
+               #adjust = 10
+               ) +
     
   # actual distribution
   geom_density(data = DF.w,
                linetype = 'dotted',
-               adjust = adjust,
-               alpha = 0.4) +
+               #adjust = 2
+               ) +
     
   # fix aes
   xlab(label) +
   theme(axis.text.y = element_blank(),
         axis.ticks.y = element_blank(),
-        axis.title.y = element_blank()
-        )
+        axis.title.y = element_blank())
 }
 ```
 
 Create figures
 ```{r}
-r.fig <- 
-  DataViz2(outcome = 'r',
-           label = 'GDP Per Capita (Millions)',
-           adjust = 5)
+r.fig <- DataViz2(outcome = 'r',
+                  label = 'GDP per capita (millions)')
 
-i.fig <- 
-  DataViz2(outcome = 'i',
-           label = 'Industry-Based GDP (%)',
-           adjust = 5)
+i.fig <- DataViz2(outcome = 'i',
+                  label = 'Industrialization')
 
-d.fig <- 
-  DataViz2(outcome = 'd',
-           label = 'Democracy Index',
-           adjust = 5)
+d.fig <- DataViz2(outcome = 'd',
+                  label = 'Democratic ratings')
 
-e.fig <- 
-  DataViz2(outcome = 'e',
-           label = 'Secondary School Enrollment (% Gross)',
-           adjust = 5)
+e.fig <- DataViz2(outcome = 'e',
+                  label = 'Educational attainment')
 
-base_plot <- 
-  plot_grid(r.fig,
-            i.fig,
-            d.fig,
-            e.fig)
+base_plot <- plot_grid(r.fig,
+          i.fig,
+          d.fig,
+          e.fig)
 
-legend_levels <- 
-  c("First author country affiliation (< 10 co-authors)", 
-    "First author country affiliation (10+ co-authors)", 
-    "Between-country distribution")
+legend_levels <- c("Small teams (1–4)", "Medium teams (5–9)", "Big teams (10+)", "Country distribution")
 
 # dummy df
 legend_df <- data.frame(
   size.bin = factor(legend_levels, levels = legend_levels),
-  x = c(1,2,3),
-  y = c(1,1,1)
+  x = c(1,2,3,4),
+  y = c(1,1,1,1)
 )
 
 # color & linetype mapping (named vector ensures mapping by name)
 my_colors <- c(
-  "First author country affiliation (< 10 co-authors)" = "#4cc9f0",
-  "First author country affiliation (10+ co-authors)"    = "#7b2cbf",
-  "Between-country distribution" = "black"
+  "Small teams (1–4)" = "#F8766D",
+  "Medium teams (5–9)" = "#DE8C00",
+  "Big teams (10+)"    = "#00BFC4",
+  "Country distribution" = "black"
 )
 
 my_linetypes <- c(
-  "First author country affiliation (< 10 co-authors)" = "solid",
-  "First author country affiliation (10+ co-authors)" = "solid",
-  "Between-country distribution" = "dotted"
+  "Small teams (1–4)" = "solid",
+  "Medium teams (5–9)" = "solid",
+  "Big teams (10+)"    = "solid",
+  "Country distribution" = "dotted"
 )
 
 # 2. Build dummy plot mapping BOTH aesthetics at top-level
-dummy_plot <- 
-  ggplot(legend_df, 
-         aes(x = x, 
-             y = y, 
-             color = size.bin, 
-             linetype = size.bin)) +
+dummy_plot <- ggplot(legend_df, aes(x = x, y = y, color = size.bin, linetype = size.bin)) +
   geom_line(size = 1.2) +
   # IMPORTANT: give both scales the same name (or both name = "")
   scale_color_manual(
@@ -291,15 +281,17 @@ dummy_plot <-
 legend_grob <- get_legend(dummy_plot)
 
 # Add legends to 
-legend_plot <- 
-  plot_grid(base_plot,
-            legend_grob,
-            nrow = 2,
-            rel_heights = c(1, 0.3))
+legend_plot <- plot_grid(
+  base_plot,
+  legend_grob,
+  ncol = 2,
+  rel_widths = c(1, 0.3)
+)
 
 print(legend_plot)
 
 final_plot <- ggdraw() +
+  draw_label("Comparison of Small, Medium and Big Team Papers by Socioeconomic Indices", fontface = "bold", size = 12, x = 0.5, hjust = 0.5, y = 0.95) +
   draw_plot(legend_plot, y = 0, height = 0.9)
 
 print(final_plot)
