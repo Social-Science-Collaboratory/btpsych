@@ -170,38 +170,33 @@ print(final_plot)
 Create general plotting function
 ```{r}
 DataViz2 <- function(outcome,
-                     label,
-                     adj = 1,
-                     adj.s = 1,
-                     adj.b = 1){
+                     label){
   ggplot(data = DF.o.w,
          aes(x = .data[[outcome]])) +
   
   # author.n < 10
   geom_density(data = DF.o.w %>% 
                  filter(authors.n < 10),
-               color = '#F8766D',
-               adjust = adj.s
+               color = '#F8766D'
                ) +
     
   # author.n > 10
   geom_density(data = DF.o.w %>% 
                  filter(authors.n > 10),
-               color = '#00BFC4',
-               adjust = adj.b
+               color = '#00BFC4'
                ) +
     
   # actual distribution
   geom_density(data = DF.w,
-               linetype = 'dotted',
-               adjust = adj
+               linetype = 'dotted'
                ) +
     
   # fix aes
   xlab(label) +
   theme(axis.text.y = element_blank(),
         axis.ticks.y = element_blank(),
-        axis.title.y = element_blank())
+        axis.title.y = element_blank()
+        )
 }
 ```
 
@@ -209,22 +204,25 @@ Create figures
 ```{r}
 r.fig <- 
   DataViz2(outcome = 'r',
-           label = 'GDP per capita (millions)')
+           label = 'GDP Per Capita (Millions)')
 
 i.fig <- 
   DataViz2(outcome = 'i',
-           label = 'Industrialization')
+           label = 'Industry-Based GDP (%)')
 
-d.fig <- DataViz2(outcome = 'd',
-                  label = 'Democratic ratings')
+d.fig <- 
+  DataViz2(outcome = 'd',
+           label = 'Democracy Index')
 
-e.fig <- DataViz2(outcome = 'e',
-                  label = 'Educational attainment')
+e.fig <- 
+  DataViz2(outcome = 'e',
+           label = 'Secondary School Enrollment (% Gross)')
 
-base_plot <- plot_grid(r.fig,
-          i.fig,
-          d.fig,
-          e.fig)
+base_plot <- 
+  plot_grid(r.fig,
+            i.fig,
+            d.fig,
+            e.fig)
 
 legend_levels <- c("Small teams (1–4)", "Medium teams (5–9)", "Big teams (10+)", "Country distribution")
 
