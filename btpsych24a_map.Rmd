@@ -291,7 +291,6 @@ legend_plot <- plot_grid(
 print(legend_plot)
 
 final_plot <- ggdraw() +
-  draw_label("Comparison of Small, Medium and Big Team Papers by Socioeconomic Indices", fontface = "bold", size = 12, x = 0.5, hjust = 0.5, y = 0.95) +
   draw_plot(legend_plot, y = 0, height = 0.9)
 
 print(final_plot)
