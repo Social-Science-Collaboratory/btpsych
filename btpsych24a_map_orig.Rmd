@@ -242,6 +242,6 @@ final.fig <-
   plot_grid(globe.fig,
             base_plot,
             nrow = 2,
-            rel_heights = c(4, 6),
+            rel_heights = c(5, 5),
             labels = c("A", "B"))
 ```

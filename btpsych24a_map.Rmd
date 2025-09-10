@@ -233,8 +233,8 @@ base_plot <-
             e.fig)
 
 legend_levels <- 
-  c("First author country affiliation (< 10 co-authors)", 
-    "First author country affiliation (10+ co-authors)", 
+  c("1st Author Affiliation (< 10 Co-Authors)", 
+    "1st Author Affiliation (10+ Co-Authors)", 
     "Between-country distribution")
 
 # dummy df
@@ -246,56 +246,56 @@ legend_df <- data.frame(
 
 # color & linetype mapping (named vector ensures mapping by name)
 my_colors <- c(
-  "First author country affiliation (< 10 co-authors)" = "#4cc9f0",
-  "First author country affiliation (10+ co-authors)"    = "#7b2cbf",
-  "Between-country distribution" = "black"
-)
+  "1st Author Affiliation (< 10 Co-Authors)" = "#4cc9f0",
+  "1st Author Affiliation (10+ Co-Authors)"    = "#7b2cbf",
+  "Between-Country Distribution" = "black"
+  )
 
 my_linetypes <- c(
-  "First author country affiliation (< 10 co-authors)" = "solid",
-  "First author country affiliation (10+ co-authors)" = "solid",
+  "1st Author Affiliation (< 10 Co-Authors)" = "solid",
+  "1st Author Affiliation (10+ Co-Authors)" = "solid",
   "Between-country distribution" = "dotted"
 )
 
-# 2. Build dummy plot mapping BOTH aesthetics at top-level
-dummy_plot <- 
-  ggplot(legend_df, 
-         aes(x = x, 
-             y = y, 
-             color = size.bin, 
-             linetype = size.bin)) +
-  geom_line(size = 1.2) +
-  # IMPORTANT: give both scales the same name (or both name = "")
-  scale_color_manual(
-    name = "",                      # same name for both scales => combined legend
-    values = my_colors,
-    breaks = legend_levels          # enforce order
-  ) +
-  scale_linetype_manual(
-    name = "",                      # same name
-    values = my_linetypes,
-    breaks = legend_levels
-  ) +
-  guides(
-    color = guide_legend(override.aes = list(size = 1.2)),   # ensure line is visible in key
-    linetype = guide_legend(override.aes = list(size = 1.2)) # won't make a second legend because names match
-  ) +
-  theme_minimal() +
-  theme(
-    legend.position = "right",      # will be right when you extract / display
-    legend.key.width = unit(1.2, "cm"),
-    legend.text = element_text(size = 11)
-  )
+# 2. Build dummy plot mapping aesthetics at top-level
 
-# 3. Extract legend grob
-legend_grob <- get_legend(dummy_plot)
+# Make a custom legend
+legend_labels <- 
+  c("1st Author Affiliation (< 10 Co-Authors)",
+    "1st Author Affiliation (10+ Co-Authors)",
+    "Between-Country Distribution")
+
+legend_colors <-
+  c("#4cc9f0", 
+    "#7b2cbf", 
+    "black")
+
+# Create a dummy ggplot to extract a legend
+dummy <- 
+  ggplot(data.frame(x = legend_labels, 
+                    y = 1, 
+                    col = legend_labels),
+         aes(x, 
+             y, 
+             color = col)) +
+  geom_point() +
+  scale_color_manual(values = legend_colors, 
+                     labels = legend_labels) +
+  guides(color = 
+           guide_legend(title = NULL, 
+                        direction = "horizontal")) +
+  theme_void() +
+  theme(legend.position = "bottom",
+        legend.text = element_text(size = 12))
+
+legend <- get_legend(dummy)
 
 # Add legends to 
 legend_plot <- 
   plot_grid(base_plot,
             legend_grob,
             nrow = 2,
-            rel_heights = c(1, 0.3))
+            rel_heights = c(1, 1))
 
 print(legend_plot)
 
@@ -303,9 +303,6 @@ final_plot <- ggdraw() +
   draw_plot(legend_plot, y = 0, height = 0.9)
 
 print(final_plot)
-
-
-
 ```
 
 Some analyses
