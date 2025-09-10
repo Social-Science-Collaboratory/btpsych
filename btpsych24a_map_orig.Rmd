@@ -79,9 +79,9 @@ saveRDS(DF.geo,
 ```{r}
 # reload data (if needed)
 DF.geo <- 
-  readRDS(here('data',
-               'location',
-               'btpsych24a_geocode.Rds')
+  readRDS(file.path(data_dir,
+                    'location',
+                    'btpsych24a_geocode.Rds')
           )
 
 DF.geo <-
@@ -99,301 +99,6 @@ DF.geo <-
              supporter_lon = .[["longitude"]]
            )
          )
-```
-
-## Identify regions
-```{r}
-DF.geo <- 
-  lapply(DF.geo,
-         function(sublist)
-           sublist %>% 
-           mutate(
-             # leader region
-             leader_region = countrycode(.[['leader_coun']], 
-                                         origin = 'iso2c', 
-                                         destination = 'un.regionsub.name'),
-             # supporter region
-             supporter_region = countrycode(.[['supporter_coun']], 
-                                            origin = 'iso2c', 
-                                            destination = 'un.regionsub.name')
-           )
-         )
-```
-
-
-# Prepare GDP figures
-
-## Load GDP and GDP per capita data
-```{r}
-# raw GDP
-DF.gdp.raw <- 
-  read.csv(here('data', 
-                'worlddata', 
-                'btpsych24a_worlddata_gdp.csv'),
-           skip = 4) %>% # skip 4 empty rows
-  select(Country.Code, X2023) %>% 
-  rename("iso_a3" = Country.Code,
-         "gdp" = X2023)
-
-# GDP per capita
-DF.gdp.pc <-
-    read.csv(here('data', 
-                  'worlddata', 
-                  'btpsych24a_worlddata_gdp.pc.csv'),
-           skip = 4) %>%
-  select(Country.Code, X2023) %>% 
-  rename("iso_a3" = Country.Code,
-         "gdp.pc" = X2023)
-
-# merge
-DF.gdp <- left_join(DF.gdp.raw,
-                    DF.gdp.pc,
-                    by = "iso_a3")
-
-# open ISO identifiers
-world <- ne_countries(scale = "medium", 
-                      returnclass = "sf")
-
-# fix missing ISO values in world data
-world[world$name == "France", ]$iso_a2 = "FR"
-world[world$name == "France", ]$iso_a3 = "FRA"
-world[world$name == "Norway", ]$iso_a2 = "NO"
-world[world$name == "Norway", ]$iso_a3 = "NOR"
-world[world$name == "Norway", ]$iso_a3 = "NOR"
-world[world$name == "Kosovo", ]$iso_a2 = "XK"
-world[world$name == "Kosovo", ]$iso_a3 = "XKX"
-
-# select ISO identifiers
-world <- world %>% 
-  select(iso_a2, iso_a3)
-
-# connect ISO identifiers to GDP data
-DF.gdp <- left_join(DF.gdp, 
-                    world,
-                    by = "iso_a3")
-
-# delete vestigial
-rm(DF.gdp.pc, DF.gdp.raw)
-```
-
-## Examine links with first author positions
-### Prepare and export data
-```{r}
-# prepare data
-f.author <-
-  # isolate first authors
-  lapply(DF.geo,
-         function(sublist)
-           slice(sublist,
-                 1)
-         ) %>% 
-  
-  # bind rows
-  bind_rows() %>% 
-  
-  # select country information
-  select(leader_coun, leader_region) %>% 
-  rename(iso_a2 = leader_coun) %>% 
-  
-  # join with GDP data
-  left_join(.,
-            DF.gdp,
-            by = "iso_a2") %>% 
-  
-  # calculate mean GDP and number of records
-  group_by(iso_a2) %>% 
-  summarise(region = unique(leader_region),
-            m.gdp = mean(gdp,
-                         na.rm = T),
-            m.gdp = m.gdp / 100000000, ## transformed for easier visualization
-            m.gdp.pc = mean(gdp.pc,
-                            na.rm = T),
-            n = n()) %>%
-  ungroup()
-
-# export data
-write.csv(x = f.author,
-          file = here('data',
-                      'worlddata',
-                      'btpsych24a_f.author_gdp.csv'),
-          row.names = F)
-```
-
-### Create figures
-```{r}
-# load data (if necessary)
-f.author <- 
-  read.csv(file = here('data',
-                       'worlddata',
-                       'btpsych24a_f.author_gdp.csv')
-           )
-
-# create GDP per capita plot
-gdp.pc.lead <- 
-  ggplot(data = f.author,
-         aes(x = m.gdp.pc,
-             y = n)) +
-  
-  # plot points and smoothed line
-  geom_smooth(method = 'lm',
-              fill = 'grey90',
-              color = "grey70",
-              alpha = .5) +
-  geom_point(aes(color = region),
-             alpha = 0.4,
-             size = 2,
-             show.legend = F) +
-  
-  # aesthetics
-  xlab("GDP per capita") +
-  ylab("First authored papers")
-
-# create GDP plot
-gdp.lead <- 
-  ggplot(data = f.author,
-         aes(x = m.gdp,
-             y = n)) +
-  
-  # plot points and smoothed line
-  geom_smooth(method = 'lm',
-              fill = 'grey90',
-              color = "grey70",
-              alpha = .5) +
-  geom_point(aes(color = region),
-             alpha = 0.4,
-             size = 2,
-             show.legend = F) +
-  # aesthetics
-  theme(axis.title.y = element_blank(),
-        axis.text = element_blank(),
-        axis.ticks = element_blank()
-        ) +
-  xlab("GDP")
-
-# combine plots
-gdp.lead.fig <- ggdraw() +
-  draw_plot(gdp.pc.lead) +
-  draw_plot(gdp.lead, 
-            x = .17,
-            y = .7,
-            width = .25,
-            height = .25)
-
-rm(gdp.pc.lead, gdp.lead, f.author)
-```
-
-## Examine links with non-first author positions
-### Prepare and export data
-```{r}
-# prepare data
-s.author <-
-  # isolate first authors
-  lapply(DF.geo,
-         function(sublist)
-           slice(sublist,
-                 -1)
-         ) %>% 
-  
-  # bind rows
-  bind_rows() %>% 
-  
-  # select country information
-  select(supporter_coun, supporter_region) %>% 
-  rename(iso_a2 = supporter_coun) %>% 
-  
-  # join with GDP data
-  left_join(.,
-            DF.gdp,
-            by = "iso_a2") %>% 
-  
-  # calculate mean GDP and number of records
-  group_by(iso_a2) %>% 
-  summarise(region = unique(supporter_region),
-            m.gdp = mean(gdp,
-                         na.rm = T),
-            m.gdp = m.gdp / 100000000,
-            m.gdp.pc = mean(gdp.pc,
-                            na.rm = T),
-            n = n()) %>%
-  ungroup()
-
-# export data
-write.csv(x = s.author,
-          file = here('data',
-                      'worlddata',
-                      'btpsych24a_s.author_gdp.csv'),
-          row.names = F)
-```
-
-### Create figures
-```{r}
-# load data (if necessary)
-s.author <- 
-  read.csv(file = here('data',
-                       'worlddata',
-                       'btpsych24a_s.author_gdp.csv')
-           )
-
-# create GDP per capita plot
-gdp.pc.support <- 
-  ggplot(data = s.author,
-         aes(x = m.gdp.pc,
-             y = n)) +
-  
-  # plot points and smoothed line
-  geom_smooth(method = 'lm',
-              fill = 'grey90',
-              color = "grey70",
-              alpha = .5) +
-  geom_point(aes(color = region),
-             alpha = 0.4,
-             size = 2,
-             show.legend = F) +
-  
-  # aesthetics
-  xlab("GDP per capita") +
-  ylab("Non-first authored papers")
-
-# create GDP plot
-gdp.support <- 
-  ggplot(data = s.author,
-         aes(x = m.gdp,
-             y = n)) +
-  
-  # plot points and smoothed line
-  geom_smooth(method = 'lm',
-              fill = 'grey90',
-              color = "grey70",
-              alpha = .5) +
-  geom_point(aes(color = region),
-             alpha = 0.4,
-             size = 2,
-             show.legend = F) +
-  
-  # aesthetics
-  theme(axis.title.y = element_blank(),
-        axis.text = element_blank(),
-        axis.ticks = element_blank()
-        ) +
-  xlab("GDP")
-
-# combine plots
-gdp.support.fig <- ggdraw() +
-  draw_plot(gdp.pc.support) +
-  draw_plot(gdp.support, 
-            x = .17,
-            y = .7,
-            width = .25,
-            height = .25)
-
-rm(gdp.pc.support, gdp.support, s.author)
-```
-
-## Combine 
-```{r}
-gdp.fig <- plot_grid(gdp.lead.fig, gdp.support.fig)
-
-rm(gdp.lead.fig, gdp.support.fig)
 ```
 
 # Prepare globe figures
@@ -425,18 +130,24 @@ DF.map <-
   mutate(leader.region = 
            countrycode(.$leader_coun, 
                        origin = 'iso2c', 
-                       destination = 'un.regionsub.name'),
+                       destination = 'region'),
          supporter.region = 
            countrycode(.$supporter_coun, 
                        origin = 'iso2c', 
-                       destination = 'un.regionsub.name')
+                       destination = 'region')
          )
 
 # manually fix coding for TW and XK
-DF.map[DF.map$leader_coun == "TW", ]$leader.region <- "Eastern Asia"
-DF.map[DF.map$supporter_coun == "TW", ]$supporter.region <- "Eastern Asia"
-DF.map[DF.map$leader_coun == "XK", ]$leader.region <- "Eastern Europe"
-DF.map[DF.map$supporter_coun == "XK", ]$supporter.region <- "Eastern Europe"
+DF.map[!is.na(DF.map$leader_coun) &
+         DF.map$leader_coun == "RE", ]$leader.region <- "Sub-Saharan Africa"
+DF.map[!is.na(DF.map$supporter_coun) &
+         DF.map$supporter_coun == "RE", ]$supporter.region <- "Sub-Saharan Africa"
+
+DF.map[!is.na(DF.map$leader_coun) &
+         DF.map$leader_coun == "XK", ]$leader.region <- "Europe & Central Asia"
+
+DF.map[!is.na(DF.map$supporter_coun) &
+         DF.map$supporter_coun == "XK", ]$supporter.region <- "Europe & Central Asia"
 
 # transform coordinates to crs 4326 map projection
 ## Note: this needs to be done separately for supporter and leader data
@@ -469,6 +180,12 @@ rm(supporter.coord, leader.coord)
 
 ## Globe figure
 ```{r}
+world <- ne_countries(scale = "medium", 
+                      returnclass = "sf")
+```
+
+
+```{r}
 globe.fig <- ggplot() +
   # plot map layer
   layer_spatial(data = world,,
@@ -478,7 +195,9 @@ globe.fig <- ggplot() +
   coord_sf(crs = 'ESRI:54030') +
   
   # add dots for supporters
-  geom_point(data = DF.map, 
+  geom_point(data = DF.map %>% 
+               filter(!is.na(leader.region),
+                      !is.na(supporter.region)), 
              aes(x = supporter_lon_new, 
                  y = supporter_lat_new,
                  colour = supporter.region),
@@ -486,7 +205,9 @@ globe.fig <- ggplot() +
              alpha = .01) +
   
   # connect leaders and supporters
-  geom_curve(data = DF.map, 
+  geom_curve(data = DF.map %>% 
+               filter(!is.na(leader.region),
+                      !is.na(supporter.region)), 
              aes(x = leader_lon_new, 
                  y = leader_lat_new, 
                  xend = supporter_lon_new, 
@@ -509,7 +230,7 @@ globe.fig <- ggplot() +
   guides(color = 
            guide_legend(override.aes = list(size = 3,
                                             alpha = 1),
-                        ncol = 4)) +
+                        nrow = 2)) +
   
   labs(x = NULL, y = NULL)
 ```
@@ -519,8 +240,8 @@ globe.fig <- ggplot() +
 # combine globe and gdp figures
 final.fig <- 
   plot_grid(globe.fig,
-            gdp.fig,
+            base_plot,
             nrow = 2,
-            rel_heights = c(6, 4),
+            rel_heights = c(4, 6),
             labels = c("A", "B"))
 ```
