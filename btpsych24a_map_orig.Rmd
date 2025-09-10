@@ -1,0 +1,526 @@
+---
+title: "Create map figure"
+author: "Anonymized for peer review (NC)"
+reviewer: "Anonymized for peer review (JT)"
+output: word_document
+editor_options: 
+  chunk_output_type: console
+---
+
+This code creates a figure that (a) illustrates the geographical distribution of big team leadership and participation rates in psychology, and (b) examines links between those rates and indicators of economic wealth (GDP)
+
+# Setup
+```{r setup, include= F}
+# specify data directory
+data_dir <- Sys.getenv("data_dir")
+
+# source setup file
+source('setup.R')
+```
+
+# Prepare OpenAlex data
+## Open and isolate OpenAlex authorship data
+```{r open.alex, include = F}
+DF.author <- 
+  # open data
+  readRDS(file.path(data_dir,
+                    "openalex",
+                    "btpsych24a_data_bib_processed.Rds")) %>% 
+  
+  # isolate big team science records
+  filter(size.bin != "1 - 4",
+         size.bin != "5 - 9")
+
+# focus on author lists
+DF.author <- DF.author$author
+```
+
+## Geocode records
+```{r}
+DF.geo <- 
+  # isolate affiliation information
+  lapply(DF.author,
+         function(sublist)
+           c(sublist['institution_display_name'],
+             sublist['institution_country_code'])
+         ) %>% 
+  
+  # select only instances with full affiliation information
+  ## changed to *any insatance* on Jul 28 2025 following reviewer recommendation
+  ### this drops number of records from 49919 to 41107
+  #Filter(function(sublist) all(!is.na(unlist(sublist))), .) %>% 
+  Filter(function(sublist) any(!is.na(unlist(sublist))), .) %>% 
+  
+  # geocode using institution name and country
+  lapply(.,
+         function(sublist)
+           as_tibble(sublist) %>% 
+           mutate(address = paste0(institution_display_name,
+                                   ", ",
+                                   institution_country_code)
+                  ) %>% 
+           tidygeocoder::geocode(.,
+                                 address = address,
+                                 method = 'arcgis', 
+                                 lat = latitude, 
+                                 long = longitude
+                                 )
+         )
+
+# save geocoded list
+saveRDS(DF.geo,
+        file.path(data_dir,
+                  'location',
+                  'btpsych24a_geocode.Rds')
+        )
+```
+
+## Identify leaders and supporters
+```{r}
+# reload data (if needed)
+DF.geo <- 
+  readRDS(here('data',
+               'location',
+               'btpsych24a_geocode.Rds')
+          )
+
+DF.geo <-
+  
+  # separate leader and supporter location information
+  lapply(DF.geo,
+         function(sublist)
+           sublist %>% 
+           mutate(
+             leader_coun = .[['institution_country_code']][1],
+             leader_lat = .[["latitude"]][1],
+             leader_lon = .[["longitude"]][1],
+             supporter_coun = .[['institution_country_code']],
+             supporter_lat = .[["latitude"]],
+             supporter_lon = .[["longitude"]]
+           )
+         )
+```
+
+## Identify regions
+```{r}
+DF.geo <- 
+  lapply(DF.geo,
+         function(sublist)
+           sublist %>% 
+           mutate(
+             # leader region
+             leader_region = countrycode(.[['leader_coun']], 
+                                         origin = 'iso2c', 
+                                         destination = 'un.regionsub.name'),
+             # supporter region
+             supporter_region = countrycode(.[['supporter_coun']], 
+                                            origin = 'iso2c', 
+                                            destination = 'un.regionsub.name')
+           )
+         )
+```
+
+
+# Prepare GDP figures
+
+## Load GDP and GDP per capita data
+```{r}
+# raw GDP
+DF.gdp.raw <- 
+  read.csv(here('data', 
+                'worlddata', 
+                'btpsych24a_worlddata_gdp.csv'),
+           skip = 4) %>% # skip 4 empty rows
+  select(Country.Code, X2023) %>% 
+  rename("iso_a3" = Country.Code,
+         "gdp" = X2023)
+
+# GDP per capita
+DF.gdp.pc <-
+    read.csv(here('data', 
+                  'worlddata', 
+                  'btpsych24a_worlddata_gdp.pc.csv'),
+           skip = 4) %>%
+  select(Country.Code, X2023) %>% 
+  rename("iso_a3" = Country.Code,
+         "gdp.pc" = X2023)
+
+# merge
+DF.gdp <- left_join(DF.gdp.raw,
+                    DF.gdp.pc,
+                    by = "iso_a3")
+
+# open ISO identifiers
+world <- ne_countries(scale = "medium", 
+                      returnclass = "sf")
+
+# fix missing ISO values in world data
+world[world$name == "France", ]$iso_a2 = "FR"
+world[world$name == "France", ]$iso_a3 = "FRA"
+world[world$name == "Norway", ]$iso_a2 = "NO"
+world[world$name == "Norway", ]$iso_a3 = "NOR"
+world[world$name == "Norway", ]$iso_a3 = "NOR"
+world[world$name == "Kosovo", ]$iso_a2 = "XK"
+world[world$name == "Kosovo", ]$iso_a3 = "XKX"
+
+# select ISO identifiers
+world <- world %>% 
+  select(iso_a2, iso_a3)
+
+# connect ISO identifiers to GDP data
+DF.gdp <- left_join(DF.gdp, 
+                    world,
+                    by = "iso_a3")
+
+# delete vestigial
+rm(DF.gdp.pc, DF.gdp.raw)
+```
+
+## Examine links with first author positions
+### Prepare and export data
+```{r}
+# prepare data
+f.author <-
+  # isolate first authors
+  lapply(DF.geo,
+         function(sublist)
+           slice(sublist,
+                 1)
+         ) %>% 
+  
+  # bind rows
+  bind_rows() %>% 
+  
+  # select country information
+  select(leader_coun, leader_region) %>% 
+  rename(iso_a2 = leader_coun) %>% 
+  
+  # join with GDP data
+  left_join(.,
+            DF.gdp,
+            by = "iso_a2") %>% 
+  
+  # calculate mean GDP and number of records
+  group_by(iso_a2) %>% 
+  summarise(region = unique(leader_region),
+            m.gdp = mean(gdp,
+                         na.rm = T),
+            m.gdp = m.gdp / 100000000, ## transformed for easier visualization
+            m.gdp.pc = mean(gdp.pc,
+                            na.rm = T),
+            n = n()) %>%
+  ungroup()
+
+# export data
+write.csv(x = f.author,
+          file = here('data',
+                      'worlddata',
+                      'btpsych24a_f.author_gdp.csv'),
+          row.names = F)
+```
+
+### Create figures
+```{r}
+# load data (if necessary)
+f.author <- 
+  read.csv(file = here('data',
+                       'worlddata',
+                       'btpsych24a_f.author_gdp.csv')
+           )
+
+# create GDP per capita plot
+gdp.pc.lead <- 
+  ggplot(data = f.author,
+         aes(x = m.gdp.pc,
+             y = n)) +
+  
+  # plot points and smoothed line
+  geom_smooth(method = 'lm',
+              fill = 'grey90',
+              color = "grey70",
+              alpha = .5) +
+  geom_point(aes(color = region),
+             alpha = 0.4,
+             size = 2,
+             show.legend = F) +
+  
+  # aesthetics
+  xlab("GDP per capita") +
+  ylab("First authored papers")
+
+# create GDP plot
+gdp.lead <- 
+  ggplot(data = f.author,
+         aes(x = m.gdp,
+             y = n)) +
+  
+  # plot points and smoothed line
+  geom_smooth(method = 'lm',
+              fill = 'grey90',
+              color = "grey70",
+              alpha = .5) +
+  geom_point(aes(color = region),
+             alpha = 0.4,
+             size = 2,
+             show.legend = F) +
+  # aesthetics
+  theme(axis.title.y = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank()
+        ) +
+  xlab("GDP")
+
+# combine plots
+gdp.lead.fig <- ggdraw() +
+  draw_plot(gdp.pc.lead) +
+  draw_plot(gdp.lead, 
+            x = .17,
+            y = .7,
+            width = .25,
+            height = .25)
+
+rm(gdp.pc.lead, gdp.lead, f.author)
+```
+
+## Examine links with non-first author positions
+### Prepare and export data
+```{r}
+# prepare data
+s.author <-
+  # isolate first authors
+  lapply(DF.geo,
+         function(sublist)
+           slice(sublist,
+                 -1)
+         ) %>% 
+  
+  # bind rows
+  bind_rows() %>% 
+  
+  # select country information
+  select(supporter_coun, supporter_region) %>% 
+  rename(iso_a2 = supporter_coun) %>% 
+  
+  # join with GDP data
+  left_join(.,
+            DF.gdp,
+            by = "iso_a2") %>% 
+  
+  # calculate mean GDP and number of records
+  group_by(iso_a2) %>% 
+  summarise(region = unique(supporter_region),
+            m.gdp = mean(gdp,
+                         na.rm = T),
+            m.gdp = m.gdp / 100000000,
+            m.gdp.pc = mean(gdp.pc,
+                            na.rm = T),
+            n = n()) %>%
+  ungroup()
+
+# export data
+write.csv(x = s.author,
+          file = here('data',
+                      'worlddata',
+                      'btpsych24a_s.author_gdp.csv'),
+          row.names = F)
+```
+
+### Create figures
+```{r}
+# load data (if necessary)
+s.author <- 
+  read.csv(file = here('data',
+                       'worlddata',
+                       'btpsych24a_s.author_gdp.csv')
+           )
+
+# create GDP per capita plot
+gdp.pc.support <- 
+  ggplot(data = s.author,
+         aes(x = m.gdp.pc,
+             y = n)) +
+  
+  # plot points and smoothed line
+  geom_smooth(method = 'lm',
+              fill = 'grey90',
+              color = "grey70",
+              alpha = .5) +
+  geom_point(aes(color = region),
+             alpha = 0.4,
+             size = 2,
+             show.legend = F) +
+  
+  # aesthetics
+  xlab("GDP per capita") +
+  ylab("Non-first authored papers")
+
+# create GDP plot
+gdp.support <- 
+  ggplot(data = s.author,
+         aes(x = m.gdp,
+             y = n)) +
+  
+  # plot points and smoothed line
+  geom_smooth(method = 'lm',
+              fill = 'grey90',
+              color = "grey70",
+              alpha = .5) +
+  geom_point(aes(color = region),
+             alpha = 0.4,
+             size = 2,
+             show.legend = F) +
+  
+  # aesthetics
+  theme(axis.title.y = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank()
+        ) +
+  xlab("GDP")
+
+# combine plots
+gdp.support.fig <- ggdraw() +
+  draw_plot(gdp.pc.support) +
+  draw_plot(gdp.support, 
+            x = .17,
+            y = .7,
+            width = .25,
+            height = .25)
+
+rm(gdp.pc.support, gdp.support, s.author)
+```
+
+## Combine 
+```{r}
+gdp.fig <- plot_grid(gdp.lead.fig, gdp.support.fig)
+
+rm(gdp.lead.fig, gdp.support.fig)
+```
+
+# Prepare globe figures
+```{r}
+DF.map <-
+  
+  # remove first author from geocoded data (we will only plot points for supporters)
+  lapply(DF.geo,
+         function(sublist)
+           slice(sublist,
+                 -1)
+         ) %>% 
+  
+  # bind_rows
+  bind_rows() %>% 
+  
+  #select relevant variables
+  select(leader_coun : supporter_lon) %>% 
+  
+  # filter out instances where collaborators were in the same location
+  filter(paste0(leader_lat, ", ", leader_lon) !=
+           paste0(supporter_lat, ", ", supporter_lon)) %>% 
+  
+  # filter out incomplete observations
+  filter(!is.na(supporter_lat),
+         !is.na(leader_lat)) %>% 
+  
+  # identify subregion name
+  mutate(leader.region = 
+           countrycode(.$leader_coun, 
+                       origin = 'iso2c', 
+                       destination = 'un.regionsub.name'),
+         supporter.region = 
+           countrycode(.$supporter_coun, 
+                       origin = 'iso2c', 
+                       destination = 'un.regionsub.name')
+         )
+
+# manually fix coding for TW and XK
+DF.map[DF.map$leader_coun == "TW", ]$leader.region <- "Eastern Asia"
+DF.map[DF.map$supporter_coun == "TW", ]$supporter.region <- "Eastern Asia"
+DF.map[DF.map$leader_coun == "XK", ]$leader.region <- "Eastern Europe"
+DF.map[DF.map$supporter_coun == "XK", ]$supporter.region <- "Eastern Europe"
+
+# transform coordinates to crs 4326 map projection
+## Note: this needs to be done separately for supporter and leader data
+supporter.coord <- DF.map %>% 
+  select(supporter.region, supporter_lat, supporter_lon) %>% 
+  st_as_sf(x = .,
+           coords = c('supporter_lon', 
+                      'supporter_lat'),
+           crs = 4326,
+           remove = F) %>% 
+  st_transform(., crs = "ESRI:54030") %>% 
+  mutate(supporter_lat_new = st_coordinates(.)[, 2],
+         supporter_lon_new = st_coordinates(.)[,1])
+
+leader.coord <- DF.map %>% 
+    select(leader.region, leader_lat, leader_lon) %>% 
+  st_as_sf(x = .,
+           coords = c('leader_lon', 
+                      'leader_lat'),
+           crs = 4326,
+           remove = F) %>% 
+  st_transform(., crs = "ESRI:54030") %>% 
+  mutate(leader_lat_new = st_coordinates(.)[, 2],
+         leader_lon_new = st_coordinates(.)[,1])
+
+DF.map <- cbind(supporter.coord, leader.coord)
+
+rm(supporter.coord, leader.coord)
+```
+
+## Globe figure
+```{r}
+globe.fig <- ggplot() +
+  # plot map layer
+  layer_spatial(data = world,,
+                color = NA)+
+  
+  # change coordinate projections
+  coord_sf(crs = 'ESRI:54030') +
+  
+  # add dots for supporters
+  geom_point(data = DF.map, 
+             aes(x = supporter_lon_new, 
+                 y = supporter_lat_new,
+                 colour = supporter.region),
+             size = .4,
+             alpha = .01) +
+  
+  # connect leaders and supporters
+  geom_curve(data = DF.map, 
+             aes(x = leader_lon_new, 
+                 y = leader_lat_new, 
+                 xend = supporter_lon_new, 
+                 yend = supporter_lat_new,
+                 colour = leader.region),
+             curvature = -0.5,
+             size = 0.1, 
+             alpha = .01,
+             show.legend = F) +
+  
+  # improve aesthetics
+  cowplot::theme_minimal_grid() +
+  
+  theme(legend.position = 'bottom',
+        legend.title = element_blank(),
+        legend.text = element_text(size = 8),
+        legend.justification = "center",
+        panel.grid.major = element_line(size = .3)) +
+  
+  guides(color = 
+           guide_legend(override.aes = list(size = 3,
+                                            alpha = 1),
+                        ncol = 4)) +
+  
+  labs(x = NULL, y = NULL)
+```
+
+# Combine globe and gdp figures
+```{r}
+# combine globe and gdp figures
+final.fig <- 
+  plot_grid(globe.fig,
+            gdp.fig,
+            nrow = 2,
+            rel_heights = c(6, 4),
+            labels = c("A", "B"))
+```
