@@ -170,35 +170,31 @@ print(final_plot)
 Create general plotting function
 ```{r}
 DataViz2 <- function(outcome,
-                     label){
+                     label,
+                     adj = 1,
+                     adj.s = 1,
+                     adj.b = 1){
   ggplot(data = DF.o.w,
          aes(x = .data[[outcome]])) +
   
-  # small team distribution
+  # author.n < 10
   geom_density(data = DF.o.w %>% 
-                 filter(size.bin == '1 - 4'),
+                 filter(authors.n < 10),
                color = '#F8766D',
-               #adjust = 10
+               adjust = adj.s
                ) +
     
-  # medium team distribution
+  # author.n > 10
   geom_density(data = DF.o.w %>% 
-                 filter(size.bin == '5 - 9'),
-               color = '#DE8C00',
-               #adjust = 10
-               ) +
-    
-  # big team distribution
-  geom_density(data = DF.o.w %>% 
-                 filter(authors.n > 9),
+                 filter(authors.n > 10),
                color = '#00BFC4',
-               #adjust = 10
+               adjust = adj.b
                ) +
     
   # actual distribution
   geom_density(data = DF.w,
                linetype = 'dotted',
-               #adjust = 2
+               adjust = adj
                ) +
     
   # fix aes
@@ -211,11 +207,13 @@ DataViz2 <- function(outcome,
 
 Create figures
 ```{r}
-r.fig <- DataViz2(outcome = 'r',
-                  label = 'GDP per capita (millions)')
+r.fig <- 
+  DataViz2(outcome = 'r',
+           label = 'GDP per capita (millions)')
 
-i.fig <- DataViz2(outcome = 'i',
-                  label = 'Industrialization')
+i.fig <- 
+  DataViz2(outcome = 'i',
+           label = 'Industrialization')
 
 d.fig <- DataViz2(outcome = 'd',
                   label = 'Democratic ratings')
