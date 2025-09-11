@@ -143,7 +143,8 @@ DataViz2 <- function(outcome,
 
     # actual distribution
     geom_density(
-      data = DF.w,
+      data = DF.pop,
+      aes(weight = pop),
       linetype = "dotted",
       adjust = adjust,
       alpha = 0.4
