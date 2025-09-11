@@ -576,27 +576,11 @@ ggplot(DF.percent.top, aes(x = authors.n, y = percent, color = iso3, group = iso
 
 # Relabel size_group and facet labels
 DF.o.w <- DF.o.w %>%
-  mutate(size_group = case_when(
+  mutate(size_group = factor(case_when(
     size.bin == "1 - 4" ~ "1 - 4 co-authors",
     size.bin == "5 - 9" ~ "5 - 9 co-authors",
     TRUE ~ "10+ co-authors"
-  ))
-
-# Preferred facet labels
-facet_labels <- c(
-  r = "GDP per capita (millions)",
-  i = "Industrialization",
-  d = "Democratic ratings",
-  e = "Educational attainment"
-)
-
-library(tidyr)
-DF_long <- DF.o.w %>%
-  select(size_group, e, i, r, d) %>%
-  pivot_longer(cols = c(e, i, r, d), names_to = "variable", values_to = "value") %>%
-  mutate(variable = facet_labels[variable])
-
-# Rainforest plot: mean and 95% CI for each group/variable
+  ), levels = c("10+ co-authors", "5 - 9 co-authors", "1 - 4 co-authors")))
 
 # Update facet labels
 facet_labels <- c(
@@ -611,22 +595,40 @@ DF_long <- DF.o.w %>%
   pivot_longer(cols = c(e, i, r, d), names_to = "variable", values_to = "value") %>%
   mutate(variable = facet_labels[variable])
 
-# Raincloud plot using ggdist
-if (!requireNamespace("ggdist", quietly = TRUE)) {
-  install.packages("ggdist")
-}
-library(ggdist)
-library(ggplot2)
+# Calculate boxplot stats by hand
+box_stats <- DF_long %>%
+  group_by(variable, size_group) %>%
+  summarise(
+    ymin = min(value, na.rm = TRUE),
+    lower = quantile(value, 0.25, na.rm = TRUE),
+    middle = median(value, na.rm = TRUE),
+    upper = quantile(value, 0.75, na.rm = TRUE),
+    ymax = max(value, na.rm = TRUE),
+    .groups = "drop"
+  )
 
-ggplot(DF_long, aes(x = size_group, y = value, fill = size_group, color = size_group)) +
-  ggdist::stat_halfeye(adjust = .5, width = .6, .width = 0, justification = -.3, point_colour = NA, alpha = 0.5) +
-  geom_boxplot(width = .15, outlier.shape = NA, alpha = 0.7, position = position_nudge(x = 0.15)) +
-  geom_jitter(width = .10, alpha = 0.3, size = 1, position = position_nudge(x = -0.15)) +
-  facet_wrap(~variable, scales = "free_y") +
-  labs(x = "Team Size Group", y = "Value", title = "Raincloud Plot: Socioeconomic Indices by Team Size Group") +
+# Set width for boxes
+box_width <- 0.3
+
+ggplot(DF_long, aes(
+  y = size_group,
+  x = value,
+  fill = size_group,
+  color = size_group
+)) +
+  facet_wrap(~variable, scales = "free_x") +
+  # Whiskers
+  geom_segment(data = box_stats, aes(y = size_group, yend = size_group, x = lower, xend = ymin), size = 1, color = "grey30") +
+  geom_segment(data = box_stats, aes(y = size_group, yend = size_group, x = upper, xend = ymax), size = 1, color = "grey30") +
+  # Box
+  geom_rect(data = box_stats, aes(ymin = as.numeric(size_group) - box_width / 2, ymax = as.numeric(size_group) + box_width / 2, xmin = lower, xmax = upper, fill = size_group), color = NA, alpha = 0.5, inherit.aes = FALSE) +
+  # Median (vertical segment at center of box)
+  geom_segment(data = box_stats, aes(y = as.numeric(size_group) - box_width / 2, yend = as.numeric(size_group) + box_width / 2, x = middle, xend = middle), color = "black", size = 1.5, inherit.aes = FALSE) +
+  labs(y = "Team Size Group", x = "Value") +
   theme_classic() +
   theme(
     legend.position = "none",
-    strip.text = element_text(size = 12)
+    strip.text = element_text(size = 12),
+    panel.spacing = unit(0.7, "lines")
   )
 ```
