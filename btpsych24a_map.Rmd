@@ -575,6 +575,13 @@ ggplot(DF.percent.top, aes(x = authors.n, y = percent, color = iso3, group = iso
 # Box and whisker plot for e, i, r, d by size.bin group
 
 # Relabel size_group and facet labels
+
+# Load required libraries
+library(ggpubr)
+library(cowplot)
+library(ggplot2)
+
+# Relabel size_group
 DF.o.w <- DF.o.w %>%
   mutate(size_group = factor(case_when(
     size.bin == "1 - 4" ~ "1 - 4 co-authors",
@@ -582,53 +589,34 @@ DF.o.w <- DF.o.w %>%
     TRUE ~ "10+ co-authors"
   ), levels = c("10+ co-authors", "5 - 9 co-authors", "1 - 4 co-authors")))
 
-# Update facet labels
-facet_labels <- c(
+# Variable labels
+var_labels <- list(
   r = "GDP Per Capita (Millions)",
   i = "Industry-Based GDP (%)",
   d = "Democracy Index",
   e = "Secondary School Enrollment (% Gross)"
 )
 
-DF_long <- DF.o.w %>%
-  select(size_group, e, i, r, d) %>%
-  pivot_longer(cols = c(e, i, r, d), names_to = "variable", values_to = "value") %>%
-  mutate(variable = facet_labels[variable])
+# Function to create annotated boxplot for each variable
 
-# Calculate boxplot stats by hand
-box_stats <- DF_long %>%
-  group_by(variable, size_group) %>%
-  summarise(
-    ymin = min(value, na.rm = TRUE),
-    lower = quantile(value, 0.25, na.rm = TRUE),
-    middle = median(value, na.rm = TRUE),
-    upper = quantile(value, 0.75, na.rm = TRUE),
-    ymax = max(value, na.rm = TRUE),
-    .groups = "drop"
-  )
+make_boxplot <- function(var, label) {
+  ggpubr::ggboxplot(DF.o.w,
+    x = "size_group", y = var,
+    fill = "size_group", color = "size_group",
+    palette = "jco", width = 0.5, outlier.shape = NA
+  ) +
+    labs(x = "Team Size Group", y = label) +
+    theme_classic() +
+    theme(legend.position = "none", axis.title.x = element_text(size = 12), axis.title.y = element_text(size = 12)) +
+    stat_compare_means(method = "wilcox.test", label = "p.signif", comparisons = ggpubr::get_comparisons(unique(DF.o.w$size_group)))
+}
 
-# Set width for boxes
-box_width <- 0.3
+# Create plots
+r_plot <- make_boxplot("r", var_labels$r)
+i_plot <- make_boxplot("i", var_labels$i)
+d_plot <- make_boxplot("d", var_labels$d)
+e_plot <- make_boxplot("e", var_labels$e)
 
-ggplot(DF_long, aes(
-  y = size_group,
-  x = value,
-  fill = size_group,
-  color = size_group
-)) +
-  facet_wrap(~variable, scales = "free_x") +
-  # Whiskers
-  geom_segment(data = box_stats, aes(y = size_group, yend = size_group, x = lower, xend = ymin), size = 1, color = "grey30") +
-  geom_segment(data = box_stats, aes(y = size_group, yend = size_group, x = upper, xend = ymax), size = 1, color = "grey30") +
-  # Box
-  geom_rect(data = box_stats, aes(ymin = as.numeric(size_group) - box_width / 2, ymax = as.numeric(size_group) + box_width / 2, xmin = lower, xmax = upper, fill = size_group), color = NA, alpha = 0.5, inherit.aes = FALSE) +
-  # Median (vertical segment at center of box)
-  geom_segment(data = box_stats, aes(y = as.numeric(size_group) - box_width / 2, yend = as.numeric(size_group) + box_width / 2, x = middle, xend = middle), color = "black", size = 1.5, inherit.aes = FALSE) +
-  labs(y = "Team Size Group", x = "Value") +
-  theme_classic() +
-  theme(
-    legend.position = "none",
-    strip.text = element_text(size = 12),
-    panel.spacing = unit(0.7, "lines")
-  )
+# Combine plots
+plot_grid(r_plot, i_plot, d_plot, e_plot, ncol = 2, labels = c("A", "B", "C", "D"))
 ```
