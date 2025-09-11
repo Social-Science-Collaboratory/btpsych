@@ -11,34 +11,40 @@ This code prepares a figure that illustrates links between team size and multipl
 # Setup
 ```{r setup, include= F}
 # load libaries
-library('tidyverse')
-library('cowplot')
-library('here')
-library('readxl')
-library('ggtext')
+library(tidyverse)
+library(cowplot)
+library(here)
+library(readxl)
+library(ggtext)
 
 # turn off scientific notation
 options(scipen = 999)
 
 # set plotting theme
-theme_set(theme_classic()) 
+theme_set(theme_classic())
 
 # specify directory
-i_am('btpsych24a_impact.Rmd')
+i_am("btpsych24a_impact.Rmd")
 
 # specify data directory
 data_dir <- Sys.getenv("data_dir")
+
+# examine correlation between year and citation per year
+plot(DF$publication_year, DF$citation.p.y)
 ```
+
 
 # Open and process data
 
 ## OpenAlex
 ```{r open.alex, include = F}
 # open data
-DF <- 
-  readRDS(file.path(data_dir,
-               "openalex",
-               "btpsych24a_data_bib_processed.Rds"))
+DF <-
+  readRDS(file.path(
+    data_dir,
+    "openalex",
+    "btpsych24a_data_bib_processed.Rds"
+  ))
 ```
 
 ## Altmetric
@@ -47,73 +53,83 @@ Important note: Altmetric data is proprietary. However, we have provided scrambl
 Necessary edits to the code to check computational reproducibility are noted in comments.
 ```{r altmetric, include = F}
 # compile information about unique identifiers
-DF.ident <- 
-  
+DF.ident <-
   # pull from doi sheets
-  rbind(read.csv(here("data",
-                      "altmetric",
-                      "btpsych24a_bib_doi1.csv")
-                 ),
-        read.csv(here("data",
-                      "altmetric",
-                      "btpsych24a_bib_doi2.csv")
-                 )
-        ) %>% 
-  
+  rbind(
+    read.csv(here(
+      "data",
+      "altmetric",
+      "btpsych24a_bib_doi1.csv"
+    )),
+    read.csv(here(
+      "data",
+      "altmetric",
+      "btpsych24a_bib_doi2.csv"
+    ))
+  ) %>%
   # format so that the doi is similar to the Altmetric output
-  rename(DOI = doi) %>% 
-  mutate(DOI = str_replace(string = DOI,
-                           pattern = "https://doi.org/",
-                           replacement = "")) %>% 
-  
+  rename(DOI = doi) %>%
+  mutate(DOI = str_replace(
+    string = DOI,
+    pattern = "https://doi.org/",
+    replacement = ""
+  )) %>%
   # select the identifiers that will link all the datasets
-  select(openalex, DOI) %>% 
-  
+  select(openalex, DOI) %>%
   # remove duplicates
-  distinct(DOI, 
-           .keep_all = T)
+  distinct(DOI,
+    .keep_all = T
+  )
 
 # combine two Altmetric datasets
-DF.alt <-  
+DF.alt <-
   rbind(
     # change to btpsych24a_altmetric1_scramble.csv if you were not provided access to raw, proprietary data
-    read.csv(file.path(data_dir,
-                  "altmetric",
-                  "btpsych24a_altmetric1_raw.csv")
-             ),
-    
-    # change to btpsych24a_altmetric2_scramble.csv if you were not provided access to raw, proprietary data
-    read.csv(file.path(data_dir,
-                  "altmetric",
-                  "btpsych24a_altmetric2_raw.csv")
-             )
-        )
+    read.csv(file.path(
+      data_dir,
+      "altmetric",
+      "btpsych24a_altmetric1_raw.csv"
+    )),
 
-# connect the Altmetric dataset and identifiers 
+    # change to btpsych24a_altmetric2_scramble.csv if you were not provided access to raw, proprietary data
+    read.csv(file.path(
+      data_dir,
+      "altmetric",
+      "btpsych24a_altmetric2_raw.csv"
+    ))
+  )
+
+# connect the Altmetric dataset and identifiers
 DF.alt <-
-  inner_join(x = DF.alt,
-             y = DF.ident,
-             by = "DOI") %>% 
-  
+  inner_join(
+    x = DF.alt,
+    y = DF.ident,
+    by = "DOI"
+  ) %>%
   # give consistent naming to OpenAlex identifier
   rename(id = openalex)
 
 # connect the identified Altmetric dataset with the OpenAlex data
 DF.alt <-
-  inner_join(x = DF.alt,  
-             y = DF %>% 
-              select(id, size.bin, publication_year, authors.n),
-             by = "id") %>% 
-  
+  inner_join(
+    x = DF.alt,
+    y = DF %>%
+      select(id, size.bin, publication_year, authors.n),
+    by = "id"
+  ) %>%
   # calculate news and general population mentions
-  mutate(news = News.mentions + Blog.mentions,
-         gen = X.mentions + Facebook.mentions) 
+  mutate(
+    news = News.mentions + Blog.mentions,
+    gen = X.mentions + Facebook.mentions
+  )
 
 # calculate yearly mentions
-DF.alt <- DF.alt %>% 
-  mutate(policy.p.y = Policy.mentions / (2025 - publication_year),
-         news.p.y = news / (2025 - publication_year),
-         gen.p.y = gen / (2025 - publication_year))
+DF.alt <- DF.alt %>%
+  mutate(
+    policy.p.y = Policy.mentions / (2025 - publication_year),
+    news.p.y = news / (2025 - publication_year),
+    gen.p.y = gen / (2025 - publication_year)
+  )
 
 # delete vestigial
 rm(DF.ident)
@@ -123,74 +139,81 @@ Export cleaned Altmetric data
 ```{r}
 # select necessary variables
 DF.alt <-
-  DF.alt %>% 
-  select(id : gen.p.y, Policy.mentions)
+  DF.alt %>%
+  select(id:gen.p.y, Policy.mentions)
 
-saveRDS(DF.alt,
-        file.path(data_dir,
-             'altmetric',
-             'btpsych24a_altmetric_processed.Rds')
-        )
+saveRDS(
+  DF.alt,
+  file.path(
+    data_dir,
+    "altmetric",
+    "btpsych24a_altmetric_processed.Rds"
+  )
+)
 ```
 
 # Prep figure data
 ```{r}
 # calculate mean yearly citation data for each size bin
-cit.DF <- DF %>% 
-  group_by(size.bin) %>% 
+cit.DF <- DF %>%
+  group_by(size.bin) %>%
   summarise(
     citation.m = mean(citation.p.y),
     citation.sd = sd(citation.p.y),
     citation.se = sd(citation.p.y) / sqrt(n()),
     citation.n = n()
-    )
+  )
 
 # do the same for policy, news, and general media mentions
-other.DF <- DF.alt %>% 
-  group_by(size.bin) %>% 
-  summarise(policy.m = mean(policy.p.y),
-            policy.sd = sd(policy.p.y),
-            policy.se = sd(policy.p.y) / sqrt(n()),
-            
-            news.m = mean(news.p.y),
-            news.sd = sd(news.p.y),
-            news.se = sd(news.p.y) / sqrt(n()),
-            
-            social.m = mean(gen.p.y),
-            social.sd = sd(gen.p.y),
-            social.se = sd(gen.p.y) / sqrt(n())
-            )
+other.DF <- DF.alt %>%
+  group_by(size.bin) %>%
+  summarise(
+    policy.m = mean(policy.p.y),
+    policy.sd = sd(policy.p.y),
+    policy.se = sd(policy.p.y) / sqrt(n()),
+    news.m = mean(news.p.y),
+    news.sd = sd(news.p.y),
+    news.se = sd(news.p.y) / sqrt(n()),
+    social.m = mean(gen.p.y),
+    social.sd = sd(gen.p.y),
+    social.se = sd(gen.p.y) / sqrt(n())
+  )
 
 # combine and prep for visualization
-viz.DF <- 
+viz.DF <-
   # join the summary dataframes
   full_join(cit.DF, other.DF,
-            by = "size.bin") %>% 
-  
-  # remove blank columns  
-  filter(!is.na(size.bin)) %>% 
-  
+    by = "size.bin"
+  ) %>%
+  # remove blank columns
+  filter(!is.na(size.bin)) %>%
   # restructure
-  pivot_longer(cols = citation.m : 
-                 social.se) %>%
-  separate(col = name,
-           into = c('outcome', 'stat'),
-           sep = "\\.") %>% 
-  pivot_wider(names_from = 'stat',
-              values_from = 'value') %>% 
-  
+  pivot_longer(cols = citation.m:
+  social.se) %>%
+  separate(
+    col = name,
+    into = c("outcome", "stat"),
+    sep = "\\."
+  ) %>%
+  pivot_wider(
+    names_from = "stat",
+    values_from = "value"
+  ) %>%
   # refactor
   mutate(outcome = factor(outcome,
-                          levels = c('citation',
-                                     'news', 
-                                     'social', 
-                                     'policy'), 
-                          labels = c("scholarly articles", 
-                                     "news", 
-                                     "social media", 
-                                     "policy documents")
-                          )
-  )
+    levels = c(
+      "citation",
+      "news",
+      "social",
+      "policy"
+    ),
+    labels = c(
+      "scholarly articles",
+      "news",
+      "social media",
+      "policy documents"
+    )
+  ))
 
 # delete vestigial
 rm(cit.DF, other.DF)
@@ -198,133 +221,178 @@ rm(cit.DF, other.DF)
 
 Back up viz.DF
 ```{r}
-viz.DF %>% 
-  saveRDS(here('figures',
-               'impact.viz.DF.Rds'))
+viz.DF %>%
+  saveRDS(here(
+    "figures",
+    "impact.viz.DF.Rds"
+  ))
 ```
 
 Optionally reload viz.DF
 ```{r eval = F}
-viz.DF <- readRDS(here('figures',
-                       'impact.viz.DF.Rds')
-                  )
+viz.DF <- readRDS(here(
+  "figures",
+  "impact.viz.DF.Rds"
+))
 ```
 
 # Create figure
 Base plot: Bar chart showing links between team size and four types of impact
 ```{r}
-impact.fig <- 
-  ggplot(viz.DF,
-       aes(x = size.bin, 
-           y = m, 
-           fill = size.bin)) +
-  
+impact.fig <-
+  ggplot(
+    viz.DF,
+    aes(
+      x = size.bin,
+      y = m,
+      fill = size.bin
+    )
+  ) +
+
   # facet by outcome
   facet_wrap(vars(outcome),
-             nrow = 2,
-             ncol = 2,
-             scales = "free_y") +
-  
+    nrow = 2,
+    ncol = 2,
+    scales = "free_y"
+  ) +
+
   # barchart
-  geom_bar(stat = 'identity',
-           alpha = .6) +
-  
+  geom_bar(
+    stat = "identity",
+    alpha = .6
+  ) +
+
   # error bars
-  geom_errorbar(aes(ymin = m - se,
-                    ymax = m + se),
-                width = .5,
-                colour = "grey50") +
-  
+  geom_errorbar(
+    aes(
+      ymin = m - se,
+      ymax = m + se
+    ),
+    width = .5,
+    colour = "grey50"
+  ) +
+
   # improve aesthetics
-  labs(x = 'team size',
-       y = 'average yearly mentions') +
-  theme(legend.position = "none",
-        axis.text.x = element_text(angle = 90,
-                                   vjust = .5,
-                                   hjust = 1))
+  labs(
+    x = "team size",
+    y = "average yearly mentions"
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 90,
+      vjust = .5,
+      hjust = 1
+    )
+  )
 ```
 
 # Export raw figure data
 ```{r}
 # join summary data with original continuous data
-viz.DF2 <- 
-  inner_join(DF %>%  # JT: changed to inner join. Was previously left join
-              select(id, size.bin, authors.n, citation.p.y),
-            DF.alt %>% 
-              select(id, policy.p.y,
-                     news.p.y,
-                     gen.p.y),
-            by = "id") 
+viz.DF2 <-
+  inner_join(
+    DF %>% # JT: changed to inner join. Was previously left join
+      select(id, size.bin, authors.n, citation.p.y),
+    DF.alt %>%
+      select(
+        id, policy.p.y,
+        news.p.y,
+        gen.p.y
+      ),
+    by = "id"
+  )
 
 # export
-viz.DF2 %>% 
-  saveRDS(here('figures',
-               'impact.viz.DF.raw.Rds'))
+viz.DF2 %>%
+  saveRDS(here(
+    "figures",
+    "impact.viz.DF.raw.Rds"
+  ))
 ```
 
 # Make continuous graphs
 Optionally re-load dataset
 ```{r eval = F}
-viz.DF2 <- 
-  readRDS(here('figures',
-               'impact.viz.DF.raw.Rds'))
+viz.DF2 <-
+  readRDS(here(
+    "figures",
+    "impact.viz.DF.raw.Rds"
+  ))
 ```
 
 ```{r}
 panel.figs <-
-  lapply(c('citation.p.y', 'news.p.y', 
-           'gen.p.y', 'policy.p.y'),
-         function(outcome){
-           ggplot(viz.DF2 %>% 
-                    # filter out these instances for consistent scaling
-                    filter(authors.n < 100),
-                  aes(x = authors.n,
-                      y = .data[[outcome]])) +
-           
-           # model linear relationship
-           geom_smooth(method = "lm", 
-                       formula = y ~ x, 
-                       color = "grey50",
-                       linetype = 'dashed',
-                       linewidth = .75) +
-           
-           # model quadratic relationsnip
-           geom_smooth(method = "lm", 
-                       formula = y ~ x + I(x^2),
-                       color = "grey50",
-                       linewidth =  .75) +
-             
-           # improve aesthetics
-           theme(axis.title.y = element_blank(),
-                 axis.title.x = element_blank()) +
-           scale_y_continuous(breaks = scales::breaks_extended(n = 4)) +
-           scale_x_continuous(breaks = c(1, 50, 100))
-           }
-         )
+  lapply(
+    c(
+      "citation.p.y", "news.p.y",
+      "gen.p.y", "policy.p.y"
+    ),
+    function(outcome) {
+      ggplot(
+        viz.DF2 %>%
+          # filter out these instances for consistent scaling
+          filter(authors.n < 100),
+        aes(
+          x = authors.n,
+          y = .data[[outcome]]
+        )
+      ) +
+
+        # model linear relationship
+        geom_smooth(
+          method = "lm",
+          formula = y ~ x,
+          color = "grey50",
+          linetype = "dashed",
+          linewidth = .75
+        ) +
+
+        # model quadratic relationsnip
+        geom_smooth(
+          method = "lm",
+          formula = y ~ x + I(x^2),
+          color = "grey50",
+          linewidth = .75
+        ) +
+
+        # improve aesthetics
+        theme(
+          axis.title.y = element_blank(),
+          axis.title.x = element_blank()
+        ) +
+        scale_y_continuous(breaks = scales::breaks_extended(n = 4)) +
+        scale_x_continuous(breaks = c(1, 50, 100))
+    }
+  )
 ```
 
 Combine base and facet plots
 ```{r}
 ggdraw() +
   draw_plot(impact.fig) +
-  draw_plot(panel.figs[[1]], 
-            x = .1,
-            y = .75,
-            width = .18,
-            height = .18) +
-  draw_plot(panel.figs[[2]], 
-            x = .575,
-            y = .75,
-            width = .18,
-            height = .18) +
-  draw_plot(panel.figs[[3]], 
-            x = .1,
-            y = .3,
-            width = .18,
-            height = .18) +
-  draw_plot(panel.figs[[4]], 
-            x = .575,
-            y = .3,
-            width = .18,
-            height = .18)
+  draw_plot(panel.figs[[1]],
+    x = .1,
+    y = .75,
+    width = .18,
+    height = .18
+  ) +
+  draw_plot(panel.figs[[2]],
+    x = .575,
+    y = .75,
+    width = .18,
+    height = .18
+  ) +
+  draw_plot(panel.figs[[3]],
+    x = .1,
+    y = .3,
+    width = .18,
+    height = .18
+  ) +
+  draw_plot(panel.figs[[4]],
+    x = .575,
+    y = .3,
+    width = .18,
+    height = .18
+  )
 ```
