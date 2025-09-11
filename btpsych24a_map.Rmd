@@ -14,7 +14,7 @@ data_dir <- Sys.getenv("data_dir")
 library(corrplot)
 
 # source setup file
-source('setup.R')
+source("setup.R")
 ```
 
 # Open bibliometric data and identify locations
@@ -22,110 +22,148 @@ source('setup.R')
 # open data
 DF.o <-
   # open data
-  readRDS(file.path(data_dir,
-                    "openalex",
-                    "btpsych24a_data_bib_processed.Rds"))
+  readRDS(file.path(
+    data_dir,
+    "openalex",
+    "btpsych24a_data_bib_processed.Rds"
+  ))
 
 # identify country of first author via indexing
 DF.o$author1.country <-
-  lapply(c(1 : nrow(DF.o)),
-         function(x){
-           DF.o[x, ][['author']][[1]][['institution_country_code']][[1]] %>% 
-             return()
-           }
+  lapply(
+    c(1:nrow(DF.o)),
+    function(x) {
+      DF.o[x, ][["author"]][[1]][["institution_country_code"]][[1]] %>%
+        return()
+    }
   )
 
 # Prepare for merging
-DF.o <- DF.o %>% 
-  mutate(iso3 = 
-           author1.country %>% 
-           
-           # convert to character and identify NAs
-           as.character() %>% 
-           if_else(. == "NA",
-                   NA,
-                   .) %>% 
-           
-           # convert country code iso3 format (to facilitate later merge)
-           countrycode(.,
-                       origin = "iso2c", 
-                       destination = "iso3c")
-         )
+DF.o <- DF.o %>%
+  mutate(
+    iso3 =
+      author1.country %>%
+        # convert to character and identify NAs
+        as.character() %>%
+        if_else(. == "NA",
+          NA,
+          .
+        ) %>%
+        # convert country code iso3 format (to facilitate later merge)
+        countrycode(.,
+          origin = "iso2c",
+          destination = "iso3c"
+        )
+  )
 ```
 
 ## Combine with weird indicators
 ```{r}
 # open weird data
 DF.w <-
-  readRDS(file.path(data_dir,
-                    'worlddata',
-                    'btpsych24a_weird.Rds')
-          )
+  readRDS(file.path(
+    data_dir,
+    "worlddata",
+    "btpsych24a_weird.Rds"
+  ))
 
 # for simplicity, calculate average 'ride' scores for each country
-DF.w <- DF.w %>% 
-  group_by(iso3) %>% 
-  summarise(r = mean(r, na.rm = T),
-            i = mean(i, na.rm = T),
-            d = mean(d, na.rm = T),
-            e = mean(e, na.rm = T))
+DF.w <- DF.w %>%
+  group_by(iso3) %>%
+  summarise(
+    r = mean(r, na.rm = T),
+    i = mean(i, na.rm = T),
+    d = mean(d, na.rm = T),
+    e = mean(e, na.rm = T)
+  )
 
 # left join with DF
-DF.o.w <- 
+DF.o.w <-
   left_join(DF.o,
-            DF.w,
-            by = "iso3")
+    DF.w,
+    by = "iso3"
+  )
 
 # export
 saveRDS(DF.o.w,
-        file = file.path(data_dir,
-        "worlddata",
-        "DF.o.w.Rds"))
+  file = file.path(
+    data_dir,
+    "worlddata",
+    "DF.o.w.Rds"
+  )
+)
+
+# reload
+DF.o.w <- readRDS(
+  file =
+    file.path(
+      data_dir,
+      "worlddata",
+      "DF.o.w.Rds"
+    )
+)
 ```
 
 # Create plots comparing population and sample distribution
 Create general plotting function
 ```{r}
 DataViz <- function(outcome,
-                    label){
-  ggplot(data = DF.w,
-         aes(x = .data[[outcome]])) +
-  
-  # distribution across-countries
-  geom_density(color = '#0066CC',
-               adjust = 2) +
-  
-  # distribution
-  geom_density(data = DF.o.w,
-               color = '#ff2917',
-               adjust = 7) +
-  
-  xlab(label) +
-  theme(axis.text.y = element_blank(),
-        axis.ticks.y = element_blank(),
-        axis.title.y = element_blank())
+                    label) {
+  ggplot(
+    data = DF.w,
+    aes(x = .data[[outcome]])
+  ) +
+
+    # distribution across-countries
+    geom_density(
+      color = "#0066CC",
+      adjust = 2
+    ) +
+
+    # distribution
+    geom_density(
+      data = DF.o.w,
+      color = "#ff2917",
+      adjust = 7
+    ) +
+    xlab(label) +
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.title.y = element_blank()
+    )
 }
 ```
 
 Create figures
 ```{r}
-r.fig <- DataViz(outcome = 'r',
-                 label = 'GDP per capita (millions)')
+r.fig <- DataViz(
+  outcome = "r",
+  label = "GDP per capita (millions)"
+)
 
-i.fig <- DataViz(outcome = 'i',
-                 label = 'Industrialization')
+i.fig <- DataViz(
+  outcome = "i",
+  label = "Industrialization"
+)
 
-d.fig <- DataViz(outcome = 'd',
-                 label = 'Democratic ratings')
+d.fig <- DataViz(
+  outcome = "d",
+  label = "Democratic ratings"
+)
 
-e.fig <- DataViz(outcome = 'e',
-                 label = 'Educational attainment')
+e.fig <- DataViz(
+  outcome = "e",
+  label = "Educational attainment"
+)
 
 # Save combined base plot
-base_plot <- plot_grid(r.fig,
-          i.fig,
-          d.fig,
-          e.fig)
+base_plot <- plot_grid(
+  r.fig,
+  i.fig,
+  d.fig,
+  e.fig
+)
 
 
 
@@ -143,7 +181,7 @@ legend_df <- data.frame(
 
 dummy_plot <- ggplot(legend_df, aes(x = x, y = y, color = group)) +
   geom_line(linewidth = 0.5) +
-  scale_color_manual(values = colors, name = NULL) +  # no legend title or add if you want
+  scale_color_manual(values = colors, name = NULL) + # no legend title or add if you want
   theme_minimal() +
   theme(
     legend.position = "right",
@@ -155,7 +193,7 @@ dummy_plot <- ggplot(legend_df, aes(x = x, y = y, color = group)) +
 # Extract legend grob
 legend_grob <- get_legend(dummy_plot)
 
-# Add legends to 
+# Add legends to
 legend_plot <- plot_grid(
   base_plot,
   legend_grob,
@@ -177,85 +215,106 @@ Create general plotting function
 ```{r}
 DataViz2 <- function(outcome,
                      label,
-                     adjust = 1){
-  ggplot(data = DF.o.w,
-         aes(x = .data[[outcome]])) +
-  
-  # author.n < 10
-  geom_density(data = DF.o.w %>% 
-                 filter(authors.n < 10),
-               color = '#4cc9f0',
-               adjust = adjust,
-               alpha = 0.4) +
-    
-  # author.n > 10
-  geom_density(data = DF.o.w %>% 
-                 filter(authors.n > 10),
-               color = '#7b2cbf',
-               adjust = adjust,
-               alpha = 0.4) +
-    
-  # actual distribution
-  geom_density(data = DF.w,
-               linetype = 'dotted',
-               adjust = adjust,
-               alpha = 0.4) +
-    
-  # fix aes
-  xlab(label) +
-  theme(axis.text.y = element_blank(),
-        axis.ticks.y = element_blank(),
-        axis.title.y = element_blank()
-        )
+                     adjust = 1) {
+  ggplot(
+    data = DF.o.w,
+    aes(x = .data[[outcome]])
+  ) +
+
+    # author.n < 10
+    geom_density(
+      data = DF.o.w %>%
+        filter(authors.n < 10),
+      color = "#4cc9f0",
+      adjust = adjust,
+      alpha = 0.4
+    ) +
+
+    # author.n > 10
+    geom_density(
+      data = DF.o.w %>%
+        filter(authors.n > 10),
+      color = "#7b2cbf",
+      adjust = adjust,
+      alpha = 0.4
+    ) +
+
+    # actual distribution
+    geom_density(
+      data = DF.w,
+      linetype = "dotted",
+      adjust = adjust,
+      alpha = 0.4
+    ) +
+
+    # fix aes
+    xlab(label) +
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.title.y = element_blank()
+    )
 }
 ```
 
 Create figures
 ```{r}
-r.fig <- 
-  DataViz2(outcome = 'r',
-           label = 'GDP Per Capita (Millions)',
-           adjust = 5)
+r.fig <-
+  DataViz2(
+    outcome = "r",
+    label = "GDP Per Capita (Millions)",
+    adjust = 5
+  )
 
-i.fig <- 
-  DataViz2(outcome = 'i',
-           label = 'Industry-Based GDP (%)',
-           adjust = 5)
+i.fig <-
+  DataViz2(
+    outcome = "i",
+    label = "Industry-Based GDP (%)",
+    adjust = 5
+  )
 
-d.fig <- 
-  DataViz2(outcome = 'd',
-           label = 'Democracy Index',
-           adjust = 5)
+d.fig <-
+  DataViz2(
+    outcome = "d",
+    label = "Democracy Index",
+    adjust = 5
+  )
 
-e.fig <- 
-  DataViz2(outcome = 'e',
-           label = 'Secondary School Enrollment (% Gross)',
-           adjust = 5)
+e.fig <-
+  DataViz2(
+    outcome = "e",
+    label = "Secondary School Enrollment (% Gross)",
+    adjust = 5
+  )
 
-base_plot <- 
-  plot_grid(r.fig,
-            i.fig,
-            d.fig,
-            e.fig)
+base_plot <-
+  plot_grid(
+    r.fig,
+    i.fig,
+    d.fig,
+    e.fig
+  )
 
-legend_levels <- 
-  c("1st Author Affiliation (< 10 Co-Authors)", 
-    "1st Author Affiliation (10+ Co-Authors)", 
-    "Between-country distribution")
+legend_levels <-
+  c(
+    "1st Author Affiliation (< 10 Co-Authors)",
+    "1st Author Affiliation (10+ Co-Authors)",
+    "Between-country distribution"
+  )
 
 # dummy df
 legend_df <- data.frame(
   size.bin = factor(legend_levels, levels = legend_levels),
-  x = c(1,2,3),
-  y = c(1,1,1)
+  x = c(1, 2, 3),
+  y = c(1, 1, 1)
 )
 
 # color & linetype mapping (named vector ensures mapping by name)
 my_colors <- c(
   "1st Author Affiliation (< 10 Co-Authors)" = "#4cc9f0",
-  "1st Author Affiliation (10+ Co-Authors)"    = "#7b2cbf",
+  "1st Author Affiliation (10+ Co-Authors)" = "#7b2cbf",
   "Between-Country Distribution" = "black"
-  )
+)
 
 my_linetypes <- c(
   "1st Author Affiliation (< 10 Co-Authors)" = "solid",
@@ -266,42 +325,60 @@ my_linetypes <- c(
 # 2. Build dummy plot mapping aesthetics at top-level
 
 # Make a custom legend
-legend_labels <- 
-  c("1st Author Affiliation (< 10 Co-Authors)",
+legend_labels <-
+  c(
+    "1st Author Affiliation (< 10 Co-Authors)",
     "1st Author Affiliation (10+ Co-Authors)",
-    "Between-Country Distribution")
+    "Between-Country Distribution"
+  )
 
 legend_colors <-
-  c("#4cc9f0", 
-    "#7b2cbf", 
-    "black")
+  c(
+    "#4cc9f0",
+    "#7b2cbf",
+    "black"
+  )
 
 # Create a dummy ggplot to extract a legend
-dummy <- 
-  ggplot(data.frame(x = legend_labels, 
-                    y = 1, 
-                    col = legend_labels),
-         aes(x, 
-             y, 
-             color = col)) +
+dummy <-
+  ggplot(
+    data.frame(
+      x = legend_labels,
+      y = 1,
+      col = legend_labels
+    ),
+    aes(x,
+      y,
+      color = col
+    )
+  ) +
   geom_point() +
-  scale_color_manual(values = legend_colors, 
-                     labels = legend_labels) +
-  guides(color = 
-           guide_legend(title = NULL, 
-                        direction = "horizontal")) +
+  scale_color_manual(
+    values = legend_colors,
+    labels = legend_labels
+  ) +
+  guides(
+    color =
+      guide_legend(
+        title = NULL,
+        direction = "horizontal"
+      )
+  ) +
   theme_void() +
-  theme(legend.position = "bottom",
-        legend.text = element_text(size = 12))
+  theme(
+    legend.position = "bottom",
+    legend.text = element_text(size = 12)
+  )
 
 legend <- get_legend(dummy)
 
-# Add legends to 
-legend_plot <- 
+# Add legends to
+legend_plot <-
   plot_grid(base_plot,
-            legend_grob,
-            nrow = 2,
-            rel_heights = c(1, 1))
+    legend_grob,
+    nrow = 2,
+    rel_heights = c(1, 1)
+  )
 
 print(legend_plot)
 
@@ -313,78 +390,94 @@ print(final_plot)
 
 Some analyses
 ```{r}
-DF.o.w <- 
-  DF.o.w %>% 
-  mutate(group = 
-           case_when(size.bin == '1 - 4' ~ 'small',
-                     size.bin == '5 - 9' ~ 'medium',
-                     authors.n > 9 ~ 'large')
-         )
+DF.o.w <-
+  DF.o.w %>%
+  mutate(
+    group =
+      case_when(
+        size.bin == "1 - 4" ~ "small",
+        size.bin == "5 - 9" ~ "medium",
+        authors.n > 9 ~ "large"
+      )
+  )
 
 WEIRD_correlations <- c(NA, NA, NA, NA)
 
 # r
 kruskal.test(r ~ group,
-             data = DF.o.w)
+  data = DF.o.w
+)
 
-WEIRD_correlations[1] <- cor.test(x = DF.o.w$r,
-                                  y = DF.o.w$authors.n,
-                                  alternative = 'two.sided',
-                                  method = 'spearman')$estimate[[1]]
+WEIRD_correlations[1] <- cor.test(
+  x = DF.o.w$r,
+  y = DF.o.w$authors.n,
+  alternative = "two.sided",
+  method = "spearman"
+)$estimate[[1]]
 
 # i
 kruskal.test(i ~ group,
-             data = DF.o.w)
+  data = DF.o.w
+)
 
-WEIRD_correlations[2] <- cor.test(x = DF.o.w$i,
-                                  y = DF.o.w$authors.n,
-                                  alternative = 'two.sided',
-                                  method = 'spearman')$estimate[[1]]
+WEIRD_correlations[2] <- cor.test(
+  x = DF.o.w$i,
+  y = DF.o.w$authors.n,
+  alternative = "two.sided",
+  method = "spearman"
+)$estimate[[1]]
 
 # d
 kruskal.test(d ~ group,
-             data = DF.o.w)
+  data = DF.o.w
+)
 
-WEIRD_correlations[3] <- cor.test(x = DF.o.w$d,
-                                  y = DF.o.w$authors.n,
-                                  alternative = 'two.sided',
-                                  method = 'spearman')$estimate[[1]]
+WEIRD_correlations[3] <- cor.test(
+  x = DF.o.w$d,
+  y = DF.o.w$authors.n,
+  alternative = "two.sided",
+  method = "spearman"
+)$estimate[[1]]
 
 # e
 kruskal.test(e ~ group,
-             data = DF.o.w)
+  data = DF.o.w
+)
 
-WEIRD_correlations[4] <- cor.test(x = DF.o.w$e,
-                                  y = DF.o.w$authors.n,
-                                  alternative = 'two.sided',
-                                  method = 'spearman')$estimate[[1]]
+WEIRD_correlations[4] <- cor.test(
+  x = DF.o.w$e,
+  y = DF.o.w$authors.n,
+  alternative = "two.sided",
+  method = "spearman"
+)$estimate[[1]]
 
 
 WEIRD_matrix <- t(matrix(WEIRD_correlations))
 
 rownames(WEIRD_matrix) <- "Team size"
-colnames(WEIRD_matrix) <- c("GDP per capita",
-                            "Industrialization",
-                            "Democratic ratings",
-                            "Educational attainment")
+colnames(WEIRD_matrix) <- c(
+  "GDP per capita",
+  "Industrialization",
+  "Democratic ratings",
+  "Educational attainment"
+)
 
 
-corrplot(WEIRD_matrix, method = "ellipse",
-        addCoef.col = "#36454F", number.cex = 0.9, number.digits = 3,
-         tl.cex = 0.9, tl.col = "#36454F", 
-         col = colorRampPalette(c("#0066CC", "white", "#ff2917"))(200),
-         mar = c(1,0,1,1))
-
-
+corrplot(WEIRD_matrix,
+  method = "ellipse",
+  addCoef.col = "#36454F", number.cex = 0.9, number.digits = 3,
+  tl.cex = 0.9, tl.col = "#36454F",
+  col = colorRampPalette(c("#0066CC", "white", "#ff2917"))(200),
+  mar = c(1, 0, 1, 1)
+)
 ```
 
 # John exploratory analysis
 
 ```{r}
-
 # For each team size, calculate the percentage of scientific papers of produced by each country
 
-#identify the list of countries in DF.o.w
+# identify the list of countries in DF.o.w
 country_list <- unique(DF.o.w$iso3)
 
 DF.percent <- DF.o.w %>%
@@ -398,20 +491,22 @@ DF.percent <- DF.o.w %>%
   # calculate the percentage of papers produced by that country
   group_by(authors.n) %>%
   mutate(percent = 100 * n_papers / sum(n_papers)) %>%
-  ungroup() %>%   
-  #remove entries without country data
+  ungroup() %>%
+  # remove entries without country data
   filter(!is.na(iso3))
 
-# add country socioeconomic data 
+# add country socioeconomic data
 DF.percent <- left_join(DF.percent, DF.w, by = "iso3")
 
 # model the impact of team size and socioeconomic factors on scientific participation
-model.percent <- lm(data = DF.percent, 
-                    percent ~ authors.n*(
-                        scale(r) + # standardize socioeconomic indices
-                        scale(i) + 
-                        scale(d) + 
-                        scale(e)) )
+model.percent <- lm(
+  data = DF.percent,
+  percent ~ authors.n * (
+    scale(r) + # standardize socioeconomic indices
+      scale(i) +
+      scale(d) +
+      scale(e))
+)
 summary(model.percent)
 
 # analyze the 5 countries with the most scietific output
@@ -421,16 +516,16 @@ top_countries <- c("USA", "CHN", "GBR", "DEU", "ITA")
 # filter the countries of interest and restrict analysis to teamsize <=100
 DF.percent.top <- DF.percent %>%
   filter(iso3 %in% top_countries &
-         authors.n <=100) %>%
+    authors.n <= 100) %>%
   select(authors.n, iso3, percent)
 
 
 model.percent.top <- DF.percent.top %>%
-  lm(data = ., percent ~ authors.n*iso3)
+  lm(data = ., percent ~ authors.n * iso3)
 summary(model.percent.top)
 
 # calculate the sum of the 5 countries' scientific participation for data visualization
- DF.totals <- DF.percent.top %>%
+DF.totals <- DF.percent.top %>%
   group_by(authors.n) %>%
   summarise(percent = sum(percent, na.rm = TRUE), .groups = "drop") %>%
   mutate(iso3 = "Combined") %>%
@@ -439,15 +534,20 @@ summary(model.percent.top)
 # add combined participation to dataframe
 DF.percent.top <- rbind(DF.percent.top, DF.totals)
 
-DF.percent.top$iso3 <- factor(DF.percent.top$iso3, 
-                              levels = c("USA", "GBR", "DEU", 
-                                         "CHN", "ITA", "Combined"))
+DF.percent.top$iso3 <- factor(DF.percent.top$iso3,
+  levels = c(
+    "USA", "GBR", "DEU",
+    "CHN", "ITA", "Combined"
+  )
+)
 
 # plot scientific participation data for the highest output countries
 ggplot(DF.percent.top, aes(x = authors.n, y = percent, color = iso3, group = iso3)) +
-  geom_smooth(method = "lm",
-              fill = "lightgrey", 
-              alpha = 0.35) +
+  geom_smooth(
+    method = "lm",
+    fill = "lightgrey",
+    alpha = 0.35
+  ) +
   geom_point() +
   labs(
     x = "Number of Authors",
@@ -456,16 +556,77 @@ ggplot(DF.percent.top, aes(x = authors.n, y = percent, color = iso3, group = iso
   ) +
   scale_color_manual(
     name = "Country",
-    labels = c("United States", "Great Britain", 
-               "Germany", "China",
-               "Italy", "Combined"),
-    values = c("USA" = "#F8766D",
-               "GBR" ="#B79F00", 
-               "DEU" =  "#7CAE00",
-               "CHN" = "#00BFC4", 
-               "ITA" = "#619CFF", 
-               "Combined" = "#F564E3"
-      )
+    labels = c(
+      "United States", "Great Britain",
+      "Germany", "China",
+      "Italy", "Combined"
+    ),
+    values = c(
+      "USA" = "#F8766D",
+      "GBR" = "#B79F00",
+      "DEU" = "#7CAE00",
+      "CHN" = "#00BFC4",
+      "ITA" = "#619CFF",
+      "Combined" = "#F564E3"
+    )
   ) +
   theme_minimal()
+
+# Box and whisker plot for e, i, r, d by size.bin group
+
+# Relabel size_group and facet labels
+DF.o.w <- DF.o.w %>%
+  mutate(size_group = case_when(
+    size.bin == "1 - 4" ~ "1 - 4 co-authors",
+    size.bin == "5 - 9" ~ "5 - 9 co-authors",
+    TRUE ~ "10+ co-authors"
+  ))
+
+# Preferred facet labels
+facet_labels <- c(
+  r = "GDP per capita (millions)",
+  i = "Industrialization",
+  d = "Democratic ratings",
+  e = "Educational attainment"
+)
+
+library(tidyr)
+DF_long <- DF.o.w %>%
+  select(size_group, e, i, r, d) %>%
+  pivot_longer(cols = c(e, i, r, d), names_to = "variable", values_to = "value") %>%
+  mutate(variable = facet_labels[variable])
+
+# Rainforest plot: mean and 95% CI for each group/variable
+
+# Update facet labels
+facet_labels <- c(
+  r = "GDP Per Capita (Millions)",
+  i = "Industry-Based GDP (%)",
+  d = "Democracy Index",
+  e = "Secondary School Enrollment (% Gross)"
+)
+
+DF_long <- DF.o.w %>%
+  select(size_group, e, i, r, d) %>%
+  pivot_longer(cols = c(e, i, r, d), names_to = "variable", values_to = "value") %>%
+  mutate(variable = facet_labels[variable])
+
+# Raincloud plot using ggdist
+if (!requireNamespace("ggdist", quietly = TRUE)) {
+  install.packages("ggdist")
+}
+library(ggdist)
+library(ggplot2)
+
+ggplot(DF_long, aes(x = size_group, y = value, fill = size_group, color = size_group)) +
+  ggdist::stat_halfeye(adjust = .5, width = .6, .width = 0, justification = -.3, point_colour = NA, alpha = 0.5) +
+  geom_boxplot(width = .15, outlier.shape = NA, alpha = 0.7, position = position_nudge(x = 0.15)) +
+  geom_jitter(width = .10, alpha = 0.3, size = 1, position = position_nudge(x = -0.15)) +
+  facet_wrap(~variable, scales = "free_y") +
+  labs(x = "Team Size Group", y = "Value", title = "Raincloud Plot: Socioeconomic Indices by Team Size Group") +
+  theme_classic() +
+  theme(
+    legend.position = "none",
+    strip.text = element_text(size = 12)
+  )
 ```
