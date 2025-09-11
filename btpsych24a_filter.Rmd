@@ -14,138 +14,148 @@ This code (a) lightly processes OpenAlex records, (b) exports DOI's to be used i
 data_dir <- Sys.getenv("data_dir")
 
 # source setup file
-source('setup.R')
+source("setup.R")
 ```
 
 # Open and process OpenAlex data
 ```{r open.alex, include = F}
 # open raw data
-DF <- 
+DF <-
   readRDS(
-    file.path(data_dir,
-              'openalex',
-              'btpsych24a_data_bib_raw.Rds')
-    ) %>% 
-
+    file.path(
+      data_dir,
+      "openalex",
+      "btpsych24a_data_bib_raw.Rds"
+    )
+  ) %>%
   # filter data
   filter(
     # only include articles
-    type == 'article',
-    
+    type == "article",
+
     # remove records where we don't have author information
     !is.na(author)
-    ) %>% 
-  
+  ) %>%
   # identify number of authors and citations per year
-  rowwise() %>% 
-  mutate(authors.n = nrow(author),
-         
-         # categorize authors counts
-         size.bin = cut(authors.n,
-                        breaks = c(-Inf,
-                                   4, 9, 19, 
-                                   29, 39, 
-                                   49, 59, 
-                                   69, 79, 
-                                   89, 99, 
-                                   Inf), 
-                        labels = c("1 - 4",
-                                   "5 - 9",
-                                   "10 - 19",
-                                   "20 - 29",
-                                   "30 - 39",
-                                   "40 - 49",
-                                   "50 - 59",
-                                   "60 - 69",
-                                   "70 - 79",
-                                   "80 - 89",
-                                   "90 - 99",
-                                   "100 +")),
-         
-         # calculate citations per year
-         citation.p.y = cited_by_count / (2025 - publication_year)
-         ) %>% 
-  ungroup()  
+  rowwise() %>%
+  mutate(
+    authors.n = nrow(author),
+
+    # categorize authors counts
+    size.bin = cut(authors.n,
+      breaks = c(
+        -Inf,
+        4, 9, 19,
+        29, 39,
+        49, 59,
+        69, 79,
+        89, 99,
+        Inf
+      ),
+      labels = c(
+        "1 - 4",
+        "5 - 9",
+        "10 - 19",
+        "20 - 29",
+        "30 - 39",
+        "40 - 49",
+        "50 - 59",
+        "60 - 69",
+        "70 - 79",
+        "80 - 89",
+        "90 - 99",
+        "100 +"
+      )
+    ),
+
+    # calculate citations per year
+    citation.p.y = cited_by_count / (2025 - publication_year)
+  ) %>%
+  ungroup()
 ```
 
 # Prep Altmetric DOIs
 The below code was used to export DOIs, which were used by JT to export Altmetric files in batches of 25,000 
 ```{r altmetric.prep, include = F, eval = F}
 # bind id information
-ids <- 
+ids <-
   bind_rows(DF$ids)
 
 # prepare data for export
-doi <- 
-  ids %>% 
-  
+doi <-
+  ids %>%
   # remove cases with no DOI
-  filter(!is.na(doi)) %>% 
-  
+  filter(!is.na(doi)) %>%
   # select relevant variables
-  select(openalex, doi) %>% 
-  
+  select(openalex, doi) %>%
   # add tracking variable placeholder
   mutate(submitted = "")
 
 # export data
 ## first million records
-write.csv(doi[1: 1000000, ], 
-          file.path(data_dir,
-                    'altmetric',  
-                    'btpsych24a_bib_doi1.csv'),
-          row.names = F)
+write.csv(doi[1:1000000, ],
+  file.path(
+    data_dir,
+    "altmetric",
+    "btpsych24a_bib_doi1.csv"
+  ),
+  row.names = F
+)
 
 ## rest of records
-write.csv(doi[1000001 : 1936245, ],
-          file.path(data_dir,
-                    'altmetric', 
-                    'btpsych24a_bib_doi2.csv'),
-          row.names = F)
+write.csv(doi[1000001:1936245, ],
+  file.path(
+    data_dir,
+    "altmetric",
+    "btpsych24a_bib_doi2.csv"
+  ),
+  row.names = F
+)
 ```
 
 # Prep contributorship coding sheet
 ```{r eval = F}
-DF %>% 
-  
+DF %>%
   # isolate largest team efforts
-  filter(size.bin != "1 - 9",
-         size.bin != "10 - 19") %>% 
-  
+  filter(
+    size.bin != "1 - 9",
+    size.bin != "10 - 19"
+  ) %>%
   # randomly sample 1000 records
-  slice_sample(n = 1000) %>%  
-  
+  slice_sample(n = 1000) %>%
   # select relevant variables
   select(id, doi, title, ab) %>%
-  
   # create rows that coders may want
-  mutate(remove.revise = "",
-         contributorship.statement = "") #%>% 
-  
-  # export (commented out to not override)
-  
-  # write.csv(file.path(data_dir,'contributorship',
-  #                'btpsych24a_cont_coding.csv'),
-  #           row.names = F)
+  mutate(
+    remove.revise = "",
+    contributorship.statement = ""
+  ) # %>%
+
+# export (commented out to not override)
+
+# write.csv(file.path(data_dir,'contributorship',
+#                'btpsych24a_cont_coding.csv'),
+#           row.names = F)
 ```
 
 # Filter out duplicate records
 Duplicate records were discovered on October 18, 2024
 ```{r}
 # pull out records with NA's, as these will be erroneously labeled as 'duplicates'
-DF.na <- 
-  DF %>% 
+DF.na <-
+  DF %>%
   filter(is.na(doi))
 
 # remove duplicates
-DF <- 
-  DF %>% 
+DF <-
+  DF %>%
   distinct(doi,
-           .keep_all = T)  
+    .keep_all = T
+  )
 
 # merge dataframes
-DF <- 
-  rbind(DF, DF.na) %>% 
+DF <-
+  rbind(DF, DF.na) %>%
   arrange(id)
 
 # delete vestigial
@@ -156,45 +166,52 @@ rm(DF.na)
 The OpenAlex API labels these papers as only having 100 authors.
 ```{r}
 # create file if it doesn't already exist (it should)
-if (!file.exists(file.path(data_dir,
-                           'openalex',
-                           'btpsych24a_author.n.correction.csv')
-                 )
-    ){
-  DF %>% 
-    select(id, authors.n) %>% 
-    filter(authors.n == 100) %>% 
-    rename('authors.n.orig' = authors.n) %>% 
-    mutate(authors.n.fixed = "") %>% 
+if (!file.exists(file.path(
+  data_dir,
+  "openalex",
+  "btpsych24a_author.n.correction.csv"
+))
+) {
+  DF %>%
+    select(id, authors.n) %>%
+    filter(authors.n == 100) %>%
+    rename("authors.n.orig" = authors.n) %>%
+    mutate(authors.n.fixed = "") %>%
     write.csv(.,
-              file.path(data_dir,
-                        'openalex',
-                        'btpsych24a_author.n.correction.csv'), 
-              row.names = F)
+      file.path(
+        data_dir,
+        "openalex",
+        "btpsych24a_author.n.correction.csv"
+      ),
+      row.names = F
+    )
 }
 
 # load file
-DF.author.correction <- 
-  read.csv(file.path(data_dir,
-                     'openalex',
-                     'btpsych24a_author.n.correction.csv')
-           ) %>% 
+DF.author.correction <-
+  read.csv(file.path(
+    data_dir,
+    "openalex",
+    "btpsych24a_author.n.correction.csv"
+  )) %>%
   select(-authors.n.orig)
 
 # join
-DF <- 
+DF <-
   # left join
-  left_join(x = DF,
-            y = DF.author.correction,
-            by = 'id') %>% 
-  
+  left_join(
+    x = DF,
+    y = DF.author.correction,
+    by = "id"
+  ) %>%
   # if record's author.n needs to be fixed, fix it
-  mutate(authors.n = 
-           if_else(!is.na(authors.n.fixed),
-                   authors.n.fixed,
-                   authors.n)
-                   ) %>%
-  
+  mutate(
+    authors.n =
+      if_else(!is.na(authors.n.fixed),
+        authors.n.fixed,
+        authors.n
+      )
+  ) %>%
   # delete vestigial variable
   select(-authors.n.fixed)
 
@@ -203,15 +220,16 @@ rm(DF.author.correction)
 
 # Use title keywords to filter out frequently ineligible records
 ```{r}
-DF <- 
-  DF %>% 
+DF <-
+  DF %>%
   filter(
     !str_detect(
-      title, 
-      regex("Transactions of|Transactions on|Conference|Annual meeting|Symposium|Proceedings of|Table of Contents", 
-            ignore_case = T)
+      title,
+      regex("Transactions of|Transactions on|Conference|Annual meeting|Symposium|Proceedings of|Table of Contents",
+        ignore_case = T
       )
     )
+  )
 ```
 
 # Remove duplicated entries identified using a MinHashing technique (August 7th)
@@ -222,102 +240,109 @@ remove_list <- readRDS(file.path(data_dir, "deduplication", "remove_list.Rds"))
 # Remove dataframe entries that match items in remove_list
 DF <- DF %>%
   filter(!(id %in% remove_list))
-
 ```
 
 # Examine other filters that Reviewer 2 recommended (July 25)
 ```{r}
-tmp <- DF %>% 
+tmp <- DF %>%
   filter(
     str_detect(
-      so, 
-      regex("arxiv", 
-            ignore_case = T)
+      so,
+      regex("arxiv",
+        ignore_case = T
       )
     )
+  )
 
-DF %>% 
+DF %>%
   filter(
     str_detect(
-      so, 
-      regex("SSRN", 
-            ignore_case = T)
+      so,
+      regex("SSRN",
+        ignore_case = T
       )
-    ) %>% 
+    )
+  ) %>%
   nrow()
 ```
 
 # Select relevant variables (to reduce size) and identify source's h index
 
 ```{r}
-
 # Select variables of interest
 DF <-
-  DF %>% 
-  select(id, title, author, 
-         language, doi, publication_year,
-         cited_by_count, 
-         authors.n : citation.p.y, so_id)
+  DF %>%
+  select(
+    id, title, author,
+    language, doi, publication_year,
+    cited_by_count,
+    authors.n:citation.p.y, so_id
+  )
 
 # read source ID and h-index collected through OpenAlex`s API
-OA_sources <- 
-     readRDS(file.path(data_dir,
-                      'openalex',
-                      'OA_sources.Rds')) %>%
+OA_sources <-
+  readRDS(file.path(
+    data_dir,
+    "openalex",
+    "OA_sources.Rds"
+  )) %>%
   rename(so_id = id) %>%
   select(so_id, h_index)
 
 # Join each work and their journal`s h-index by the source's ID
 DF <- left_join(DF, OA_sources, by = "so_id")
-
 ```
 
 # Export processed OpenAlex data
 ```{r}
-
 # save
-saveRDS(DF, 
-        file.path(data_dir,
-                      'openalex',
-                      'btpsych24a_data_bib_processed.Rds'))
+saveRDS(
+  DF,
+  file.path(
+    data_dir,
+    "openalex",
+    "btpsych24a_data_bib_processed.Rds"
+  )
+)
 
 # optionally re-load
-# DF <- 
+# DF <-
 #     readRDS(file.path(data_dir,
 #                       'openalex',
 #                       'btpsych24a_data_bib_processed.Rds'))
-
 ```
 
 
 # Export list of big team efforts for topic coding
 ```{r eval = F}
-DF.bts <-  DF %>% 
-  
+DF.bts <- DF %>%
   # select random sample
-  group_by(size.bin) %>% 
-  slice_sample(n = 300) %>% 
-  
+  group_by(size.bin) %>%
+  slice_sample(n = 300) %>%
   # create placeholder for manual extraction of topic from APA PsychInfo
-  mutate(topic = "") %>% 
-  
+  mutate(topic = "") %>%
   # isolate doi information
-  mutate(doi = 
-           str_replace(string = doi,
-                       pattern = "https://doi.org/",
-                       replacement = "")
-         ) %>% 
-  
+  mutate(
+    doi =
+      str_replace(
+        string = doi,
+        pattern = "https://doi.org/",
+        replacement = ""
+      )
+  ) %>%
   # select relevant variables
-  select(id, doi, title, size.bin, topic) %>% 
-  
+  select(id, doi, title, size.bin, topic) %>%
   # arrange
   arrange(desc(size.bin), doi)
 
 # export
-DF.bts %>% 
-  write.csv(file.path(data_dir,
-                      'topic',
-                      'btpsych24a_topiccoding.csv'), 
-            row.names = F)
+DF.bts %>%
+  write.csv(
+    file.path(
+      data_dir,
+      "topic",
+      "btpsych24a_topiccoding.csv"
+    ),
+    row.names = F
+  )
 ```
