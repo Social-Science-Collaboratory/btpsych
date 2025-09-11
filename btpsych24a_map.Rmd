@@ -10,9 +10,6 @@ editor_options:
 # specify data directory
 data_dir <- Sys.getenv("data_dir")
 
-# Corrplot package for correlation plot
-library(corrplot)
-
 # source setup file
 source("setup.R")
 ```
@@ -102,6 +99,17 @@ DF.o.w <- readRDS(
       "DF.o.w.Rds"
     )
 )
+
+# prepare population data
+DF.pop <- read.csv(file.path(data_dir, "worlddata", "population", "btpsych24a_worlddata_pop.csv"), skip = 4)
+
+# process population data
+DF.pop <- DF.pop %>%
+  filter(Country.Name != "Not classified") %>%
+  rowwise() %>%
+  mutate(pop = mean(X2000:X2024, na.rm = T)) %>%
+  ungroup() %>%
+  select(Country.Code, pop)
 ```
 
 # Create plots comparing population and sample distribution
@@ -572,9 +580,6 @@ ggplot(DF.percent.top, aes(x = authors.n, y = percent, color = iso3, group = iso
   ) +
   theme_minimal()
 
-# Box and whisker plot for e, i, r, d by size.bin group
-
-# Relabel size_group and facet labels
 
 # Load required libraries
 library(ggpubr)
@@ -608,7 +613,11 @@ make_boxplot <- function(var, label) {
     labs(x = "Team Size Group", y = label) +
     theme_classic() +
     theme(legend.position = "none", axis.title.x = element_text(size = 12), axis.title.y = element_text(size = 12)) +
-    stat_compare_means(method = "wilcox.test", label = "p.signif", comparisons = ggpubr::get_comparisons(unique(DF.o.w$size_group)))
+    stat_compare_means(
+      method = "wilcox.test",
+      label = "p.signif",
+      comparisons = as.list(combn(levels(DF.o.w$size_group), 2, simplify = FALSE))
+    )
 }
 
 # Create plots
