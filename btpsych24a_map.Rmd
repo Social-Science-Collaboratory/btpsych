@@ -20,14 +20,14 @@ source('setup.R')
 # Open bibliometric data and identify locations
 ```{r}
 # open data
-DF.o <- 
+DF.o <-
   # open data
   readRDS(file.path(data_dir,
                     "openalex",
                     "btpsych24a_data_bib_processed.Rds"))
 
 # identify country of first author via indexing
-DF.o$author1.country <- 
+DF.o$author1.country <-
   lapply(c(1 : nrow(DF.o)),
          function(x){
            DF.o[x, ][['author']][[1]][['institution_country_code']][[1]] %>% 
@@ -75,6 +75,12 @@ DF.o.w <-
   left_join(DF.o,
             DF.w,
             by = "iso3")
+
+# export
+saveRDS(DF.o.w,
+        file = file.path(data_dir,
+        "worlddata",
+        "DF.o.w.Rds"))
 ```
 
 # Create plots comparing population and sample distribution
