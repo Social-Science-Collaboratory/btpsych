@@ -15,6 +15,7 @@ This code creates a figure illustrating (a) frequency of big team psychology eff
 library('tidyverse')
 library('here')
 library('cowplot')
+library('nnet')
 
 # specify data directory
 data_dir <- Sys.getenv("data_dir")
@@ -470,7 +471,6 @@ DF.topics <- read.csv(file.path(data_dir,
                                 'btpsych24a_topic.csv'))
 
 # fix corrupted size bin variable (Excel thought it was a date)
-# to do so, just grab the original size bin labels from DF
 DF.topics <- DF.topics %>%
   mutate(
     size.bin = case_when(

@@ -11,6 +11,7 @@ editor_options:
 data_dir <- Sys.getenv("data_dir")
 
 # source setup file
+library(Ecume)
 source("setup.R")
 ```
 
@@ -101,7 +102,16 @@ DF.o.w <- readRDS(
 )
 
 # prepare population data
-DF.pop <- read.csv(file.path(data_dir, "worlddata", "population", "btpsych24a_worlddata_pop.csv"), skip = 4)
+DF.pop <-
+  read.csv(
+    file.path(
+      data_dir,
+      "worlddata",
+      "population",
+      "btpsych24a_worlddata_pop.csv"
+    ),
+    skip = 4
+  )
 
 # process population data
 DF.pop <- DF.pop %>%
@@ -110,6 +120,31 @@ DF.pop <- DF.pop %>%
   mutate(pop = mean(X2000:X2024, na.rm = T)) %>%
   ungroup() %>%
   select(Country.Code, pop)
+
+# prepare merge with other indicators
+DF.w2 <- DF.w %>%
+  group_by(iso3) %>%
+  summarise(r = mean(r, na.rm = T), i = mean(i, na.rm = T), d = mean(d, na.rm = T), e = mean(e, na.rm = T))
+
+tmp <- DF.pop %>%
+  rename("iso3" = "Country.Code") %>%
+  left_join(DF.w2, by = "iso3")
+
+# export
+saveRDS(tmp,
+  file = file.path(
+    data_dir,
+    "worlddata",
+    "tmp.Rds"
+  )
+)
+
+tmp <- 
+  readRDS(file = 
+            file.path(data_dir,
+                      "worlddata",
+                      "tmp.Rds")
+          )
 ```
 
 # Create plots comparing distribution across different bands of big team science
@@ -143,7 +178,7 @@ DataViz2 <- function(outcome,
 
     # actual distribution
     geom_density(
-      data = DF.pop,
+      data = tmp,
       aes(weight = pop),
       linetype = "dotted",
       adjust = adjust,
@@ -524,3 +559,64 @@ e_plot <- make_boxplot("e", var_labels$e)
 # Combine plots
 plot_grid(r_plot, i_plot, d_plot, e_plot, ncol = 2, labels = c("A", "B", "C", "D"))
 ```
+
+# Nicholas paper analyses
+## Compare global distribution to psychology first authors
+```{r}
+# Run weighted KS test
+ks_test(x = tmp$e, 
+        y = DF.o.w$e, 
+        w_x = tmp$pop)
+
+# i
+ks_test(x = tmp$i, 
+        y = DF.o.w$i, 
+        w_x = tmp$pop)
+
+# r
+ks_test(x = tmp$r, 
+        y = DF.o.w$r, 
+        w_x = tmp$pop)
+
+# d
+ks_test(x = tmp$d, 
+        y = DF.o.w$d, 
+        w_x = tmp$pop)
+```
+
+## Examine monotonic links between team size and ride
+```{r}
+
+# spearman corr
+cor.test(x = DF.o.w$e,
+         y = DF.o.w$authors.n,
+         method = "spearman")
+
+cor.test(x = DF.o.w$i,
+         y = DF.o.w$authors.n,
+         method = "spearman")
+
+cor.test(x = DF.o.w$r,
+         y = DF.o.w$authors.n,
+         method = "spearman")
+
+cor.test(x = DF.o.w$d,
+         y = DF.o.w$authors.n,
+         method = "spearman")
+```
+
+# Compare small team to big team
+```{r}
+ks_test(x = DF.o.w[DF.o.w$authors.n < 10, ]$e, 
+        y = DF.o.w[DF.o.w$authors.n > 9, ]$e)
+
+ks_test(x = DF.o.w[DF.o.w$authors.n < 10, ]$i, 
+        y = DF.o.w[DF.o.w$authors.n > 9, ]$i)
+
+ks_test(x = DF.o.w[DF.o.w$authors.n < 10, ]$r, 
+        y = DF.o.w[DF.o.w$authors.n > 9, ]$r)
+
+ks_test(x = DF.o.w[DF.o.w$authors.n < 10, ]$d, 
+        y = DF.o.w[DF.o.w$authors.n > 9, ]$d)
+```
+
