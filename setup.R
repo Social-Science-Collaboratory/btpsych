@@ -20,6 +20,7 @@ library('tidygeocoder')
 library('png')
 library('grid')
 library('parallel')
+library('Ecume')
 
 # set plotting theme
 theme_set(theme_classic())

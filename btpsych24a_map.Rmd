@@ -11,7 +11,6 @@ editor_options:
 data_dir <- Sys.getenv("data_dir")
 
 # source setup file
-library(Ecume)
 source("setup.R")
 ```
 
@@ -419,28 +418,71 @@ corrplot(WEIRD_matrix,
 )
 ```
 
-# John exploratory analysis
+# John analyses
 
 ```{r}
 # For each team size, calculate the percentage of scientific papers of produced by each country
 
-# identify the list of countries in DF.o.w
-country_list <- unique(DF.o.w$iso3)
+# identify top five producers of psychology
+top5.p <-
+  DF.o.w %>% 
+  filter(!is.na(iso3)) %>% 
+  group_by(iso3) %>% 
+  summarise(n.papers = n()) %>%
+  mutate(per.papers = n.papers / sum(n.papers)) %>% 
+  slice_max(per.papers, 
+            n = 5)
 
-DF.percent <- DF.o.w %>%
+# compare to population
+top5.w <-
+  tmp %>% 
+  mutate(per.pop = pop / sum(pop)) %>% 
+  filter(iso3 %in% top5.p$iso3)
+
+top5.p$per.papers %>% sum()
+top5.w$per.pop %>% sum()
+
+# proportions by small, medium, big
+DF.percent <- 
+  DF.o.w %>%
+  
+  # remove non-iso data
+  filter(!is.na(iso3)) %>% 
+  
+  # identify
+  mutate(size = 
+           case_when(size.bin == "1 - 4" ~ 'small',
+                     size.bin == "5 - 9" ~ 'medium',
+                     authors.n > 9 ~ 'big')) %>% 
+  
   # group by number of authors and country
-  group_by(authors.n, iso3) %>%
+  group_by(size, iso3) %>%
+  
   # calculate the total number of papers of each team size produced by country
-  summarise(n_papers = n(), .groups = "drop_last") %>%
+  summarise(n_papers = n()) %>%
   ungroup() %>%
-  # fill in missing authors.n × countries combos with n_papers = NA
-  complete(authors.n, iso3 = country_list, fill = list(n_papers = 0)) %>%
+  
   # calculate the percentage of papers produced by that country
-  group_by(authors.n) %>%
+  group_by(size) %>%
   mutate(percent = 100 * n_papers / sum(n_papers)) %>%
   ungroup() %>%
-  # remove entries without country data
-  filter(!is.na(iso3))
+  
+  # sort
+  arrange(size, 
+          -percent)
+
+# isolate five
+DF.percent %>% 
+  group_by(size) %>% 
+  slice_max(percent, n = 5) %>% 
+  mutate(share = sum(percent)) %>% 
+  View()
+
+
+tmp %>% 
+  filter(iso3 %in% c('USA', 'GRB', 'CHN', 'BRA', 'CAN')) %>% 
+  .$pop %>% 
+  sum() / sum(tmp$pop)
 
 # add country socioeconomic data
 DF.percent <- left_join(DF.percent, DF.w, by = "iso3")
