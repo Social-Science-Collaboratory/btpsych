@@ -158,11 +158,20 @@ DataViz2 <- function(outcome,
     aes(x = .data[[outcome]])
   ) +
 
-    # author.n < 10
+    # size.bin == '1 - 4'
     geom_density(
       data = DF.o.w %>%
-        filter(authors.n < 10),
-      color = "#4cc9f0",
+        filter(size.bin == '1 - 4'),
+      color = "#1b9e77",
+      adjust = adjust,
+      alpha = 0.4
+    ) +
+    
+    # size.bin == '5 - 9'
+    geom_density(
+      data = DF.o.w %>%
+        filter(size.bin == '5 - 9'),
+      color = "#d95f02",
       adjust = adjust,
       alpha = 0.4
     ) +
@@ -171,7 +180,7 @@ DataViz2 <- function(outcome,
     geom_density(
       data = DF.o.w %>%
         filter(authors.n > 10),
-      color = "#7b2cbf",
+      color = "#7570b3",
       adjust = adjust,
       alpha = 0.4
     ) +
@@ -604,6 +613,38 @@ cor.test(x = DF.o.w$d,
          y = DF.o.w$authors.n,
          method = "spearman")
 ```
+
+# Compare small, medium, and big team
+```{r}
+# e gets worse as you move to medium, but not big
+ks_test(x = DF.o.w[DF.o.w$size.bin == '1 - 4', ]$e, 
+        y = DF.o.w[DF.o.w$size.bin == '5 - 9', ]$e)
+
+ks_test(x = DF.o.w[DF.o.w$size.bin == '5 - 9', ]$e, 
+        y = DF.o.w[DF.o.w$authors.n > 9, ]$e)
+
+# i
+ks_test(x = DF.o.w[DF.o.w$size.bin == '1 - 4', ]$i, 
+        y = DF.o.w[DF.o.w$size.bin == '5 - 9', ]$i)
+
+ks_test(x = DF.o.w[DF.o.w$size.bin == '5 - 9', ]$i, 
+        y = DF.o.w[DF.o.w$authors.n > 9, ]$i)
+
+# r
+ks_test(x = DF.o.w[DF.o.w$size.bin == '1 - 4', ]$r, 
+        y = DF.o.w[DF.o.w$size.bin == '5 - 9', ]$r)
+
+ks_test(x = DF.o.w[DF.o.w$size.bin == '5 - 9', ]$r, 
+        y = DF.o.w[DF.o.w$authors.n > 9, ]$r)
+
+# d
+ks_test(x = DF.o.w[DF.o.w$size.bin == '1 - 4', ]$d, 
+        y = DF.o.w[DF.o.w$size.bin == '5 - 9', ]$d)
+
+ks_test(x = DF.o.w[DF.o.w$size.bin == '5 - 9', ]$d, 
+        y = DF.o.w[DF.o.w$authors.n > 9, ]$d)
+```
+
 
 # Compare small team to big team
 ```{r}
