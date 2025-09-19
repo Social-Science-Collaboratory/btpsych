@@ -241,97 +241,87 @@ base_plot <-
     e.fig
   )
 
+```
+
+# Create custom legends for the graphs
+
+```{r}
+
 legend_levels <-
-  c(
-    "1st Author Affiliation (< 10 Co-Authors)",
-    "1st Author Affiliation (10+ Co-Authors)",
-    "Between-country distribution"
-  )
-
-# dummy df
-legend_df <- data.frame(
-  size.bin = factor(legend_levels, levels = legend_levels),
-  x = c(1, 2, 3),
-  y = c(1, 1, 1)
-)
-
-# color & linetype mapping (named vector ensures mapping by name)
-my_colors <- c(
-  "1st Author Affiliation (< 10 Co-Authors)" = "#4cc9f0",
-  "1st Author Affiliation (10+ Co-Authors)" = "#7b2cbf",
-  "Between-Country Distribution" = "black"
-)
-
-my_linetypes <- c(
-  "1st Author Affiliation (< 10 Co-Authors)" = "solid",
-  "1st Author Affiliation (10+ Co-Authors)" = "solid",
-  "Between-country distribution" = "dotted"
-)
-
-# 2. Build dummy plot mapping aesthetics at top-level
-
-# Make a custom legend
-legend_labels <-
   c(
     "1st Author Affiliation (< 10 Co-Authors)",
     "1st Author Affiliation (10+ Co-Authors)",
     "Between-Country Distribution"
   )
 
-legend_colors <-
-  c(
-    "#4cc9f0",
-    "#7b2cbf",
-    "black"
-  )
+# Create a dummy df with 2 points per group so geom_line can create lines with the appropriate aesthetics
+legend_df <- data.frame(
+  group = factor(rep(legend_levels, each = 2), levels = legend_levels),
+  x = rep(c(1, 2), times = length(legend_levels)),
+  y = rep(1:length(legend_levels), each = 2)  
+)
 
-# Create a dummy ggplot to extract a legend
-dummy <-
+# Define color mapping
+my_colors <- c(
+  "1st Author Affiliation (< 10 Co-Authors)" = "#4cc9f0",
+  "1st Author Affiliation (10+ Co-Authors)" = "#7b2cbf",
+  "Between-Country Distribution" = "black"
+)
+
+# Define linetype mapping
+my_linetypes <- c(
+  "1st Author Affiliation (< 10 Co-Authors)" = "solid",
+  "1st Author Affiliation (10+ Co-Authors)" = "solid",
+  "Between-Country Distribution" = "dotted"
+)
+
+# 2. Build dummy plot mapping aesthetics at top-level
+
+# Create a dummy ggplot with the appropriate graph aesthetics to extract a legend
+dummy_plot <-
   ggplot(
-    data.frame(
-      x = legend_labels,
-      y = 1,
-      col = legend_labels
-    ),
-    aes(x,
-      y,
-      color = col
-    )
-  ) +
-  geom_point() +
-  scale_color_manual(
-    values = legend_colors,
-    labels = legend_labels
-  ) +
+    legend_df, # dummy data frame with 2 observations per group
+    aes(x = x, y = y, 
+        color = group, linetype = group)) +
+  geom_line(linewidth = 1.2) +
+  scale_color_manual(  # Choose the appropriate colors and labels 
+    name = "Legend",
+    values = my_colors,
+    labels = legend_levels) +
+  scale_linetype_manual(  # Choose the appropriate linetypes and labels
+    name = "Legend",
+    values = my_linetypes,
+    labels = legend_levels) +
   guides(
-    color =
-      guide_legend(
-        title = NULL,
-        direction = "horizontal"
-      )
-  ) +
+  color = guide_legend(
+    title = NULL,
+    direction = "horizontal",
+    override.aes = list(linetype = c("solid", "solid", "dotted")) # Override aes so we only get a single color x linetype legend box
+  ),
+  linetype = "none") +
   theme_void() +
   theme(
     legend.position = "bottom",
     legend.text = element_text(size = 12)
   )
 
-legend <- get_legend(dummy)
+print(dummy_plot)
 
-# Add legends to
+# Extract the guide-box from the dummy plot, and remove any zeroGrob[NULL] elements to get the legend
+all_guides <- cowplot:::get_plot_component(dummy_plot, "guide-box", return_all = TRUE)
+legend <- all_guides[[which(!sapply(all_guides, inherits, "zeroGrob"))]]
+print(legend)
+
+# Combine the legend extracted from the dummy plot to the base figure
 legend_plot <-
   plot_grid(base_plot,
-    legend_grob,
+    legend,
     nrow = 2,
-    rel_heights = c(1, 1)
+    rel_heights = c(1, 0.2)
   )
 
 print(legend_plot)
 
-final_plot <- ggdraw() +
-  draw_plot(legend_plot, y = 0, height = 0.9)
-
-print(final_plot)
 ```
 
 Some analyses

@@ -454,7 +454,8 @@ fig.tim <-
             size = 2.5) +
   
   # improve aesthetics
-  xlab("publication year") +
+  ylab("Count") +
+  xlab("Publication Year") +
   theme(legend.position = "none",
         legend.title = element_blank(),
         strip.text = element_text(size = 8)) +
@@ -620,8 +621,8 @@ topic.fig <-
                 colour = 'grey50') +
   
   # improve aesthetics
-  xlab('proportion of big team records') +
-  ylab('topic') +
+  xlab('Proportion of Big Team Records') +
+  ylab('Topic') +
   theme(axis.line.y = element_blank(),
         axis.ticks.y = element_blank(),
         legend.position = 'none')
