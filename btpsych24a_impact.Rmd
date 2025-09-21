@@ -208,10 +208,10 @@ viz.DF <-
       "policy"
     ),
     labels = c(
-      "scholarly articles",
-      "news",
-      "social media",
-      "policy documents"
+      "Scholarly Articles",
+      "News",
+      "Social Media",
+      "Policy Documents"
     )
   ))
 
@@ -274,8 +274,8 @@ impact.fig <-
 
   # improve aesthetics
   labs(
-    x = "team size",
-    y = "average yearly mentions"
+    x = "Team Size",
+    y = "Average Yearly Mentions"
   ) +
   theme(
     legend.position = "none",
