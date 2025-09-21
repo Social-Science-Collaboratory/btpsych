@@ -267,6 +267,20 @@ DF %>%
 ```
 
 # Select relevant variables (to reduce size) and identify source's h index
+```{r}
+DF <- DF %>%
+  mutate(unique_institutions = map_int(author, ~ {
+    ids <- .x$institution_id
+    length(unique(na.omit(ids)))
+  }))
+
+DF <- DF %>%
+  mutate(unique_country_codes = map_int(author, ~ {
+    codes <- .x$institution_country_code
+    length(unique(na.omit(codes)))
+  }))
+```
+
 
 ```{r}
 # Select variables of interest
@@ -276,7 +290,9 @@ DF <-
     id, title, author,
     language, doi, publication_year,
     cited_by_count,
-    authors.n:citation.p.y, so_id
+    authors.n:citation.p.y, 
+    unique_institutions, unique_country_codes,
+    so_id
   )
 
 # read source ID and h-index collected through OpenAlex`s API
