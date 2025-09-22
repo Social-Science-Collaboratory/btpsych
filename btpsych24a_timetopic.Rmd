@@ -460,7 +460,9 @@ fig.tim <-
         legend.title = element_blank(),
         strip.text = element_text(size = 8)) +
   guides(color = guide_legend(override.aes = list(size = 7))) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) +
   scale_x_continuous(n.breaks = 3)
+
 ```
 
 # Topics data

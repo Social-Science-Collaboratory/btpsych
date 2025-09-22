@@ -246,12 +246,11 @@ base_plot <-
 # Create custom legends for the graphs
 
 ```{r}
-
 legend_levels <-
   c(
     "1st Author Affiliation (< 10 Co-Authors)",
     "1st Author Affiliation (10+ Co-Authors)",
-    "Between-Country Distribution"
+    "Global Distribution"
   )
 
 # Create a dummy df with 2 points per group so geom_line can create lines with the appropriate aesthetics
@@ -265,14 +264,14 @@ legend_df <- data.frame(
 my_colors <- c(
   "1st Author Affiliation (< 10 Co-Authors)" = "#4cc9f0",
   "1st Author Affiliation (10+ Co-Authors)" = "#7b2cbf",
-  "Between-Country Distribution" = "black"
+  "Global Distribution" = "black"
 )
 
 # Define linetype mapping
 my_linetypes <- c(
   "1st Author Affiliation (< 10 Co-Authors)" = "solid",
   "1st Author Affiliation (10+ Co-Authors)" = "solid",
-  "Between-Country Distribution" = "dotted"
+  "Global Distribution" = "dotted"
 )
 
 # 2. Build dummy plot mapping aesthetics at top-level
@@ -302,7 +301,7 @@ dummy_plot <-
   theme_void() +
   theme(
     legend.position = "bottom",
-    legend.text = element_text(size = 12)
+    legend.text = element_text(size = 9)
   )
 
 print(dummy_plot)
