@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.1.2 Chrome/138.0.7204.243 Electron/37.4.0 Safari/537.36" version="28.1.2">
   <diagram name="Mechanism" id="8GAw0jobU0_pIFRNUd0c">
-    <mxGraphModel dx="1273" dy="849" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1018" dy="679" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -197,7 +197,7 @@
         <mxCell id="Vr80zx1zmRr2NjJ--V2T-38" value="sociocultural indicators" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;strokeColor=#F2D88D;fillColor=default;strokeWidth=1.5;fontColor=#333333;" parent="1" vertex="1">
           <mxGeometry x="58.75" y="330" width="80" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="Vr80zx1zmRr2NjJ--V2T-39" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;curved=0;strokeColor=#A4BF8A;strokeWidth=1.5;" parent="1" source="Vr80zx1zmRr2NjJ--V2T-1" target="Vr80zx1zmRr2NjJ--V2T-2" edge="1">
+        <mxCell id="Vr80zx1zmRr2NjJ--V2T-39" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;curved=0;strokeColor=#A4BF8A;strokeWidth=1.5;startArrow=classic;startFill=1;" parent="1" source="Vr80zx1zmRr2NjJ--V2T-1" target="Vr80zx1zmRr2NjJ--V2T-2" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="168.75" y="290" />
@@ -233,16 +233,16 @@
         <mxCell id="Vr80zx1zmRr2NjJ--V2T-51" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F2D88D;strokeColor=#F2D88D;" parent="1" vertex="1">
           <mxGeometry x="58.75" y="100" width="20" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="Ss2UxTsFI0pqzv04MIHL-1" value="Cross-sectional nature of investigation cannot evaluate all mechanisms and potential confounds" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#333333;" vertex="1" parent="1">
+        <mxCell id="Ss2UxTsFI0pqzv04MIHL-1" value="Examples of different units of analysis and potential mechanisms" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#333333;" parent="1" vertex="1">
           <mxGeometry x="98.75" y="140" width="650" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="Ss2UxTsFI0pqzv04MIHL-2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;strokeColor=#999999;" vertex="1" parent="1">
+        <mxCell id="Ss2UxTsFI0pqzv04MIHL-2" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#999999;strokeColor=#999999;" parent="1" vertex="1">
           <mxGeometry x="58.75" y="140" width="20" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="Ss2UxTsFI0pqzv04MIHL-6" value="&lt;b&gt;Exploratory findings&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;rotation=-90;fillColor=#666666;fontColor=#FFFFFF;strokeColor=none;" vertex="1" parent="1">
+        <mxCell id="Ss2UxTsFI0pqzv04MIHL-6" value="&lt;b&gt;Exploratory findings&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;rotation=-90;fillColor=#666666;fontColor=#FFFFFF;strokeColor=none;" parent="1" vertex="1">
           <mxGeometry x="-60" y="76.25" width="165" height="32.5" as="geometry" />
         </mxCell>
-        <mxCell id="Ss2UxTsFI0pqzv04MIHL-7" value="&lt;b&gt;Post-hoc framework&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;rotation=-90;fillColor=#666666;fontColor=#FFFFFF;strokeColor=none;" vertex="1" parent="1">
+        <mxCell id="Ss2UxTsFI0pqzv04MIHL-7" value="&lt;b&gt;Post-hoc framework&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;rotation=-90;fillColor=#666666;fontColor=#FFFFFF;strokeColor=none;" parent="1" vertex="1">
           <mxGeometry x="-97.5" y="303.75" width="240" height="32.5" as="geometry" />
         </mxCell>
       </root>
