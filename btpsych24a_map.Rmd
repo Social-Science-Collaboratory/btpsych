@@ -16,15 +16,20 @@ source("setup.R")
 
 ```{r}
 # open processed OpenAlex data
-DF.o <- readRDS(file.path(data_dir, "openalex", "btpsych24a_data_bib_processed.Rds"))
+DF.o <-
+  readRDS(file.path(data_dir, 
+                    "openalex", 
+                    "btpsych24a_data_bib_processed.Rds"))
 
 # identify country of first author via safe extraction
-DF.o$author1.country <- lapply(seq_len(nrow(DF.o)), function(i) {
-  tryCatch(
-    DF.o[i, ][["author"]][[1]][["institution_country_code"]][[1]],
-    error = function(e) NA
-  )
-})
+DF.o$author1.country <-
+  lapply(seq_len(nrow(DF.o)), function(i) {
+    tryCatch(
+      DF.o[i, ][["author"]][[1]][["institution_country_code"]][[1]],
+      error = function(e)
+        NA
+    )
+  })
 
 # Prepare for merging: convert to iso3 codes
 DF.o <- DF.o %>%
@@ -104,11 +109,12 @@ DF.pop <- DF.pop %>%
 # prepare merge with other indicators
 DF.w2 <- DF.w %>%
   group_by(iso3) %>%
-  summarise(r = mean(r, na.rm = T), 
-            i = mean(i, na.rm = T), 
-            d = mean(d, na.rm = T), 
-            e = mean(e, na.rm = T)
-            )
+  summarise(
+    r = mean(r, na.rm = T),
+    i = mean(i, na.rm = T),
+    d = mean(d, na.rm = T),
+    e = mean(e, na.rm = T)
+  )
 
 tmp <- DF.pop %>%
   rename("iso3" = "Country.Code") %>%
@@ -191,7 +197,7 @@ DataViz2 <- function(outcome,
 }
 ```
 
-Create figures
+## Create plots
 ```{r}
 r.fig <-
   DataViz2(
@@ -228,14 +234,19 @@ base_plot <-
     d.fig,
     e.fig
   )
+
+# delete vestigial
+rm(r.fig, i.fig, d.fig, e.fig)
 ```
 
-## Create custom legend (LEFT OFF HERE)
+## Create custom legend
 ```{r}
 legend_levels <-
-  c("1st Author Affiliation (< 10 Co-Authors)",
+  c(
+    "1st Author Affiliation (< 10 Co-Authors)",
     "1st Author Affiliation (10+ Co-Authors)",
-    "Global Distribution")
+    "Global Distribution"
+  )
 
 # Create a dummy df with 2 points per group so geom_line can create lines with the appropriate aesthetics
 legend_df <- data.frame(
@@ -294,12 +305,14 @@ dummy_plot <-
     legend.text = element_text(size = 9)
   )
 
-print(dummy_plot)
-
 # Extract the guide-box from the dummy plot, and remove any zeroGrob[NULL] elements to get the legend
-all_guides <- cowplot:::get_plot_component(dummy_plot, "guide-box", return_all = TRUE)
+all_guides <- 
+  cowplot:::get_plot_component(dummy_plot, 
+                               "guide-box", 
+                               return_all = TRUE)
+
 legend <- all_guides[[which(!sapply(all_guides, inherits, "zeroGrob"))]]
-print(legend)
+rm(all_guides)
 
 # Combine the legend extracted from the dummy plot to the base figure
 legend_plot <-
@@ -309,32 +322,51 @@ legend_plot <-
     rel_heights = c(1, 0.2)
   )
 
-print(legend_plot)
+# delete vestigial
+rm(base_plot, legend, legend_levels,
+   legend_df, dummy_plot,
+   my_colors, my_linetypes, DataViz2)
 ```
 
 # Globe panel: geocode, prep, plot, and merge with legend panel
-```{r globe_panel}
+## Prepare data
+```{r}
 # Prepare OpenAlex big-team author data for geocoding
-DF.author <- 
-  DF.o %>% 
-  filter(size.bin != "1 - 4", 
-         size.bin != "5 - 9")
+DF.author <-
+  DF.o.w %>%
+  filter(size.bin != "1 - 4", size.bin != "5 - 9")
 
 DF.author <- DF.author$author
 
 # Geocode records (skip if already saved)
-geo_path <- 
+geo_path <-
   file.path(data_dir, 
             "location", 
             "btpsych24a_geocode.Rds")
 
 if (!file.exists(geo_path)) {
-  DF.geo <- lapply(DF.author, function(sublist) c(sublist["institution_display_name"], sublist["institution_country_code"])) %>%
-    Filter(function(sublist) any(!is.na(unlist(sublist))), .) %>%
+  DF.geo <- 
+    lapply(DF.author, function(sublist)
+      c(sublist["institution_display_name"],
+        sublist["institution_country_code"])) %>%
+    
+    Filter(function(sublist)
+      any(!is.na(unlist(sublist))), .) %>%
+    
     lapply(function(sublist) {
       as_tibble(sublist) %>%
-        mutate(address = paste0(institution_display_name, ", ", institution_country_code)) %>%
-        tidygeocoder::geocode(., address = address, method = "arcgis", lat = latitude, long = longitude)
+        mutate(address =
+                 paste0(institution_display_name,
+                        ", ",
+                        institution_country_code)) %>%
+        
+        tidygeocoder::geocode(
+          .,
+          address = address,
+          method = "arcgis",
+          lat = latitude,
+          long = longitude
+        )
     })
   saveRDS(DF.geo, geo_path)
 } else {
@@ -354,7 +386,8 @@ DF.geo <- lapply(DF.geo, function(sublist) {
 })
 
 # Prepare map data
-DF.map <- lapply(DF.geo, function(sublist) slice(sublist, -1)) %>%
+DF.map <- lapply(DF.geo, function(sublist)
+  slice(sublist, -1)) %>%
   bind_rows() %>%
   select(leader_coun:supporter_lon) %>%
   filter(paste0(leader_lat, ", ", leader_lon) != paste0(supporter_lat, ", ", supporter_lon)) %>%
@@ -363,51 +396,104 @@ DF.map <- lapply(DF.geo, function(sublist) slice(sublist, -1)) %>%
     leader.region = countrycode(.$leader_coun, origin = "iso2c", destination = "region"),
     supporter.region = countrycode(.$supporter_coun, origin = "iso2c", destination = "region")
   )
+
 # manual fixes
-DF.map[!is.na(DF.map$leader_coun) & DF.map$leader_coun == "RE", ]$leader.region <- "Sub-Saharan Africa"
+DF.map[!is.na(DF.map$leader_coun) &
+         DF.map$leader_coun == "RE", ]$leader.region <- "Sub-Saharan Africa"
 
-DF.map[!is.na(DF.map$supporter_coun) & DF.map$supporter_coun == "RE", ]$supporter.region <- "Sub-Saharan Africa"
+DF.map[!is.na(DF.map$supporter_coun) &
+         DF.map$supporter_coun == "RE", ]$supporter.region <- "Sub-Saharan Africa"
 
-DF.map[!is.na(DF.map$leader_coun) & DF.map$leader_coun == "XK", ]$leader.region <- "Europe & Central Asia"
+DF.map[!is.na(DF.map$leader_coun) &
+         DF.map$leader_coun == "XK", ]$leader.region <- "Europe & Central Asia"
 
-DF.map[!is.na(DF.map$supporter_coun) & DF.map$supporter_coun == "XK", ]$supporter.region <- "Europe & Central Asia"
+DF.map[!is.na(DF.map$supporter_coun) &
+         DF.map$supporter_coun == "XK", ]$supporter.region <- "Europe & Central Asia"
 
 # transform coordinates to crs 4326 then to ESRI:54030
 supporter.coord <- DF.map %>%
   select(supporter.region, supporter_lat, supporter_lon) %>%
-  st_as_sf(coords = c("supporter_lon", "supporter_lat"), crs = 4326, remove = F) %>%
+  st_as_sf(
+    coords = c("supporter_lon", "supporter_lat"),
+    crs = 4326,
+    remove = F
+  ) %>%
   st_transform(crs = "ESRI:54030") %>%
-  mutate(supporter_lat_new = st_coordinates(.)[, 2], supporter_lon_new = st_coordinates(.)[, 1])
+  mutate(supporter_lat_new = st_coordinates(.)[, 2],
+         supporter_lon_new = st_coordinates(.)[, 1])
 leader.coord <- DF.map %>%
   select(leader.region, leader_lat, leader_lon) %>%
-  st_as_sf(coords = c("leader_lon", "leader_lat"), crs = 4326, remove = F) %>%
+  st_as_sf(
+    coords = c("leader_lon", "leader_lat"),
+    crs = 4326,
+    remove = F
+  ) %>%
   st_transform(crs = "ESRI:54030") %>%
-  mutate(leader_lat_new = st_coordinates(.)[, 2], leader_lon_new = st_coordinates(.)[, 1])
+  mutate(leader_lat_new = st_coordinates(.)[, 2],
+         leader_lon_new = st_coordinates(.)[, 1])
 
 DF.map <- cbind(supporter.coord, leader.coord)
 rm(supporter.coord, leader.coord)
+```
 
+## Create globe figure
+```{r globe_panel}
 # Globe figure
 world <- ne_countries(scale = "medium", returnclass = "sf")
 
 globe.fig <- ggplot() +
   # plot map layer
+  
   layer_spatial(data = world, color = NA) +
   # change coordinate projections
+  
   coord_sf(crs = "ESRI:54030") +
   # add dots for supporters
-  geom_point(data = DF.map %>% filter(!is.na(leader.region), !is.na(supporter.region)), aes(x = supporter_lon_new, y = supporter_lat_new, colour = supporter.region), size = .4, alpha = .01) +
+  geom_point(
+    data = DF.map %>%
+      filter(!is.na(leader.region), !is.na(supporter.region)),
+    aes(x = supporter_lon_new, y = supporter_lat_new, colour = supporter.region),
+    size = .4,
+    alpha = .01
+  ) +
   # connect leaders and supporters
-  geom_curve(data = DF.map %>% filter(!is.na(leader.region), !is.na(supporter.region)), aes(x = leader_lon_new, y = leader_lat_new, xend = supporter_lon_new, yend = supporter_lat_new, colour = leader.region), curvature = -0.5, size = 0.1, alpha = .01, show.legend = F) +
+  geom_curve(
+    data = DF.map %>% filter(!is.na(leader.region), !is.na(supporter.region)),
+    aes(
+      x = leader_lon_new,
+      y = leader_lat_new,
+      xend = supporter_lon_new,
+      yend = supporter_lat_new,
+      colour = leader.region
+    ),
+    curvature = -0.5,
+    size = 0.1,
+    alpha = .01,
+    show.legend = F
+  ) +
   # improve aesthetics
   cowplot::theme_minimal_grid() +
-  theme(legend.position = "bottom", legend.title = element_blank(), legend.text = element_text(size = 8), legend.justification = "center", panel.grid.major = element_line(size = .3)) +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 8),
+    legend.justification = "center",
+    panel.grid.major = element_line(size = .3)
+  ) +
   guides(color = guide_legend(override.aes = list(size = 3, alpha = 1), nrow = 2)) +
   labs(x = NULL, y = NULL)
+```
 
+## Combine globe and plots
+```{r}
 # Combine globe and gdp figures
-final.fig <- plot_grid(globe.fig, legend_plot, nrow = 2, rel_heights = c(4.5, 5.5), labels = c("A", "B"))
-print(final.fig)
+final.fig <- plot_grid(
+  globe.fig,
+  legend_plot,
+  nrow = 2,
+  rel_heights = c(4.5, 5.5),
+  labels = c("A", "B")
+)
 ```
 
 ## Compare global distribution to psychology first authors
@@ -539,4 +625,3 @@ ks_test(
   y = DF.o.w[DF.o.w$authors.n > 9, ]$d
 )
 ```
-
