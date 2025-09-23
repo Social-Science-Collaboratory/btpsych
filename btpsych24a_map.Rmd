@@ -12,11 +12,6 @@ data_dir <- Sys.getenv("data_dir")
 
 # source setup file
 source("setup.R")
-
-# declare global variables to satisfy linters for non-standard evaluation
-if (getRversion() >= "2.15.1") {
-  utils::globalVariables(c("size.bin", "authors.n", "pop"))
-}
 ```
 
 ```{r}
@@ -109,7 +104,11 @@ DF.pop <- DF.pop %>%
 # prepare merge with other indicators
 DF.w2 <- DF.w %>%
   group_by(iso3) %>%
-  summarise(r = mean(r, na.rm = T), i = mean(i, na.rm = T), d = mean(d, na.rm = T), e = mean(e, na.rm = T))
+  summarise(r = mean(r, na.rm = T), 
+            i = mean(i, na.rm = T), 
+            d = mean(d, na.rm = T), 
+            e = mean(e, na.rm = T)
+            )
 
 tmp <- DF.pop %>%
   rename("iso3" = "Country.Code") %>%
@@ -231,15 +230,12 @@ base_plot <-
   )
 ```
 
-# Create custom legends for the graphs
-
+## Create custom legend (LEFT OFF HERE)
 ```{r}
 legend_levels <-
-  c(
-    "1st Author Affiliation (< 10 Co-Authors)",
+  c("1st Author Affiliation (< 10 Co-Authors)",
     "1st Author Affiliation (10+ Co-Authors)",
-    "Global Distribution"
-  )
+    "Global Distribution")
 
 # Create a dummy df with 2 points per group so geom_line can create lines with the appropriate aesthetics
 legend_df <- data.frame(
@@ -316,292 +312,22 @@ legend_plot <-
 print(legend_plot)
 ```
 
-Some analyses
-```{r}
-DF.o.w <-
-  DF.o.w %>%
-  mutate(
-    group =
-      case_when(
-        size.bin == "1 - 4" ~ "small",
-        size.bin == "5 - 9" ~ "medium",
-        authors.n > 9 ~ "large"
-      )
-  )
-
-WEIRD_correlations <- c(NA, NA, NA, NA)
-
-# r
-kruskal.test(r ~ group,
-  data = DF.o.w
-)
-
-WEIRD_correlations[1] <- cor.test(
-  x = DF.o.w$r,
-  y = DF.o.w$authors.n,
-  alternative = "two.sided",
-  method = "spearman"
-)$estimate[[1]]
-
-# i
-kruskal.test(i ~ group,
-  data = DF.o.w
-)
-
-WEIRD_correlations[2] <- cor.test(
-  x = DF.o.w$i,
-  y = DF.o.w$authors.n,
-  alternative = "two.sided",
-  method = "spearman"
-)$estimate[[1]]
-
-# d
-kruskal.test(d ~ group,
-  data = DF.o.w
-)
-
-WEIRD_correlations[3] <- cor.test(
-  x = DF.o.w$d,
-  y = DF.o.w$authors.n,
-  alternative = "two.sided",
-  method = "spearman"
-)$estimate[[1]]
-
-# e
-kruskal.test(e ~ group,
-  data = DF.o.w
-)
-
-WEIRD_correlations[4] <- cor.test(
-  x = DF.o.w$e,
-  y = DF.o.w$authors.n,
-  alternative = "two.sided",
-  method = "spearman"
-)$estimate[[1]]
-
-
-WEIRD_matrix <- t(matrix(WEIRD_correlations))
-
-rownames(WEIRD_matrix) <- "Team size"
-colnames(WEIRD_matrix) <- c(
-  "GDP per capita",
-  "Industrialization",
-  "Democratic ratings",
-  "Educational attainment"
-)
-
-
-corrplot(WEIRD_matrix,
-  method = "ellipse",
-  addCoef.col = "#36454F", number.cex = 0.9, number.digits = 3,
-  tl.cex = 0.9, tl.col = "#36454F",
-  col = colorRampPalette(c("#0066CC", "white", "#ff2917"))(200),
-  mar = c(1, 0, 1, 1)
-)
-```
-
-# John analyses
-
-```{r}
-# For each team size, calculate the percentage of scientific papers of produced by each country
-
-# identify top five producers of psychology
-top5.p <-
-  DF.o.w %>%
-  filter(!is.na(iso3)) %>%
-  group_by(iso3) %>%
-  summarise(n.papers = n()) %>%
-  mutate(per.papers = n.papers / sum(n.papers)) %>%
-  slice_max(per.papers,
-    n = 5
-  )
-
-# compare to population
-top5.w <-
-  tmp %>%
-  mutate(per.pop = pop / sum(pop)) %>%
-  filter(iso3 %in% top5.p$iso3)
-
-top5.p$per.papers %>% sum()
-top5.w$per.pop %>% sum()
-
-# proportions by small, medium, big
-DF.percent <-
-  DF.o.w %>%
-  # remove non-iso data
-  filter(!is.na(iso3)) %>%
-  # identify
-  mutate(
-    size =
-      case_when(
-        size.bin == "1 - 4" ~ "small",
-        size.bin == "5 - 9" ~ "medium",
-        authors.n > 9 ~ "big"
-      )
-  ) %>%
-  # group by number of authors and country
-  group_by(size, iso3) %>%
-  # calculate the total number of papers of each team size produced by country
-  summarise(n_papers = n()) %>%
-  ungroup() %>%
-  # calculate the percentage of papers produced by that country
-  group_by(size) %>%
-  mutate(percent = 100 * n_papers / sum(n_papers)) %>%
-  ungroup() %>%
-  # sort
-  arrange(
-    size,
-    -percent
-  )
-
-# isolate five
-DF.percent %>%
-  group_by(size) %>%
-  slice_max(percent, n = 5) %>%
-  mutate(share = sum(percent)) %>%
-  View()
-
-
-tmp %>%
-  filter(iso3 %in% c("USA", "GRB", "CHN", "BRA", "CAN")) %>%
-  .$pop %>%
-  sum() / sum(tmp$pop)
-
-# add country socioeconomic data
-DF.percent <- left_join(DF.percent, DF.w, by = "iso3")
-
-# model the impact of team size and socioeconomic factors on scientific participation
-model.percent <- lm(
-  data = DF.percent,
-  percent ~ authors.n * (
-    scale(r) + # standardize socioeconomic indices
-      scale(i) +
-      scale(d) +
-      scale(e))
-)
-summary(model.percent)
-
-# analyze the 5 countries with the most scietific output
-# list the countries in iso3 code
-top_countries <- c("USA", "CHN", "GBR", "DEU", "ITA")
-
-# filter the countries of interest and restrict analysis to teamsize <=100
-DF.percent.top <- DF.percent %>%
-  filter(iso3 %in% top_countries &
-    authors.n <= 100) %>%
-  select(authors.n, iso3, percent)
-
-
-model.percent.top <- DF.percent.top %>%
-  lm(data = ., percent ~ authors.n * iso3)
-summary(model.percent.top)
-
-# calculate the sum of the 5 countries' scientific participation for data visualization
-DF.totals <- DF.percent.top %>%
-  group_by(authors.n) %>%
-  summarise(percent = sum(percent, na.rm = TRUE), .groups = "drop") %>%
-  mutate(iso3 = "Combined") %>%
-  select(authors.n, iso3, percent)
-
-# add combined participation to dataframe
-DF.percent.top <- rbind(DF.percent.top, DF.totals)
-
-DF.percent.top$iso3 <- factor(DF.percent.top$iso3,
-  levels = c(
-    "USA", "GBR", "DEU",
-    "CHN", "ITA", "Combined"
-  )
-)
-
-# plot scientific participation data for the highest output countries
-ggplot(DF.percent.top, aes(x = authors.n, y = percent, color = iso3, group = iso3)) +
-  geom_smooth(
-    method = "lm",
-    fill = "lightgrey",
-    alpha = 0.35
-  ) +
-  geom_point() +
-  labs(
-    x = "Number of Authors",
-    y = "Scientific Participation (%)",
-    title = "Scientific Output Percentage by Country and Team Size"
-  ) +
-  scale_color_manual(
-    name = "Country",
-    labels = c(
-      "United States", "Great Britain",
-      "Germany", "China",
-      "Italy", "Combined"
-    ),
-    values = c(
-      "USA" = "#F8766D",
-      "GBR" = "#B79F00",
-      "DEU" = "#7CAE00",
-      "CHN" = "#00BFC4",
-      "ITA" = "#619CFF",
-      "Combined" = "#F564E3"
-    )
-  ) +
-  theme_minimal()
-
-
-# Load required libraries
-library(ggpubr)
-library(cowplot)
-library(ggplot2)
-
-# Relabel size_group
-DF.o.w <- DF.o.w %>%
-  mutate(size_group = factor(case_when(
-    size.bin == "1 - 4" ~ "1 - 4 co-authors",
-    size.bin == "5 - 9" ~ "5 - 9 co-authors",
-    TRUE ~ "10+ co-authors"
-  ), levels = c("10+ co-authors", "5 - 9 co-authors", "1 - 4 co-authors")))
-
-# Variable labels
-var_labels <- list(
-  r = "GDP Per Capita (Millions)",
-  i = "Industry-Based GDP (%)",
-  d = "Democracy Index",
-  e = "Secondary School Enrollment (% Gross)"
-)
-
-# Function to create annotated boxplot for each variable
-
-make_boxplot <- function(var, label) {
-  ggpubr::ggboxplot(DF.o.w,
-    x = "size_group", y = var,
-    fill = "size_group", color = "size_group",
-    palette = "jco", width = 0.5, outlier.shape = NA
-  ) +
-    labs(x = "Team Size Group", y = label) +
-    theme_classic() +
-    theme(legend.position = "none", axis.title.x = element_text(size = 12), axis.title.y = element_text(size = 12)) +
-    stat_compare_means(
-      method = "wilcox.test",
-      label = "p.signif",
-      comparisons = as.list(combn(levels(DF.o.w$size_group), 2, simplify = FALSE))
-    )
-}
-
-# Create plots
-r_plot <- make_boxplot("r", var_labels$r)
-i_plot <- make_boxplot("i", var_labels$i)
-d_plot <- make_boxplot("d", var_labels$d)
-e_plot <- make_boxplot("e", var_labels$e)
-
-# Combine plots
-plot_grid(r_plot, i_plot, d_plot, e_plot, ncol = 2, labels = c("A", "B", "C", "D"))
-```
-
 # Globe panel: geocode, prep, plot, and merge with legend panel
 ```{r globe_panel}
 # Prepare OpenAlex big-team author data for geocoding
-DF.author <- DF.o %>% filter(size.bin != "1 - 4", size.bin != "5 - 9")
+DF.author <- 
+  DF.o %>% 
+  filter(size.bin != "1 - 4", 
+         size.bin != "5 - 9")
+
 DF.author <- DF.author$author
 
 # Geocode records (skip if already saved)
-geo_path <- file.path(data_dir, "location", "btpsych24a_geocode.Rds")
+geo_path <- 
+  file.path(data_dir, 
+            "location", 
+            "btpsych24a_geocode.Rds")
+
 if (!file.exists(geo_path)) {
   DF.geo <- lapply(DF.author, function(sublist) c(sublist["institution_display_name"], sublist["institution_country_code"])) %>%
     Filter(function(sublist) any(!is.na(unlist(sublist))), .) %>%
@@ -639,8 +365,11 @@ DF.map <- lapply(DF.geo, function(sublist) slice(sublist, -1)) %>%
   )
 # manual fixes
 DF.map[!is.na(DF.map$leader_coun) & DF.map$leader_coun == "RE", ]$leader.region <- "Sub-Saharan Africa"
+
 DF.map[!is.na(DF.map$supporter_coun) & DF.map$supporter_coun == "RE", ]$supporter.region <- "Sub-Saharan Africa"
+
 DF.map[!is.na(DF.map$leader_coun) & DF.map$leader_coun == "XK", ]$leader.region <- "Europe & Central Asia"
+
 DF.map[!is.na(DF.map$supporter_coun) & DF.map$supporter_coun == "XK", ]$supporter.region <- "Europe & Central Asia"
 
 # transform coordinates to crs 4326 then to ESRI:54030
