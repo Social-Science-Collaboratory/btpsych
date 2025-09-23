@@ -810,15 +810,31 @@ cor.test(DF.impact$authors.n,
 )
 
 ## Bayesian correlation (Bayes Factor) analogs to Spearman tests
-bf_cit <- correlationBF(rank(DF.impact$authors.n), rank(DF.impact$citation.p.y))
-bf_news <- correlationBF(rank(DF.impact$authors.n), rank(DF.impact$news.p.y))
-bf_gen <- correlationBF(rank(DF.impact$authors.n), rank(DF.impact$gen.p.y))
-bf_policy <- correlationBF(rank(DF.impact$authors.n), rank(DF.impact$policy.p.y))
+d <- DF.impact %>%
+  mutate(
+    citation.p.y = rank(citation.p.y),
+    news.p.y = rank(news.p.y),
+    gen.p.y = rank(gen.p.y),
+    policy.p.y = rank(policy.p.y),
+    authors.n = rank(authors.n),
+  ) %>%
+  data.frame()
 
-print(bf_cit)
-print(bf_news)
-print(bf_gen)
-print(bf_policy)
+lmBF(citation.p.y ~ authors.n,
+  data = d
+)
+
+lmBF(news.p.y ~ authors.n,
+  data = d
+)
+
+lmBF(gen.p.y ~ authors.n,
+  data = d
+)
+
+lmBF(policy.p.y ~ authors.n,
+  data = d
+)
 ```
 
 ## Bayesian linear vs. quadratic comparisons (minimal)
