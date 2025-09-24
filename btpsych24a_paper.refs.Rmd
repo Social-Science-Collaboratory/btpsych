@@ -648,6 +648,14 @@ Upload impact data
 ```{r}
 impact.by.size <-
   readRDS(here("figures", "impact.viz.DF.Rds"))
+
+DF.alt <- readRDS(
+  file.path(
+    data_dir,
+    "altmetric",
+    "btpsych24a_altmetric_processed.Rds"
+    )
+  )
 ```
 
 1-4 co-authors
@@ -673,7 +681,9 @@ impact.by.size[impact.by.size$size.bin == "10 - 19", ]$n[1] /
 # stats
 impact.by.size[impact.by.size$size.bin == "10 - 19", ]
 
+#####################
 # citation comparison
+#####################
 3.36 / 0.927
 
 mes(
@@ -685,10 +695,15 @@ mes(
   sd.1 = impact.by.size[1, ]$sd
 )
 
+ttestBF(x = DF[DF$size.bin == '1 - 4', ]$citation.p.y,
+        y = DF[DF$size.bin == '10 - 19', ]$citation.p.y)
 
+#####################
 # news comparison
+#####################
 0.62 / 0.191
 
+# cohen's d
 mes(
   n.2 = impact.by.size[9, ]$n,
   m.2 = impact.by.size[11, ]$m,
@@ -698,7 +713,14 @@ mes(
   sd.1 = impact.by.size[3, ]$sd
 )
 
+ttestBF(x = DF.alt[DF.alt$size.bin == '1 - 4' & 
+                     !is.na(DF.alt$news.p.y), ]$news.p.y,
+        y = DF.alt[DF.alt$size.bin == '10 - 19' & 
+                     !is.na(DF.alt$news.p.y), ]$news.p.y)
+
+#####################
 # social media comparison
+#####################
 3.62 / 1.43
 
 mes(
@@ -710,7 +732,14 @@ mes(
   sd.1 = impact.by.size[4, ]$sd
 )
 
+ttestBF(x = DF.alt[DF.alt$size.bin == '1 - 4' & 
+                     !is.na(DF.alt$gen.p.y), ]$gen.p.y,
+        y = DF.alt[DF.alt$size.bin == '10 - 19' & 
+                     !is.na(DF.alt$gen.p.y), ]$gen.p.y)
+
+#####################
 # policy comparison
+#####################
 0.0179 / 0.00758
 
 mes(
@@ -721,6 +750,11 @@ mes(
   m.1 = impact.by.size[2, ]$m,
   sd.1 = impact.by.size[2, ]$sd
 )
+
+ttestBF(x = DF.alt[DF.alt$size.bin == '1 - 4' & 
+                     !is.na(DF.alt$policy.p.y), ]$policy.p.y,
+        y = DF.alt[DF.alt$size.bin == '10 - 19' & 
+                     !is.na(DF.alt$policy.p.y), ]$policy.p.y)
 ```
 
 30-39 co-authors
@@ -734,7 +768,9 @@ impact.by.size[impact.by.size$size.bin == "30 - 39", ]$n[1] /
 # stats
 impact.by.size[impact.by.size$size.bin == "30 - 39", ] %>% View()
 
+#####################
 # citation comparison
+#####################
 8.90 / 0.927
 mes(
   n.2 = impact.by.size[17, ]$n,
@@ -745,7 +781,12 @@ mes(
   sd.1 = impact.by.size[1, ]$sd
 )
 
+ttestBF(x = DF[DF$size.bin == '1 - 4', ]$citation.p.y,
+        y = DF[DF$size.bin == '30 - 39', ]$citation.p.y)
+
+#####################
 # news comparison
+#####################
 3.1 / 0.191
 mes(
   n.2 = impact.by.size[17, ]$n,
@@ -756,9 +797,15 @@ mes(
   sd.1 = impact.by.size[3, ]$sd
 )
 
+ttestBF(x = DF.alt[DF.alt$size.bin == '1 - 4' & 
+                     !is.na(DF.alt$news.p.y), ]$news.p.y,
+        y = DF.alt[DF.alt$size.bin == '30 - 39' & 
+                     !is.na(DF.alt$news.p.y), ]$news.p.y)
+
+#####################
 # social media comparison
 19.9 / 1.43
-
+#####################
 mes(
   n.2 = impact.by.size[17, ]$n,
   m.2 = impact.by.size[20, ]$m,
@@ -768,7 +815,14 @@ mes(
   sd.1 = impact.by.size[4, ]$sd
 )
 
+ttestBF(x = DF.alt[DF.alt$size.bin == '1 - 4' & 
+                     !is.na(DF.alt$gen.p.y), ]$gen.p.y,
+        y = DF.alt[DF.alt$size.bin == '30 - 39' & 
+                     !is.na(DF.alt$gen.p.y), ]$gen.p.y)
+
+#####################
 # policy comparison
+#####################
 0.0636 / 0.00758
 
 mes(
@@ -779,6 +833,11 @@ mes(
   m.1 = impact.by.size[2, ]$m,
   sd.1 = impact.by.size[2, ]$sd
 )
+
+ttestBF(x = DF.alt[DF.alt$size.bin == '1 - 4' & 
+                     !is.na(DF.alt$policy.p.y), ]$policy.p.y,
+        y = DF.alt[DF.alt$size.bin == '30 - 39' & 
+                     !is.na(DF.alt$policy.p.y), ]$policy.p.y)
 ```
 
 Correlations
@@ -868,10 +927,11 @@ priors_standard <- c(
 
 outcomes <- c("citation.p.y", "news.p.y", "gen.p.y", "policy.p.y")
 bayes_results <- list()
+
 for (out in outcomes) {
   cat("\n---\nOutcome: ", out, "\n")
-  f_lin <- bf(as.formula(paste0(out, " ~ a_s")))
-  f_quad <- bf(as.formula(paste0(out, " ~ a_s + a_s2")))
+  f_lin <- brms::bf(as.formula(paste0(out, " ~ a_s")))
+  f_quad <- brms::bf(as.formula(paste0(out, " ~ a_s + a_s2")))
 
   m_lin <- brm(f_lin,
     data = DF.100,
@@ -897,7 +957,7 @@ for (out in outcomes) {
   # bridge sampling for marginal likelihoods -> Bayes factor (quad vs lin)
   bs_lin <- bridge_sampler(m_lin, silent = TRUE)
   bs_quad <- bridge_sampler(m_quad, silent = TRUE)
-  bf_qvsl <- bf(bs_quad, bs_lin)
+  bf_qvsl <- bridgesampling::bf(bs_quad, bs_lin)  # Explicitly use bridgesampling::bf
   print(bf_qvsl)
 
   bayes_results[[out]] <- list(
@@ -912,7 +972,6 @@ for (out in outcomes) {
 # Brief posterior checks for the last fitted model
 pp_check(m_quad, ndraws = 30)
 print(bayes_R2(m_quad))
-```
 ```
 
 ### Comparisons of linear vs. quadratic relationships
