@@ -926,48 +926,44 @@ priors_standard <- c(
 )
 
 outcomes <- c("citation.p.y", "news.p.y", "gen.p.y", "policy.p.y")
-bayes_results <- list()
 
-for (out in outcomes) {
+bayes_results <- lapply(outcomes, function(out) {
   cat("\n---\nOutcome: ", out, "\n")
+  
   f_lin <- brms::bf(as.formula(paste0(out, " ~ a_s")))
   f_quad <- brms::bf(as.formula(paste0(out, " ~ a_s + a_s2")))
 
   m_lin <- brm(f_lin,
     data = DF.100,
     family = gaussian(),
-    prior = priors_standard,
-    chains = 4, iter = 1000, cores = 4,
-    control = list(adapt_delta = 0.9)
+    prior = priors_standard
   )
 
   m_quad <- brm(f_quad,
     data = DF.100,
     family = gaussian(),
-    prior = priors_standard,
-    chains = 4, iter = 1000, cores = 4,
-    control = list(adapt_delta = 0.9)
+    prior = priors_standard
   )
-
-  # LOO comparison
-  loo_lin <- loo(m_lin)
-  loo_quad <- loo(m_quad)
-  print(loo_compare(loo_lin, loo_quad))
 
   # bridge sampling for marginal likelihoods -> Bayes factor (quad vs lin)
   bs_lin <- bridge_sampler(m_lin, silent = TRUE)
   bs_quad <- bridge_sampler(m_quad, silent = TRUE)
-  bf_qvsl <- bridgesampling::bf(bs_quad, bs_lin)  # Explicitly use bridgesampling::bf
-  print(bf_qvsl)
+  bf_qvsl <- bridgesampling::bf(bs_quad, bs_lin)
 
-  bayes_results[[out]] <- list(
+  list(
     m_lin = m_lin,
     m_quad = m_quad,
-    loo_lin = loo_lin,
-    loo_quad = loo_quad,
     bf = bf_qvsl
   )
-}
+})
+
+# Set names for the list elements
+names(bayes_results) <- outcomes
+
+# export bayes_results
+saveRDS(bayes_results, here("figures", "bayes_linear_quad_results.Rds"))
+
+bayes_results$policy.p.y$bf
 
 # Brief posterior checks for the last fitted model
 pp_check(m_quad, ndraws = 30)

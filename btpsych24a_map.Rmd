@@ -17,17 +17,16 @@ source("setup.R")
 ```{r}
 # open processed OpenAlex data
 DF.o <-
-  readRDS(file.path(data_dir, 
-                    "openalex", 
-                    "btpsych24a_data_bib_processed.Rds"))
+  readRDS(file.path(data_dir, "openalex", "btpsych24a_data_bib_processed.Rds"))
 
 # identify country of first author via safe extraction
 DF.o$author1.country <-
   lapply(seq_len(nrow(DF.o)), function(i) {
     tryCatch(
       DF.o[i, ][["author"]][[1]][["institution_country_code"]][[1]],
-      error = function(e)
+      error = function(e) {
         NA
+      }
     )
   })
 
@@ -62,13 +61,11 @@ DF.w <- DF.w %>%
 
 # left join with DF
 DF.o.w <-
-  left_join(DF.o,
-    DF.w,
-    by = "iso3"
-  )
+  left_join(DF.o, DF.w, by = "iso3")
 
 # export
-saveRDS(DF.o.w,
+saveRDS(
+  DF.o.w,
   file = file.path(
     data_dir,
     "worlddata",
@@ -78,12 +75,11 @@ saveRDS(DF.o.w,
 
 # reload
 DF.o.w <- readRDS(
-  file =
-    file.path(
-      data_dir,
-      "worlddata",
-      "DF.o.w.Rds"
-    )
+  file = file.path(
+    data_dir,
+    "worlddata",
+    "DF.o.w.Rds"
+  )
 )
 
 # prepare population data
@@ -121,7 +117,8 @@ tmp <- DF.pop %>%
   left_join(DF.w2, by = "iso3")
 
 # export
-saveRDS(tmp,
+saveRDS(
+  tmp,
   file = file.path(
     data_dir,
     "worlddata",
@@ -131,21 +128,18 @@ saveRDS(tmp,
 
 tmp <-
   readRDS(
-    file =
-      file.path(
-        data_dir,
-        "worlddata",
-        "tmp.Rds"
-      )
+    file = file.path(
+      data_dir,
+      "worlddata",
+      "tmp.Rds"
+    )
   )
 ```
 
 # Create plots comparing distribution across different bands of big team science
 Create general plotting function
 ```{r}
-DataViz2 <- function(outcome,
-                     label,
-                     adjust = 1) {
+DataViz2 <- function(outcome, label, adjust = 1) {
   ggplot(
     data = DF.o.w,
     aes(x = .data[[outcome]])
@@ -276,17 +270,21 @@ dummy_plot <-
   ggplot(
     legend_df, # dummy data frame with 2 observations per group
     aes(
-      x = x, y = y,
-      color = group, linetype = group
+      x = x,
+      y = y,
+      color = group,
+      linetype = group
     )
   ) +
   geom_line(linewidth = 1.2) +
-  scale_color_manual( # Choose the appropriate colors and labels
+  scale_color_manual(
+    # Choose the appropriate colors and labels
     name = "Legend",
     values = my_colors,
     labels = legend_levels
   ) +
-  scale_linetype_manual( # Choose the appropriate linetypes and labels
+  scale_linetype_manual(
+    # Choose the appropriate linetypes and labels
     name = "Legend",
     values = my_linetypes,
     labels = legend_levels
@@ -306,26 +304,27 @@ dummy_plot <-
   )
 
 # Extract the guide-box from the dummy plot, and remove any zeroGrob[NULL] elements to get the legend
-all_guides <- 
-  cowplot:::get_plot_component(dummy_plot, 
-                               "guide-box", 
-                               return_all = TRUE)
+all_guides <-
+  cowplot:::get_plot_component(dummy_plot, "guide-box", return_all = TRUE)
 
 legend <- all_guides[[which(!sapply(all_guides, inherits, "zeroGrob"))]]
 rm(all_guides)
 
 # Combine the legend extracted from the dummy plot to the base figure
 legend_plot <-
-  plot_grid(base_plot,
-    legend,
-    nrow = 2,
-    rel_heights = c(1, 0.2)
-  )
+  plot_grid(base_plot, legend, nrow = 2, rel_heights = c(1, 0.2))
 
 # delete vestigial
-rm(base_plot, legend, legend_levels,
-   legend_df, dummy_plot,
-   my_colors, my_linetypes, DataViz2)
+rm(
+  base_plot,
+  legend,
+  legend_levels,
+  legend_df,
+  dummy_plot,
+  my_colors,
+  my_linetypes,
+  DataViz2
+)
 ```
 
 # Globe panel: geocode, prep, plot, and merge with legend panel
@@ -340,26 +339,34 @@ DF.author <- DF.author$author
 
 # Geocode records (skip if already saved)
 geo_path <-
-  file.path(data_dir, 
-            "location", 
-            "btpsych24a_geocode.Rds")
+  file.path(data_dir, "location", "btpsych24a_geocode.Rds")
 
 if (!file.exists(geo_path)) {
-  DF.geo <- 
-    lapply(DF.author, function(sublist)
-      c(sublist["institution_display_name"],
-        sublist["institution_country_code"])) %>%
-    
-    Filter(function(sublist)
-      any(!is.na(unlist(sublist))), .) %>%
-    
+  DF.geo <-
+    lapply(DF.author, function(sublist) {
+      c(
+        sublist["institution_display_name"],
+        sublist["institution_country_code"]
+      )
+    }) %>%
+
+    Filter(
+      function(sublist) {
+        any(!is.na(unlist(sublist)))
+      },
+      .
+    ) %>%
+
     lapply(function(sublist) {
       as_tibble(sublist) %>%
-        mutate(address =
-                 paste0(institution_display_name,
-                        ", ",
-                        institution_country_code)) %>%
-        
+        mutate(
+          address = paste0(
+            institution_display_name,
+            ", ",
+            institution_country_code
+          )
+        ) %>%
+
         tidygeocoder::geocode(
           .,
           address = address,
@@ -375,40 +382,61 @@ if (!file.exists(geo_path)) {
 
 # Identify leaders and supporters
 DF.geo <- lapply(DF.geo, function(sublist) {
-  sublist %>% mutate(
-    leader_coun = .[["institution_country_code"]][1],
-    leader_lat = .[["latitude"]][1],
-    leader_lon = .[["longitude"]][1],
-    supporter_coun = .[["institution_country_code"]],
-    supporter_lat = .[["latitude"]],
-    supporter_lon = .[["longitude"]]
-  )
+  sublist %>%
+    mutate(
+      leader_coun = .[["institution_country_code"]][1],
+      leader_lat = .[["latitude"]][1],
+      leader_lon = .[["longitude"]][1],
+      supporter_coun = .[["institution_country_code"]],
+      supporter_lat = .[["latitude"]],
+      supporter_lon = .[["longitude"]]
+    )
 })
 
 # Prepare map data
-DF.map <- lapply(DF.geo, function(sublist)
-  slice(sublist, -1)) %>%
+DF.map <- lapply(DF.geo, function(sublist) {
+  slice(sublist, -1)
+}) %>%
   bind_rows() %>%
   select(leader_coun:supporter_lon) %>%
-  filter(paste0(leader_lat, ", ", leader_lon) != paste0(supporter_lat, ", ", supporter_lon)) %>%
+  filter(
+    paste0(leader_lat, ", ", leader_lon) !=
+      paste0(supporter_lat, ", ", supporter_lon)
+  ) %>%
   filter(!is.na(supporter_lat), !is.na(leader_lat)) %>%
   mutate(
-    leader.region = countrycode(.$leader_coun, origin = "iso2c", destination = "region"),
-    supporter.region = countrycode(.$supporter_coun, origin = "iso2c", destination = "region")
+    leader.region = countrycode(
+      .$leader_coun,
+      origin = "iso2c",
+      destination = "region"
+    ),
+    supporter.region = countrycode(
+      .$supporter_coun,
+      origin = "iso2c",
+      destination = "region"
+    )
   )
 
 # manual fixes
-DF.map[!is.na(DF.map$leader_coun) &
-         DF.map$leader_coun == "RE", ]$leader.region <- "Sub-Saharan Africa"
+DF.map[
+  !is.na(DF.map$leader_coun) &
+    DF.map$leader_coun == "RE",
+]$leader.region <- "Sub-Saharan Africa"
 
-DF.map[!is.na(DF.map$supporter_coun) &
-         DF.map$supporter_coun == "RE", ]$supporter.region <- "Sub-Saharan Africa"
+DF.map[
+  !is.na(DF.map$supporter_coun) &
+    DF.map$supporter_coun == "RE",
+]$supporter.region <- "Sub-Saharan Africa"
 
-DF.map[!is.na(DF.map$leader_coun) &
-         DF.map$leader_coun == "XK", ]$leader.region <- "Europe & Central Asia"
+DF.map[
+  !is.na(DF.map$leader_coun) &
+    DF.map$leader_coun == "XK",
+]$leader.region <- "Europe & Central Asia"
 
-DF.map[!is.na(DF.map$supporter_coun) &
-         DF.map$supporter_coun == "XK", ]$supporter.region <- "Europe & Central Asia"
+DF.map[
+  !is.na(DF.map$supporter_coun) &
+    DF.map$supporter_coun == "XK",
+]$supporter.region <- "Europe & Central Asia"
 
 # transform coordinates to crs 4326 then to ESRI:54030
 supporter.coord <- DF.map %>%
@@ -419,8 +447,10 @@ supporter.coord <- DF.map %>%
     remove = F
   ) %>%
   st_transform(crs = "ESRI:54030") %>%
-  mutate(supporter_lat_new = st_coordinates(.)[, 2],
-         supporter_lon_new = st_coordinates(.)[, 1])
+  mutate(
+    supporter_lat_new = st_coordinates(.)[, 2],
+    supporter_lon_new = st_coordinates(.)[, 1]
+  )
 leader.coord <- DF.map %>%
   select(leader.region, leader_lat, leader_lon) %>%
   st_as_sf(
@@ -429,8 +459,10 @@ leader.coord <- DF.map %>%
     remove = F
   ) %>%
   st_transform(crs = "ESRI:54030") %>%
-  mutate(leader_lat_new = st_coordinates(.)[, 2],
-         leader_lon_new = st_coordinates(.)[, 1])
+  mutate(
+    leader_lat_new = st_coordinates(.)[, 2],
+    leader_lon_new = st_coordinates(.)[, 1]
+  )
 
 DF.map <- cbind(supporter.coord, leader.coord)
 rm(supporter.coord, leader.coord)
@@ -443,16 +475,20 @@ world <- ne_countries(scale = "medium", returnclass = "sf")
 
 globe.fig <- ggplot() +
   # plot map layer
-  
+
   layer_spatial(data = world, color = NA) +
   # change coordinate projections
-  
+
   coord_sf(crs = "ESRI:54030") +
   # add dots for supporters
   geom_point(
     data = DF.map %>%
       filter(!is.na(leader.region), !is.na(supporter.region)),
-    aes(x = supporter_lon_new, y = supporter_lat_new, colour = supporter.region),
+    aes(
+      x = supporter_lon_new,
+      y = supporter_lat_new,
+      colour = supporter.region
+    ),
     size = .4,
     alpha = .01
   ) +
@@ -480,7 +516,9 @@ globe.fig <- ggplot() +
     legend.justification = "center",
     panel.grid.major = element_line(size = .3)
   ) +
-  guides(color = guide_legend(override.aes = list(size = 3, alpha = 1), nrow = 2)) +
+  guides(
+    color = guide_legend(override.aes = list(size = 3, alpha = 1), nrow = 2)
+  ) +
   labs(x = NULL, y = NULL)
 ```
 
@@ -552,6 +590,45 @@ cor.test(
   x = DF.o.w$d,
   y = DF.o.w$authors.n,
   method = "spearman"
+)
+```
+
+### Bayesian analysis
+```{r}
+# Load BayesFactor package
+library(BayesFactor)
+
+# Function to do this for all variables
+bayes_rank_corr_lmBF <- function(x_var, y_var, data_name = "") {
+  # Create complete cases data with ranks
+  d <- DF.o.w %>%
+    filter(!is.na(!!sym(x_var)) & !is.na(!!sym(y_var))) %>%
+    mutate(
+      x_rank = rank(!!sym(x_var)),
+      y_rank = rank(!!sym(y_var))
+    ) %>%
+    data.frame()
+
+  # Bayesian correlation test
+  bf_result <- lmBF(x_rank ~ y_rank, data = d)
+
+  cat("\n---", data_name, "---\n")
+  print(bf_result)
+  return(bf_result)
+}
+
+# Run all correlations
+bf_e_authors <- bayes_rank_corr_lmBF("e", "authors.n", "Education ~ Authors")
+bf_i_authors <- bayes_rank_corr_lmBF("i", "authors.n", "Industry ~ Authors")
+bf_r_authors <- bayes_rank_corr_lmBF("r", "authors.n", "GDP ~ Authors")
+bf_d_authors <- bayes_rank_corr_lmBF("d", "authors.n", "Democracy ~ Authors")
+
+# Store results
+bayes_corr_results <- list(
+  education = bf_e_authors,
+  industry = bf_i_authors,
+  gdp = bf_r_authors,
+  democracy = bf_d_authors
 )
 ```
 
