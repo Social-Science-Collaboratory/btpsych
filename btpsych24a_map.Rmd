@@ -237,7 +237,8 @@ rm(r.fig, i.fig, d.fig, e.fig)
 ```{r}
 legend_levels <-
   c(
-    "1st Author Affiliation (< 10 Co-Authors)",
+    "1st Author Affiliation (< 5 Co-Authors)",
+    "1st Author Affiliation (5 - 9 Co-Authors)",
     "1st Author Affiliation (10+ Co-Authors)",
     "Global Distribution"
   )
@@ -251,14 +252,16 @@ legend_df <- data.frame(
 
 # Define color mapping
 my_colors <- c(
-  "1st Author Affiliation (< 10 Co-Authors)" = "#4cc9f0",
-  "1st Author Affiliation (10+ Co-Authors)" = "#7b2cbf",
+  "1st Author Affiliation (< 5 Co-Authors)" = "#1b9e77",
+  "1st Author Affiliation (5 - 9 Co-Authors)" = "#d95f02",
+  "1st Author Affiliation (10+ Co-Authors)" = "#7570b3",
   "Global Distribution" = "black"
 )
 
 # Define linetype mapping
 my_linetypes <- c(
-  "1st Author Affiliation (< 10 Co-Authors)" = "solid",
+  "1st Author Affiliation (< 5 Co-Authors)" = "solid",
+  "1st Author Affiliation (5 - 9 Co-Authors)" = "solid",
   "1st Author Affiliation (10+ Co-Authors)" = "solid",
   "Global Distribution" = "dotted"
 )
