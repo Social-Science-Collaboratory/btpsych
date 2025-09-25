@@ -543,11 +543,21 @@ ks_test(
   w_x = tmp$pop
 )
 
+ttestBF(
+  x = tmp[!is.na(tmp$e), ]$e,
+  y = DF.o.w[!is.na(DF.o.w$e), ]$e
+)
+
 # i
 ks_test(
   x = tmp$i,
   y = DF.o.w$i,
   w_x = tmp$pop
+)
+
+ttestBF(
+  x = tmp[!is.na(tmp$i), ]$i,
+  y = DF.o.w[!is.na(DF.o.w$i), ]$i
 )
 
 # r
@@ -557,11 +567,21 @@ ks_test(
   w_x = tmp$pop
 )
 
+ttestBF(
+  x = tmp[!is.na(tmp$r), ]$r,
+  y = DF.o.w[!is.na(DF.o.w$r), ]$r
+)
+
 # d
 ks_test(
   x = tmp$d,
   y = DF.o.w$d,
   w_x = tmp$pop
+)
+
+ttestBF(
+  x = tmp[!is.na(tmp$d), ]$d,
+  y = DF.o.w[!is.na(DF.o.w$d), ]$d
 )
 ```
 
@@ -629,76 +649,5 @@ bayes_corr_results <- list(
   industry = bf_i_authors,
   gdp = bf_r_authors,
   democracy = bf_d_authors
-)
-```
-
-# Compare small, medium, and big team
-```{r}
-# e gets worse as you move to medium, but not big
-ks_test(
-  x = DF.o.w[DF.o.w$size.bin == "1 - 4", ]$e,
-  y = DF.o.w[DF.o.w$size.bin == "5 - 9", ]$e
-)
-
-ks_test(
-  x = DF.o.w[DF.o.w$size.bin == "5 - 9", ]$e,
-  y = DF.o.w[DF.o.w$authors.n > 9, ]$e
-)
-
-# i
-ks_test(
-  x = DF.o.w[DF.o.w$size.bin == "1 - 4", ]$i,
-  y = DF.o.w[DF.o.w$size.bin == "5 - 9", ]$i
-)
-
-ks_test(
-  x = DF.o.w[DF.o.w$size.bin == "5 - 9", ]$i,
-  y = DF.o.w[DF.o.w$authors.n > 9, ]$i
-)
-
-# r
-ks_test(
-  x = DF.o.w[DF.o.w$size.bin == "1 - 4", ]$r,
-  y = DF.o.w[DF.o.w$size.bin == "5 - 9", ]$r
-)
-
-ks_test(
-  x = DF.o.w[DF.o.w$size.bin == "5 - 9", ]$r,
-  y = DF.o.w[DF.o.w$authors.n > 9, ]$r
-)
-
-# d
-ks_test(
-  x = DF.o.w[DF.o.w$size.bin == "1 - 4", ]$d,
-  y = DF.o.w[DF.o.w$size.bin == "5 - 9", ]$d
-)
-
-ks_test(
-  x = DF.o.w[DF.o.w$size.bin == "5 - 9", ]$d,
-  y = DF.o.w[DF.o.w$authors.n > 9, ]$d
-)
-```
-
-
-# Compare small team to big team
-```{r}
-ks_test(
-  x = DF.o.w[DF.o.w$authors.n < 10, ]$e,
-  y = DF.o.w[DF.o.w$authors.n > 9, ]$e
-)
-
-ks_test(
-  x = DF.o.w[DF.o.w$authors.n < 10, ]$i,
-  y = DF.o.w[DF.o.w$authors.n > 9, ]$i
-)
-
-ks_test(
-  x = DF.o.w[DF.o.w$authors.n < 10, ]$r,
-  y = DF.o.w[DF.o.w$authors.n > 9, ]$r
-)
-
-ks_test(
-  x = DF.o.w[DF.o.w$authors.n < 10, ]$d,
-  y = DF.o.w[DF.o.w$authors.n > 9, ]$d
 )
 ```
