@@ -296,7 +296,7 @@ dummy_plot <-
     color = guide_legend(
       title = NULL,
       direction = "horizontal",
-      override.aes = list(linetype = c("solid", "solid", "dotted")) # Override aes so we only get a single color x linetype legend box
+      override.aes = list(linetype = c("solid", "solid", "solid", "dotted")) # Override aes so we only get a single color x linetype legend box
     ),
     linetype = "none"
   ) +
