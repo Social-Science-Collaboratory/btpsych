@@ -10,9 +10,8 @@ This code examines the reliability of contributorship coding by JT and GG
 
 # Setup
 ```{r setup, include= F}
-# load libaries
-library('tidyverse')
-library('here')
+# setup
+source("setup.R")
 
 # specify data directory
 data_dir <- Sys.getenv("data_dir")
@@ -24,64 +23,58 @@ options(scipen = 999)
 # Open and process contributorship data
 ```{r}
 # recoded records from GG
-DF.g <- 
-  read.csv(file.path(data_dir,
-                'contributorship',
-                'btpsych24a_cont_coding_rel.csv'),
-           na.string = "N/A") %>% 
-  
+DF.g <-
+  read.csv(
+    file.path(data_dir, 'contributorship', 'btpsych24a_cont_coding_rel.csv'),
+    na.string = "N/A"
+  ) %>%
+
   # select relevant variables
-  select(id, 
-         conception : draft.writing,
-         Coder)
+  select(id, conception:draft.writing, Coder)
 
 # original coded records
 DF.j <-
-  read.csv(file.path(data_dir,
-                'contributorship',
-                'btpsych24a_cont_coding.csv'),
-           na.string = "N/A") %>% 
-  
+  read.csv(
+    file.path(data_dir, 'contributorship', 'btpsych24a_cont_coding.csv'),
+    na.string = "N/A"
+  ) %>%
+
   # select relevant variables
-  select(id, 
-         conception : draft.writing,
-         Coder) %>% 
-  
+  select(id, conception:draft.writing, Coder) %>%
+
   # semi join (focusing only on records that have been recoded by GG)
-  semi_join(y = DF.g,
-            by = 'id')
+  semi_join(y = DF.g, by = 'id')
 
 # bind files
-DF <- rbind(DF.g,
-            DF.j) %>% 
-  
+DF <- rbind(DF.g, DF.j) %>%
+
   # pivot data for processing
-  pivot_longer(conception : draft.writing) %>% 
-  
+  pivot_longer(conception:draft.writing) %>%
+
   # count number of authors who have contributed to each category
   mutate(
-    n = 
-      # if N/A leave blank, otherwise count number of commas and add 1
-      if_else(is.na(value),
-              NA,
-              
-              # otherwise, count number of commas and add 1  
-              str_count(value,
-                        ",") + 1
-              )
-    ) %>% 
-  
-  select(-value) %>%  
-  
+    # if N/A leave blank, otherwise count number of commas and add 1
+    n = if_else(
+      is.na(value),
+      NA,
+
+      # otherwise, count number of commas and add 1
+      str_count(value, ",") + 1
+    )
+  ) %>%
+
+  select(-value) %>%
+
   # pivot
-  pivot_wider(names_from = Coder,
-              values_from = n) %>% 
+  pivot_wider(names_from = Coder, values_from = n) %>%
   arrange(G)
 ```
 
 # Examine reliability
 ```{r}
 library('psych')
-ICC(DF %>% 
-      select(G, J))
+ICC(
+  DF %>%
+    select(G, J)
+)
 ```

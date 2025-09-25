@@ -10,12 +10,8 @@ This code prepares a figure that illustrates links between team size and multipl
 
 # Setup
 ```{r setup, include= F}
-# load libaries
-library(tidyverse)
-library(cowplot)
-library(here)
-library(readxl)
-library(ggtext)
+# setup
+source("setup.R")
 
 # turn off scientific notation
 options(scipen = 999)

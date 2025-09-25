@@ -11,11 +11,7 @@ This code creates a spreadsheet for checking the reliability of contributorship 
 
 ```{r}
 # load libaries
-library('tidyverse')
-library('here')
-
-# set seed
-set.seed(1967)
+source("setup.R")
 
 # specify data directory
 data_dir <- Sys.getenv("data_dir")
@@ -23,60 +19,63 @@ data_dir <- Sys.getenv("data_dir")
 # open and process data
 DF.c <-
   # open data
-  read.csv(file.path(data_dir,
-                'contributorship',
-                'btpsych24a_cont_coding.csv'),
-           na.string = "N/A") %>% 
-  
+  read.csv(
+    file.path(data_dir, 'contributorship', 'btpsych24a_cont_coding.csv'),
+    na.string = "N/A"
+  ) %>%
+
   # filter
   filter(
     #remove instances without contributorship statements
     !is.na(contributorship.statement),
     contributorship.statement != "",
-    
+
     # remove instances where coders recommended removal
     remove.revise != 1,
-    
+
     # remove instances where there wasn't anything to code
     !(is.na(conception) &
-        is.na(execution) &
-        is.na(analysis) &
-        is.na(draft.writing) &
-        is.na(review.writing) &
-        is.na(funding)
-      ),
-    
+      is.na(execution) &
+      is.na(analysis) &
+      is.na(draft.writing) &
+      is.na(review.writing) &
+      is.na(funding)),
+
     # remove instances where G coded
     Coder == "J"
-    ) %>% 
-  
+  ) %>%
+
   # randomly select 20 cases
-  slice_sample(n = 20) %>% 
-  
+  slice_sample(n = 20) %>%
+
   # clear data
-  mutate(contributorship.statement = "",
-         conception = "",
-         execution = "",
-         analysis = "",
-         draft.writing = "",
-         review.writing = "",
-         funding = "",
-         Coder = "G")
+  mutate(
+    contributorship.statement = "",
+    conception = "",
+    execution = "",
+    analysis = "",
+    draft.writing = "",
+    review.writing = "",
+    funding = "",
+    Coder = "G"
+  )
 ```
 
 Export
 ```{r}
 # if file doesn't exist (it should), create it
-if (!file.exists(file.path(data_dir,
-                      'contributorship',
-                      'btpsych24a_cont_coding_rel.csv')
-                 )
-    ){
-  write.csv(DF.c,
-          file.path(data_dir,
-               'contributorship',
-               'btpsych24a_cont_coding_rel.csv'),
-          row.names = F)
+if (
+  !file.exists(file.path(
+    data_dir,
+    'contributorship',
+    'btpsych24a_cont_coding_rel.csv'
+  ))
+) {
+  write.csv(
+    DF.c,
+    file.path(data_dir, 'contributorship', 'btpsych24a_cont_coding_rel.csv'),
+    row.names = F
+  )
 }
 ```
 

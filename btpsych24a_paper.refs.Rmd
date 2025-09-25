@@ -10,17 +10,8 @@ This code compiles the numbers quoted in the paper.
 
 # Setup
 ```{r setup, include= F}
-# load libraries
-library("tidyverse")
-library("here")
-library("compute.es")
-# Bayesian libraries (minimal; brms uses Stan under the hood)
-library("brms")
-library("bridgesampling")
-library("bayestestR")
-library("loo")
-library("bayesplot")
-library("BayesFactor")
+# setup
+source("setup.R")
 
 # specify directory
 i_am("btpsych24a_paper.refs.Rmd")

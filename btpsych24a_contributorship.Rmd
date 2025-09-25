@@ -9,14 +9,11 @@ editor_options:
 
 # Setup
 ```{r setup, include= F}
-# load libaries
-library('tidyverse')
-library('here')
-library('ggtext')
-library('cowplot')
+# setup
+source("setup.R")
 
 # set plotting theme
-theme_set(theme_classic()) 
+theme_set(theme_classic())
 
 # specify data directory
 data_dir <- Sys.getenv("data_dir")
@@ -27,12 +24,14 @@ options(scipen = 999)
 
 # Open OpenAlex data
 ```{r open.alex, include = F}
-DF.oa <- 
+DF.oa <-
   # open data
-  readRDS(file.path(data_dir, 
-                    "openalex",
-                    "btpsych24a_data_bib_processed.Rds")) %>% 
-  
+  readRDS(file.path(
+    data_dir,
+    "openalex",
+    "btpsych24a_data_bib_processed.Rds"
+  )) %>%
+
   # select variables of interest
   select(id, authors.n, size.bin, citation.p.y)
 ```
@@ -42,204 +41,213 @@ Keep in mind that there are some instances where you couldn't actually code
 ```{r}
 DF.c <-
   # open data
-  read.csv(file.path(data_dir, 
-                'contributorship',
-                'btpsych24a_cont_coding.csv'),
-           na.string = "N/A") %>% 
-  
+  read.csv(
+    file.path(data_dir, 'contributorship', 'btpsych24a_cont_coding.csv'),
+    na.string = "N/A"
+  ) %>%
+
   # filter
   filter(
     # remove instances without contributorship statements
     !is.na(contributorship.statement),
     contributorship.statement != "",
-    
-    # remove instances where coders recommended removal 
+
+    # remove instances where coders recommended removal
     remove.revise != 1,
-    
+
     # remove instances where there wasn't anything to code
     !(is.na(conception) &
-        is.na(execution) &
-        is.na(analysis) &
-        is.na(draft.writing) &
-        is.na(review.writing) &
-        is.na(funding)
-      )
-    )  %>% 
-  
+      is.na(execution) &
+      is.na(analysis) &
+      is.na(draft.writing) &
+      is.na(review.writing) &
+      is.na(funding))
+  ) %>%
+
   # select relevant variables
-  select(id, contributorship.statement : funding)
+  select(id, contributorship.statement:funding)
 ```
 
 # Merge OpenAlex and contributorship data
 ```{r}
-DF <- 
-  inner_join(DF.c,  #JT: changed to inner join to analyze with partial data set
-             DF.oa, 
-             by = "id")
+DF <-
+  inner_join(
+    DF.c, #JT: changed to inner join to analyze with partial data set
+    DF.oa,
+    by = "id"
+  )
 
 # rm(DF.c, DF.oa)
 ```
 
 # Identify number of contributors per category
 ```{r}
-DF <- DF %>% 
+DF <- DF %>%
   # pivot longer for easier processing
-  pivot_longer(cols = c(conception : funding),
-               names_to = 'category',
-               values_to = 'statements') %>% 
-  
+  pivot_longer(
+    cols = c(conception:funding),
+    names_to = 'category',
+    values_to = 'statements'
+  ) %>%
+
   # count number of authors who have contributed to each category
   mutate(
-    n = 
-      # if all authors, use full author count
-      if_else(statements == "All authors",
-              authors.n,
-              
-              # otherwise, if N/A, leave blank
-              if_else(is.na(statements),
-                      NA,
-                      
-                      # otherwise, count number of commas in the extracted contributorship statement and add 1  
-                      str_count(statements,
-                                  ",") + 1)
-                )
-    ) %>% 
-  
+    # if all authors, use full author count
+    n = if_else(
+      statements == "All authors",
+      authors.n,
+
+      # otherwise, if N/A, leave blank
+      if_else(
+        is.na(statements),
+        NA,
+
+        # otherwise, count number of commas in the extracted contributorship statement and add 1
+        str_count(statements, ",") + 1
+      )
+    )
+  ) %>%
+
   # calculate proportion of authors who contributed to each category
-  mutate(prop.n = n / authors.n) %>% 
-  
+  mutate(prop.n = n / authors.n) %>%
+
   # re-arrange category ordering
-  mutate(category = factor(category,
-                           levels = c('conception',
-                                      'execution',
-                                      'analysis',
-                                      'draft.writing',
-                                      'review.writing',
-                                      'funding')
-                           )
-         ) %>% 
-  
+  mutate(
+    category = factor(
+      category,
+      levels = c(
+        'conception',
+        'execution',
+        'analysis',
+        'draft.writing',
+        'review.writing',
+        'funding'
+      )
+    )
+  ) %>%
+
   # manually fix proportions that exceed 1
-  mutate(prop.n = if_else(prop.n > 1,
-                          1,
-                          prop.n)) %>% 
-  
+  mutate(prop.n = if_else(prop.n > 1, 1, prop.n)) %>%
+
   # remove categories not being analyzed
-  filter(category != 'funding', 
-         category != 'review.writing')
+  filter(category != 'funding', category != 'review.writing')
 
 # identify dominant contribution category
-tmp <- 
-  DF %>% 
-  
+tmp <-
+  DF %>%
+
   # process each paper separately
   group_by(id) %>%
-  
+
   # grab top two categories
-  slice_max(prop.n,
-            n = 2,
-            with_ties = F) %>% 
-  select(id, category, prop.n) %>% 
-  
+  slice_max(prop.n, n = 2, with_ties = F) %>%
+  select(id, category, prop.n) %>%
+
   # identify which is max vs. second max
-  mutate(position = row_number()) %>% 
-  
+  mutate(position = row_number()) %>%
+
   # If the percentage of authors who contributed to the first category is at least 10% more than the percentage of the second, list it as dominant
-  pivot_wider(names_from = 'position',
-              values_from = 'prop.n') %>% 
-  mutate(dominant = 
-           if_else(max(`1`, na.rm = T) > max(`2`, na.rm = T) + .1,
-                   'yes',
-                   'no')) %>% 
-  filter(!is.na(`1`)) %>% 
-  rename('category.main' = category) %>% 
+  pivot_wider(names_from = 'position', values_from = 'prop.n') %>%
+  mutate(
+    dominant = if_else(
+      max(`1`, na.rm = T) > max(`2`, na.rm = T) + .1,
+      'yes',
+      'no'
+    )
+  ) %>%
+  filter(!is.na(`1`)) %>%
+  rename('category.main' = category) %>%
   select(id, category.main, dominant)
 
 # get descriptive statistics for dominant categories
-tmp2 <- tmp %>% 
-  filter(dominant == "yes") %>% 
-  group_by(category.main) %>% 
-  summarise(category.main.prop = n() / (DF$id %>% unique %>% length), # divided by number of unique records
-            category.main.prop = round(category.main.prop, 2) * 100)
+tmp2 <- tmp %>%
+  filter(dominant == "yes") %>%
+  group_by(category.main) %>%
+  summarise(
+    category.main.prop = n() / (DF$id %>% unique %>% length), # divided by number of unique records
+    category.main.prop = round(category.main.prop, 2) * 100
+  )
 
 # merge data with its descriptives
-DF.2 <- 
+DF.2 <-
   # merge dataframe (DF) and category descriptives (tmp)
-  left_join(DF, 
-            tmp,
-            by = "id") %>% 
-  
+  left_join(DF, tmp, by = "id") %>%
+
   # merge dominant category descriptives (tmp2)
-  left_join(.,
-            tmp2,
-            by = "category.main") %>% 
-  
+  left_join(., tmp2, by = "category.main") %>%
+
   # update labels
-  mutate(category.main = paste0(category.main, 
-                                " dominant (",
-                                category.main.prop,
-                                "%)")) %>% 
-  mutate(category.main = factor(category.main,
-                                levels = unique(category.main), 
-                                labels = unique(category.main)
-                           )
-         ) %>% 
-  
+  mutate(
+    category.main = paste0(
+      category.main,
+      " dominant (",
+      category.main.prop,
+      "%)"
+    )
+  ) %>%
+  mutate(
+    category.main = factor(
+      category.main,
+      levels = unique(category.main),
+      labels = unique(category.main)
+    )
+  ) %>%
+
   # remove unnecessary variables
   select(-citation.p.y)
 
 # export processed data
-saveRDS(DF.2,
-        file.path(data_dir, 
-             'contributorship',
-             'btpsych24a_cont_processed.Rds'))
+saveRDS(
+  DF.2,
+  file.path(data_dir, 'contributorship', 'btpsych24a_cont_processed.Rds')
+)
 ```
 
 # Create figure
 ## Plot the percentage of contributing authors within each category
 Prep data
 ```{r}
-overall.fig.DF <-  
-  DF.2 %>% 
-  group_by(category) %>% 
-  summarise(M = mean(prop.n,
-                     na.rm = T),
-            sd = sd(prop.n,
-                    na.rm = T),
-            n = length(unique(id)),
-            se = sd / sqrt(n)) %>% 
+overall.fig.DF <-
+  DF.2 %>%
+  group_by(category) %>%
+  summarise(
+    M = mean(prop.n, na.rm = T),
+    sd = sd(prop.n, na.rm = T),
+    n = length(unique(id)),
+    se = sd / sqrt(n)
+  ) %>%
   rename('prop.n' = 'M')
 ```
 
 Plot
 ```{r}
-overall.fig <- 
-  ggplot(overall.fig.DF,
-         aes(x = category,
-             y = prop.n)) +
-  
+overall.fig <-
+  ggplot(overall.fig.DF, aes(x = category, y = prop.n)) +
+
   # violin and box plots
-  geom_violin(data = DF.2,
-              aes(fill = category),
-              alpha = .5,
-              color = NA,
-              width = 1.2) +
-  
-  geom_boxplot(data = DF.2,
-               width= 0.1, 
-               color= "grey70", 
-               alpha= 0.5,
-               fill = NA,
-               outlier.shape = NA) +
-  
+  geom_violin(
+    data = DF.2,
+    aes(fill = category),
+    alpha = .5,
+    color = NA,
+    width = 1.2
+  ) +
+
+  geom_boxplot(
+    data = DF.2,
+    width = 0.1,
+    color = "grey70",
+    alpha = 0.5,
+    fill = NA,
+    outlier.shape = NA
+  ) +
+
   # improve aesthetics
   theme(legend.position = "none") +
-  labs(x = "", 
-       y = "proportion of authors") +
-  scale_x_discrete(labels = c('conceptualization',
-                              'execution',
-                              'analysis',
-                              'writing')) +
+  labs(x = "", y = "proportion of authors") +
+  scale_x_discrete(
+    labels = c('conceptualization', 'execution', 'analysis', 'writing')
+  ) +
   scale_fill_brewer(palette = "Pastel2") +
   scale_color_brewer(palette = "Pastel2")
 ```
@@ -248,46 +256,40 @@ overall.fig <-
 Prep data
 ```{r}
 # focus on instances where a collaboration was focused on a specific type of contribution
-#JT: suggestion: select cases where a specific contribution category predominated in number of author contributions 
-sub.fig.DF <- DF.2 %>% 
+#JT: suggestion: select cases where a specific contribution category predominated in number of author contributions
+sub.fig.DF <- DF.2 %>%
   filter(dominant == 'yes')
 ```
 
 Plot
 ```{r}
 sub.fig <-
-  ggplot(sub.fig.DF,
-       aes(x = category,
-           y = prop.n)
-       ) +
-  
+  ggplot(sub.fig.DF, aes(x = category, y = prop.n)) +
+
   # wrap by category
   facet_wrap(vars(category.main)) +
-  
+
   # create line graphs
-  geom_line(aes(group = id,
-                color = category.main),
-            alpha = .2,
-            linewidth = 1) +
-  
+  geom_line(aes(group = id, color = category.main), alpha = .2, linewidth = 1) +
+
   # improve aesthetics
   theme(legend.position = "none") +
-  labs(x = "type of contribution",
-       y = "proportion of authors") +
-  scale_x_discrete(labels = c('conceptualization',
-                              'execution',
-                              'analysis',
-                              'writing')) +
+  labs(x = "type of contribution", y = "proportion of authors") +
+  scale_x_discrete(
+    labels = c('conceptualization', 'execution', 'analysis', 'writing')
+  ) +
   scale_fill_brewer(palette = "Pastel2") +
   scale_color_brewer(palette = "Pastel2")
 ```
 
 ## Combine figures
 ```{r}
-combined.fig <- 
-  plot_grid(overall.fig,
-            sub.fig,
-            nrow = 2,
-            rel_heights = c(4, 6),
-            labels = c("A", "B"))
+combined.fig <-
+  plot_grid(
+    overall.fig,
+    sub.fig,
+    nrow = 2,
+    rel_heights = c(4, 6),
+    labels = c("A", "B")
+  )
 ```
