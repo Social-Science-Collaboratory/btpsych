@@ -7,8 +7,6 @@ editor_options:
 
 # Setup
 ```{r setup, include= F}
-# hi john
-
 # specify data directory
 data_dir <- Sys.getenv("data_dir")
 
@@ -533,11 +531,10 @@ globe.fig <- ggplot() +
 # Combine globe and gdp figures
 final.fig <- plot_grid(
   globe.fig,
+  NULL,
   legend_plot,
-  nrow = 2,
-  rel_heights = c(4.5, 5.5),
-  labels = c("A", "B"),
-  label_y = c(1, 0.95), # Move B label up
-  vjust = c(1, 1) # Add padding/spacing between plots
+  nrow = 3,
+  rel_heights = c(4.5, 0.5, 5),
+  labels = c("A", "B", "")
 )
 ```
