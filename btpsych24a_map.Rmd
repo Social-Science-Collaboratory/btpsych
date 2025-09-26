@@ -298,7 +298,8 @@ dummy_plot <-
     color = guide_legend(
       title = NULL,
       direction = "horizontal",
-      override.aes = list(linetype = c("solid", "solid", "solid", "dotted")) # Override aes so we only get a single color x linetype legend box
+      nrow = 2,
+      override.aes = list(linetype = c("solid", "solid", "solid", "dotted"))
     ),
     linetype = "none"
   ) +
@@ -535,124 +536,8 @@ final.fig <- plot_grid(
   legend_plot,
   nrow = 2,
   rel_heights = c(4.5, 5.5),
-  labels = c("A", "B")
-)
-```
-
-## Compare global distribution to psychology first authors
-```{r}
-# Run weighted KS test
-ks_test(
-  x = tmp$e,
-  y = DF.o.w$e,
-  w_x = tmp$pop
-)
-
-ttestBF(
-  x = tmp[!is.na(tmp$e), ]$e,
-  y = DF.o.w[!is.na(DF.o.w$e), ]$e
-)
-
-# i
-ks_test(
-  x = tmp$i,
-  y = DF.o.w$i,
-  w_x = tmp$pop
-)
-
-ttestBF(
-  x = tmp[!is.na(tmp$i), ]$i,
-  y = DF.o.w[!is.na(DF.o.w$i), ]$i
-)
-
-# r
-ks_test(
-  x = tmp$r,
-  y = DF.o.w$r,
-  w_x = tmp$pop
-)
-
-ttestBF(
-  x = tmp[!is.na(tmp$r), ]$r,
-  y = DF.o.w[!is.na(DF.o.w$r), ]$r
-)
-
-# d
-ks_test(
-  x = tmp$d,
-  y = DF.o.w$d,
-  w_x = tmp$pop
-)
-
-ttestBF(
-  x = tmp[!is.na(tmp$d), ]$d,
-  y = DF.o.w[!is.na(DF.o.w$d), ]$d
-)
-```
-
-## Examine monotonic links between team size and ride
-```{r}
-# spearman corr
-cor.test(
-  x = DF.o.w$e,
-  y = DF.o.w$authors.n,
-  method = "spearman"
-)
-
-cor.test(
-  x = DF.o.w$i,
-  y = DF.o.w$authors.n,
-  method = "spearman"
-)
-
-cor.test(
-  x = DF.o.w$r,
-  y = DF.o.w$authors.n,
-  method = "spearman"
-)
-
-cor.test(
-  x = DF.o.w$d,
-  y = DF.o.w$authors.n,
-  method = "spearman"
-)
-```
-
-### Bayesian analysis
-```{r}
-# Load BayesFactor package
-library(BayesFactor)
-
-# Function to do this for all variables
-bayes_rank_corr_lmBF <- function(x_var, y_var, data_name = "") {
-  # Create complete cases data with ranks
-  d <- DF.o.w %>%
-    filter(!is.na(!!sym(x_var)) & !is.na(!!sym(y_var))) %>%
-    mutate(
-      x_rank = rank(!!sym(x_var)),
-      y_rank = rank(!!sym(y_var))
-    ) %>%
-    data.frame()
-
-  # Bayesian correlation test
-  bf_result <- lmBF(x_rank ~ y_rank, data = d)
-
-  cat("\n---", data_name, "---\n")
-  print(bf_result)
-  return(bf_result)
-}
-
-# Run all correlations
-bf_e_authors <- bayes_rank_corr_lmBF("e", "authors.n", "Education ~ Authors")
-bf_i_authors <- bayes_rank_corr_lmBF("i", "authors.n", "Industry ~ Authors")
-bf_r_authors <- bayes_rank_corr_lmBF("r", "authors.n", "GDP ~ Authors")
-bf_d_authors <- bayes_rank_corr_lmBF("d", "authors.n", "Democracy ~ Authors")
-
-# Store results
-bayes_corr_results <- list(
-  education = bf_e_authors,
-  industry = bf_i_authors,
-  gdp = bf_r_authors,
-  democracy = bf_d_authors
+  labels = c("A", "B"),
+  label_y = c(1, 0.95), # Move B label up
+  vjust = c(1, 1) # Add padding/spacing between plots
 )
 ```
