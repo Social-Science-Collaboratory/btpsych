@@ -1,0 +1,102 @@
+---
+title: "Untitled"
+format: html
+---
+
+# Setup
+```{r}
+# setup
+source("setup.R")
+
+# specify data directory
+data_dir <- Sys.getenv("data_dir")
+
+# specify directory
+i_am('btpsych24a_timetopic.Rmd')
+```
+
+# Load data
+
+```{r}
+DF <-
+  readRDS(file.path(data_dir, "openalex", "btpsych24a_data_bib_processed.Rds"))
+```
+
+# Create function to calculate relative growth for a given time window
+```{r}
+calculate_growth <- function(data, start_year, end_year) {
+  # Create time window label
+  time_window <- paste0(start_year + 1, "-", end_year - 1)
+
+  # Calculate midpoint for splitting the window
+  mid_year <- start_year + ((end_year - start_year) / 2)
+
+  growth_data <- data |>
+    # Filter to the specified time window
+    filter(publication_year > start_year, publication_year < end_year) |>
+
+    # Split into two equal periods
+    mutate(
+      pub.period = if_else(publication_year > mid_year, "later", "earlier")
+    ) |>
+
+    # Calculate counts for each size.bin and period
+    group_by(size.bin, pub.period) |>
+    summarise(n = n(), .groups = "drop") |>
+
+    # Pivot to get earlier and later columns
+    pivot_wider(
+      names_from = 'pub.period',
+      values_from = n,
+      id_cols = 'size.bin'
+    ) |>
+
+    # Calculate relative growth percentage
+    rowwise() |>
+    mutate(
+      relative_growth = if_else(
+        is.na(earlier) | earlier == 0,
+        NA_real_,
+        (later - earlier) / earlier * 100
+      ),
+      relative_growth = round(relative_growth, 1)
+    ) |>
+
+    # Add time window column and select final columns
+    mutate(time_window = time_window) |>
+    select(
+      time_window,
+      size_bin = size.bin,
+      relative_growth_pct = relative_growth
+    )
+
+  return(growth_data)
+}
+
+# Define the three time windows
+time_windows <- list(
+  list(start = 2010, end = 2021), # 2011-2020
+  list(start = 2005, end = 2016), # 2006-2015
+  list(start = 2000, end = 2011) # 2001-2010
+)
+
+# Calculate growth for all time windows
+growth_results <- map_dfr(
+  time_windows,
+  ~ calculate_growth(DF, .x$start, .x$end)
+)
+
+# Reorder columns for final table
+sensitivity_table <- growth_results |>
+  select(
+    `Time Window` = time_window,
+    `Size Bin` = size_bin,
+    `Relative Growth (%)` = relative_growth_pct
+  )
+
+# Export to CSV
+write_csv(
+  sensitivity_table,
+  file.path("figures", "btpsych_time_sensitivity_analysis1.csv")
+)
+```

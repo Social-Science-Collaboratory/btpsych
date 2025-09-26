@@ -17,9 +17,6 @@ source("setup.R")
 # specify data directory
 data_dir <- Sys.getenv("data_dir")
 
-# set plotting theme
-theme_set(theme_classic())
-
 # specify directory
 i_am('btpsych24a_timetopic.Rmd')
 ```
