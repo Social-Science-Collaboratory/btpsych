@@ -16,13 +16,13 @@ i_am('btpsych24a_timetopic.Rmd')
 ```
 
 # Load data
-
 ```{r}
 DF <-
   readRDS(file.path(data_dir, "openalex", "btpsych24a_data_bib_processed.Rds"))
 ```
 
-# Create function to calculate relative growth for a given time window
+# Calculate relative growth for a given time window
+## Create function
 ```{r}
 calculate_growth <- function(data, start_year, end_year) {
   # Create time window label
@@ -72,7 +72,10 @@ calculate_growth <- function(data, start_year, end_year) {
 
   return(growth_data)
 }
+```
 
+## Sensitivity analysis: three periods
+```{r}
 # Define the three time windows
 time_windows <- list(
   list(start = 2010, end = 2021), # 2011-2020
@@ -98,5 +101,35 @@ sensitivity_table <- growth_results |>
 write_csv(
   sensitivity_table,
   file.path("figures", "btpsych_time_sensitivity_analysis1.csv")
+)
+```
+
+## Sensitivity analysis: three windows
+```{r}
+# Define the three time windows with varying widths
+width_windows <- list(
+  list(start = 2016, end = 2021, width = "4 year"), # 2017-2020
+  list(start = 2010, end = 2021, width = "10 year"), # 2011-2020
+  list(start = 2000, end = 2021, width = "20 year") # 2001-2020
+)
+
+# Calculate growth for all window widths
+width_results <- map_dfr(
+  width_windows,
+  ~ calculate_growth(DF, .x$start, .x$end)
+)
+
+# Reorder columns for final table
+width_sensitivity_table <- width_results |>
+  select(
+    `Time Window` = time_window,
+    `Size Bin` = size_bin,
+    `Relative Growth (%)` = relative_growth_pct
+  )
+
+# Export to CSV
+write_csv(
+  width_sensitivity_table,
+  file.path("figures", "btpsych_time_sensitivity_analysis2.csv")
 )
 ```
