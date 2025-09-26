@@ -1,0 +1,111 @@
+---
+title: "OECD and UNESCO Data Processing"
+format: html
+editor_options: 
+  chunk_output_type: console
+---
+
+# Setup
+
+```{r setup, include=FALSE}
+# Specify data directory
+data_dir <- Sys.getenv("data_dir")
+
+# Add source setup file
+source("setup.R")
+```
+
+# Load and Process OECD/UNESCO Data
+
+```{r load-data}
+# Open GERD data
+gerd_data <- read_csv(file.path(data_dir, "r2", "btpsych_gerd_data.csv"))
+
+# Open researchers data (skip first 4 rows)
+researchers_data <- read_csv(
+  file.path(data_dir, "r2", "btpsych_researchers_data.csv"), 
+  skip = 4
+)
+```
+
+# Calculate Averages for Year 2000 and Beyond
+
+```{r calculate-averages}
+# Process GERD data - calculate average for year 2000+
+gerd_averages <- gerd_data |>
+  filter(year >= 2000) |>
+  group_by(iso3) |>
+  summarise(
+    avg_gerd = mean(gerd_value, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Process researchers data - calculate average for year 2000+
+researchers_averages <- researchers_data |>
+  filter(year >= 2000) |>
+  group_by(iso3) |>
+  summarise(
+    avg_researchers = mean(researchers_value, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Combine GERD and researchers averages
+combined_averages <- gerd_averages |>
+  full_join(researchers_averages, by = "iso3")
+```
+
+# Load OpenAlex Data and Join
+
+```{r join-data}
+# Open OpenAlex processed data
+openalex_data <- readRDS(file.path(data_dir, "openalex", "btpsych24a_data_bib_processed.Rds"))
+
+# Join with combined averages using iso3 codes
+final_data <- openalex_data |>
+  left_join(combined_averages, by = "iso3")
+
+# View summary of joined data
+final_data |>
+  select(iso3, avg_gerd, avg_researchers) |>
+  summary()
+```
+
+# Data Overview
+
+The analysis integrates three key datasets to examine the relationship between national science indicators and research output:
+
+- **OECD GERD Data**: Gross domestic expenditure on research and development, representing national investment in R&D activities
+- **UNESCO Researchers Data**: Number of research personnel, indicating human capital in scientific research
+- **OpenAlex Bibliometric Data**: Publication and citation data from the bibliometric analysis
+
+We calculated average values for both GERD spending and researcher counts for the period 2000 onwards to provide stable indicators of each country's research infrastructure and investment patterns.
+
+```{r data-summary}
+# Display country coverage
+cat("Countries with GERD data:", nrow(gerd_averages), "\n")
+cat("Countries with researchers data:", nrow(researchers_averages), "\n")
+cat("Countries in final dataset:", nrow(final_data), "\n")
+
+# Show distribution of key variables
+final_data |>
+  select(avg_gerd, avg_researchers) |>
+  describe()
+```
+
+# Export Results
+
+```{r export}
+# Save the final joined dataset
+saveRDS(
+  final_data,
+  file.path(data_dir, "processed", "btpsych_combined_with_indicators.Rds")
+)
+
+# Also save just the averages summary for reference
+write_csv(
+  combined_averages,
+  file.path(data_dir, "processed", "country_averages_2000_plus.csv")
+)
+```
+
+The final dataset combines bibliometric indicators with national science investment and human capital measures, enabling analysis of how research infrastructure relates to scientific productivity and impact in the field of psychology.
