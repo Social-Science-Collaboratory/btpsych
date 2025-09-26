@@ -24,6 +24,42 @@ options(scipen = 999)
 ```
 
 # New (unsorted)
+Examine whether mentions of terms varies
+```{r}
+DF %>%
+  mutate(rep = str_detect(string = title, pattern = 'replication')) %>%
+  filter(rep == T) %>%
+  nrow()
+
+DF %>%
+  mutate(rep = str_detect(string = title, pattern = 'meta-analysis')) %>%
+  filter(rep == T) %>%
+  nrow()
+```
+
+```{r}
+
+## Examine whether topic distribution varies
+``
+`{r}
+m.0 <-
+  multinom(topic.trunc ~ 1, data = DF.topics)
+
+m.1 <-
+  multinom(topic.trunc ~ size.bin, data = DF.topics)
+
+anova(m.0, m.1)
+
+topic.dist <-
+  table(DF.topics$size.bin, DF.topics$topic.trunc) %>%
+  as.data.frame() %>%
+  pivot_wider(names_from = 'Var2', values_from = 'Freq')
+
+rm(m.0, m.1)
+```
+
+```
+
 ```{r}
 DF.oa.filter[DF.oa.filter$unique_institutions == 0, ]$unique_institutions <- NA
 DF.oa.filter[DF.oa.filter$unique_country_codes == 0, ]$unique_country_codes <- NA
@@ -1388,17 +1424,20 @@ cor.test(
   f.author$n,
   f.author$m.gdp
 )
-```
+`
+``
   
 Non-first author positions
 ```{r}
 # open data
 s.author <-
-  read.csv(file = file.path(
-    data_dir,
-    "worlddata",
-    "btpsych24a_s.author_gdp.csv"
-  ))
+  read.csv(
+    file = file.path(
+      data_dir,
+      "worlddata",
+      "btpsych24a_s.author_gdp.csv"
+    )
+  )
 
 # look at top contributors
 s.author %>%
