@@ -6,7 +6,6 @@ editor_options:
 ---
 
 # Setup
-
 ```{r setup, include=FALSE}
 # Specify data directory
 data_dir <- Sys.getenv("data_dir")
@@ -15,15 +14,14 @@ data_dir <- Sys.getenv("data_dir")
 source("setup.R")
 ```
 
-# Load and Process OECD/UNESCO Data
-
+# Load and Process Data
 ```{r load-data}
 # Open GERD data
 gerd_data <- read_csv(file.path(data_dir, "r2", "btpsych_gerd_data.csv"))
 
 # Open researchers data (skip first 4 rows)
 researchers_data <- read_csv(
-  file.path(data_dir, "r2", "btpsych_researchers_data.csv"), 
+  file.path(data_dir, "r2", "btpsych_researchers_data.csv"),
   skip = 4
 )
 ```
@@ -33,21 +31,29 @@ researchers_data <- read_csv(
 ```{r calculate-averages}
 # Process GERD data - calculate average for year 2000+
 gerd_averages <- gerd_data |>
-  filter(year >= 2000) |>
-  group_by(iso3) |>
+  filter(TIME_PERIOD >= 2000) |>
+  group_by(REF_AREA) |>
   summarise(
-    avg_gerd = mean(gerd_value, na.rm = TRUE),
+    avg_gerd = mean(OBS_VALUE, na.rm = TRUE),
     .groups = "drop"
-  )
+  ) |>
+  rename(iso3 = REF_AREA)
 
 # Process researchers data - calculate average for year 2000+
 researchers_averages <- researchers_data |>
+  pivot_longer(
+    cols = `1960`:`2023`,
+    names_to = "year",
+    values_to = "researchers_value"
+  ) |>
+  mutate(year = as.numeric(year)) |>
   filter(year >= 2000) |>
-  group_by(iso3) |>
+  group_by(`Country Code`) |>
   summarise(
     avg_researchers = mean(researchers_value, na.rm = TRUE),
     .groups = "drop"
-  )
+  ) |>
+  rename(iso3 = `Country Code`)
 
 # Combine GERD and researchers averages
 combined_averages <- gerd_averages |>
@@ -55,10 +61,15 @@ combined_averages <- gerd_averages |>
 ```
 
 # Load OpenAlex Data and Join
-
 ```{r join-data}
 # Open OpenAlex processed data
-openalex_data <- readRDS(file.path(data_dir, "openalex", "btpsych24a_data_bib_processed.Rds"))
+openalex_data <- readRDS(
+  file = file.path(
+    data_dir,
+    "worlddata",
+    "DF.o.w.Rds"
+  )
+)
 
 # Join with combined averages using iso3 codes
 final_data <- openalex_data |>
@@ -68,44 +79,60 @@ final_data <- openalex_data |>
 final_data |>
   select(iso3, avg_gerd, avg_researchers) |>
   summary()
-```
 
-# Data Overview
-
-The analysis integrates three key datasets to examine the relationship between national science indicators and research output:
-
-- **OECD GERD Data**: Gross domestic expenditure on research and development, representing national investment in R&D activities
-- **UNESCO Researchers Data**: Number of research personnel, indicating human capital in scientific research
-- **OpenAlex Bibliometric Data**: Publication and citation data from the bibliometric analysis
-
-We calculated average values for both GERD spending and researcher counts for the period 2000 onwards to provide stable indicators of each country's research infrastructure and investment patterns.
-
-```{r data-summary}
-# Display country coverage
-cat("Countries with GERD data:", nrow(gerd_averages), "\n")
-cat("Countries with researchers data:", nrow(researchers_averages), "\n")
-cat("Countries in final dataset:", nrow(final_data), "\n")
-
-# Show distribution of key variables
-final_data |>
-  select(avg_gerd, avg_researchers) |>
-  describe()
-```
-
-# Export Results
-
-```{r export}
-# Save the final joined dataset
-saveRDS(
-  final_data,
-  file.path(data_dir, "processed", "btpsych_combined_with_indicators.Rds")
-)
-
-# Also save just the averages summary for reference
-write_csv(
+rm(
   combined_averages,
-  file.path(data_dir, "processed", "country_averages_2000_plus.csv")
+  gerd_averages,
+  researchers_averages,
+  gerd_data,
+  researchers_data,
+  openalex_data
 )
 ```
 
-The final dataset combines bibliometric indicators with national science investment and human capital measures, enabling analysis of how research infrastructure relates to scientific productivity and impact in the field of psychology.
+# Quick analysis
+
+```{r}
+cor.test(
+  x = final_data$authors.n,
+  y = final_data$avg_gerd,
+  method = "spearman"
+)
+
+cor.test(
+  x = final_data$authors.n,
+  y = final_data$avg_researchers,
+  method = "spearman"
+)
+
+# Function to do this in a Bayesian framework
+bayes_rank_corr_lmBF <- function(x_var, y_var, data_name = "") {
+  # Create complete cases data with ranks
+  d <- final_data %>%
+    filter(!is.na(!!sym(x_var)) & !is.na(!!sym(y_var))) %>%
+    mutate(
+      x_rank = rank(!!sym(x_var)),
+      y_rank = rank(!!sym(y_var))
+    ) %>%
+    data.frame()
+
+  # Bayesian correlation test
+  bf_result <- lmBF(x_rank ~ y_rank, data = d)
+
+  cat("\n---", data_name, "---\n")
+  print(bf_result)
+  return(bf_result)
+}
+
+bf_e_authors <- bayes_rank_corr_lmBF(
+  "avg_gerd",
+  "authors.n",
+  "GERD ~ Authors"
+)
+
+bf_e_authors <- bayes_rank_corr_lmBF(
+  "avg_researchers",
+  "authors.n",
+  "GERD ~ Authors"
+)
+```

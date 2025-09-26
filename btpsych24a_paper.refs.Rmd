@@ -106,9 +106,6 @@ cor.test(
 
 ### Bayesian analysis
 ```{r}
-# Load BayesFactor package
-library(BayesFactor)
-
 # Function to do this for all variables
 bayes_rank_corr_lmBF <- function(x_var, y_var, data_name = "") {
   # Create complete cases data with ranks
