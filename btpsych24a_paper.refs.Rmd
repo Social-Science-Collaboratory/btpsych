@@ -24,167 +24,16 @@ options(scipen = 999)
 ```
 
 # New (unsorted)
-
-## Compare global distribution to psychology first authors
-```{r}
-# Run weighted KS test
-ks_test(
-  x = tmp$e,
-  y = DF.o.w$e,
-  w_x = tmp$pop
-)
-
-ttestBF(
-  x = tmp[!is.na(tmp$e), ]$e,
-  y = DF.o.w[!is.na(DF.o.w$e), ]$e
-)
-
-# i
-ks_test(
-  x = tmp$i,
-  y = DF.o.w$i,
-  w_x = tmp$pop
-)
-
-ttestBF(
-  x = tmp[!is.na(tmp$i), ]$i,
-  y = DF.o.w[!is.na(DF.o.w$i), ]$i
-)
-
-# r
-ks_test(
-  x = tmp$r,
-  y = DF.o.w$r,
-  w_x = tmp$pop
-)
-
-ttestBF(
-  x = tmp[!is.na(tmp$r), ]$r,
-  y = DF.o.w[!is.na(DF.o.w$r), ]$r
-)
-
-# d
-ks_test(
-  x = tmp$d,
-  y = DF.o.w$d,
-  w_x = tmp$pop
-)
-
-ttestBF(
-  x = tmp[!is.na(tmp$d), ]$d,
-  y = DF.o.w[!is.na(DF.o.w$d), ]$d
-)
-```
-
-## Examine monotonic links between team size and ride
-```{r}
-# spearman corr
-cor.test(
-  x = DF.o.w$e,
-  y = DF.o.w$authors.n,
-  method = "spearman"
-)
-
-cor.test(
-  x = DF.o.w$i,
-  y = DF.o.w$authors.n,
-  method = "spearman"
-)
-
-cor.test(
-  x = DF.o.w$r,
-  y = DF.o.w$authors.n,
-  method = "spearman"
-)
-
-cor.test(
-  x = DF.o.w$d,
-  y = DF.o.w$authors.n,
-  method = "spearman"
-)
-```
-
-### Bayesian analysis
-```{r}
-# Function to do this for all variables
-bayes_rank_corr_lmBF <- function(x_var, y_var, data_name = "") {
-  # Create complete cases data with ranks
-  d <- DF.o.w %>%
-    filter(!is.na(!!sym(x_var)) & !is.na(!!sym(y_var))) %>%
-    mutate(
-      x_rank = rank(!!sym(x_var)),
-      y_rank = rank(!!sym(y_var))
-    ) %>%
-    data.frame()
-
-  # Bayesian correlation test
-  bf_result <- lmBF(x_rank ~ y_rank, data = d)
-
-  cat("\n---", data_name, "---\n")
-  print(bf_result)
-  return(bf_result)
-}
-
-# Run all correlations
-bf_e_authors <- bayes_rank_corr_lmBF("e", "authors.n", "Education ~ Authors")
-bf_i_authors <- bayes_rank_corr_lmBF("i", "authors.n", "Industry ~ Authors")
-bf_r_authors <- bayes_rank_corr_lmBF("r", "authors.n", "GDP ~ Authors")
-bf_d_authors <- bayes_rank_corr_lmBF("d", "authors.n", "Democracy ~ Authors")
-
-# Store results
-bayes_corr_results <- list(
-  education = bf_e_authors,
-  industry = bf_i_authors,
-  gdp = bf_r_authors,
-  democracy = bf_d_authors
-)
-```
-
-
-Examine whether mentions of terms varies
-```{r}
-DF %>%
-  mutate(rep = str_detect(string = title, pattern = 'replication')) %>%
-  filter(rep == T) %>%
-  nrow()
-
-DF %>%
-  mutate(rep = str_detect(string = title, pattern = 'meta-analysis')) %>%
-  filter(rep == T) %>%
-  nrow()
-```
-
 ```{r}
 
-## Examine whether topic distribution varies
-``
-`{r}
-m.0 <-
-  multinom(topic.trunc ~ 1, data = DF.topics)
 
-m.1 <-
-  multinom(topic.trunc ~ size.bin, data = DF.topics)
+DF.o.w[DF.o.w$unique_institutions == 0, ]$unique_institutions <- NA
+DF.o.w[DF.o.w$unique_country_codes == 0, ]$unique_country_codes <- NA
 
-anova(m.0, m.1)
+# plot(DF.o.w$authors.n, DF.o.w$unique_institutions)
+# plot(DF.o.w$authors.n, DF.o.w$unique_country_codes)
 
-topic.dist <-
-  table(DF.topics$size.bin, DF.topics$topic.trunc) %>%
-  as.data.frame() %>%
-  pivot_wider(names_from = 'Var2', values_from = 'Freq')
-
-rm(m.0, m.1)
-```
-
-```
-
-```{r}
-DF.oa.filter[DF.oa.filter$unique_institutions == 0, ]$unique_institutions <- NA
-DF.oa.filter[DF.oa.filter$unique_country_codes == 0, ]$unique_country_codes <- NA
-
-# plot(DF.oa.filter$authors.n, DF.oa.filter$unique_institutions)
-# plot(DF.oa.filter$authors.n, DF.oa.filter$unique_country_codes)
-
-DF.oa.filter %>%
+DF.o.w %>%
   group_by(size.bin) %>%
   summarise(
     mean.i =
@@ -207,33 +56,33 @@ DF.oa.filter %>%
 
 # calculate correlations
 cor.test(
-  DF.oa.filter$authors.n,
-  DF.oa.filter$unique_institutions,
+  DF.o.w$authors.n,
+  DF.o.w$unique_institutions,
   method = "spearman"
 )
 
 cor.test(
-  DF.oa.filter$authors.n,
-  DF.oa.filter$unique_country_codes,
+  DF.o.w$authors.n,
+  DF.o.w$unique_country_codes,
   method = "spearman"
 )
 
 # quick thought: is team size, country, or institution a better predictor?
 cor.test(
-  DF.oa.filter$authors.n,
-  DF.oa.filter$citation.p.y,
+  DF.o.w$authors.n,
+  DF.o.w$citation.p.y,
   method = "spearman"
 )
 
 cor.test(
-  DF.oa.filter$unique_institutions,
-  DF.oa.filter$citation.p.y,
+  DF.o.w$unique_institutions,
+  DF.o.w$citation.p.y,
   method = "spearman"
 )
 
 cor.test(
-  DF.oa.filter$unique_country_codes,
-  DF.oa.filter$citation.p.y,
+  DF.o.w$unique_country_codes,
+  DF.o.w$citation.p.y,
   method = "spearman"
 )
 ```
@@ -250,6 +99,14 @@ DF.oa.filter <-
       "btpsych24a_data_bib_processed.Rds"
     )
   )
+
+# compute total number of articles analyzed
+DF.oa.filter %>% nrow()
+
+# compute number of articles with 10 to 100+ authors
+DF.oa.filter %>%
+  filter(authors.n >= 10) %>%
+  nrow()
 
 # open Altmetrics data
 DF.alt <-
@@ -315,7 +172,7 @@ DF.na <- DF.oa.raw %>%
     is.na(doi)
   )
 
-## remove duplicates
+## remove identical doi duplicates
 DF.oa.raw.nodup <-
   DF.oa.raw %>%
   filter(
@@ -330,7 +187,7 @@ DF.oa.raw.nodup <-
 DF.oa.raw.nodup <- rbind(DF.oa.raw.nodup, DF.na) %>%
   arrange(id)
 
-## calculate number of duplicates that were removed
+## calculate number of doi duplicates that were removed
 DF.oa.raw %>%
   filter(
     type == "article",
@@ -349,6 +206,15 @@ DF.oa.raw.nodup %>%
     )
   ) %>%
   nrow() - nrow(DF.oa.raw.nodup)
+
+# Read the minhash duplicate list generated by the btpsych24a_dedup.R script
+minhash_duplicat_list <- readRDS(file.path(data_dir, "deduplication", "remove_list.Rds"))
+
+# Calculate the number of minhash duplicates that were removed
+DF.oa.raw.nodup %>%
+  filter(id %in% minhash_duplicat_list) %>%
+  nrow()
+
 
 # final openalex dataset
 DF.oa.filter <-
@@ -553,12 +419,15 @@ DF.topics <-
     )
   )
 
-nrow(DF.topics)
-
 # reminder: not all size.bins had over 300 articles
 DF %>%
   group_by(size.bin) %>%
   summarise(n = n())
+
+# Total number of entries included in the topic analysis
+nrow(DF.topics)
+
+
 
 # total number with topic classifications
 DF.topics <- DF.topics %>%
@@ -633,65 +502,22 @@ DF.alt <-
 nrow(DF.alt)
 ```
 
-## Division of labor (supplemental analysis)
+## Who leads big team psychology?
+
 ```{r}
-# number of records included in coding
-DF.c <-
-  # open data
-  read.csv(
-    file.path(
-      data_dir,
-      "contributorship",
-      "btpsych24a_cont_coding.csv"
-    ),
-    na.string = "N/A"
-  )
+# Calculate the number of entries with first author information available
 
-nrow(DF.c)
+## download dataframe with first author's country information
+DF.o.w <- readRDS(file.path(
+  "data",
+  "worlddata",
+  "DF.o.w.Rds"))
 
-# number of records actually coded
-DF.c <- DF.c %>%
-  filter(
-    # remove instances without contributorship statements
-    !is.na(contributorship.statement),
-    contributorship.statement != "",
+## calculate the percentage of non NA entries
+sum(!is.na(DF.o.w$author1.country))/nrow(DF.o.w)
 
-    # remove instances where coders recommended removal
-    remove.revise != 1,
-
-    # remove instances where there wasn't anything to code
-    !(is.na(conception) &
-      is.na(execution) &
-      is.na(analysis) &
-      is.na(draft.writing) &
-      is.na(review.writing) &
-      is.na(funding)
-    )
-  ) %>%
-  # select relevant variables
-  select(id, contributorship.statement:funding)
-
-nrow(DF.c)
 ```
 
-## Geographical distribution
-```{r}
-# number of big team efforts
-DF.oa.filter %>%
-  filter(authors.n > 9) %>%
-  nrow()
-
-# number of geocoded efforts (i.e., ones with complete authorship info)
-DF.geo <- readRDS(
-  file.path(
-    data_dir,
-    "location",
-    "btpsych24a_geocode.Rds"
-  )
-)
-
-DF.geo %>% length()
-```
 
 # Results
 ## Big team science is an emerging trend
@@ -787,7 +613,7 @@ DF.topics %>%
   View()
 ```
 
-## Bigger teams produce work...
+## Larger Teams Produce Work that has More Impact on Science, Policy, and the Public 
 Upload impact data
 ```{r}
 impact.by.size <-
@@ -1041,6 +867,7 @@ lmBF(policy.p.y ~ authors.n,
 ```
 
 ## Bayesian linear vs. quadratic comparisons (minimal)
+## JT: I couldn't understand this chunk. Should we keep it?
 ```{r bayes-linear-quad-minimal, message=FALSE, warning=FALSE}
 # Minimal Bayesian analysis: compare linear vs quadratic relationships
 # across per-year impact measures using brms. We use standard weakly
@@ -1070,6 +897,9 @@ priors_standard <- c(
 )
 
 outcomes <- c("citation.p.y", "news.p.y", "gen.p.y", "policy.p.y")
+
+# optional: download bayes results
+# bayes_results <- readRDS(here("figures", "bayes_linear_quad_results.Rds"))
 
 bayes_results <- lapply(outcomes, function(out) {
   cat("\n---\nOutcome: ", out, "\n")
@@ -1142,7 +972,7 @@ rm(m.l, m.q)
 
 ggplot(
   DF.impact %>% filter(authors.n < 100),
-  aes(x = authors.n, y = policy.p.y)
+  aes(x = authors.n, y = citation.p.y)
 ) +
   # model linear relationship
   geom_smooth(
@@ -1261,7 +1091,223 @@ AIC(m.l, m.q)$AIC %>%
 
 AIC
 rm(m.l, m.q)
+
+
+ggplot(
+  DF.impact %>% filter(authors.n < 100),
+  aes(x = authors.n, y = policy.p.y)
+) +
+  # model linear relationship
+  geom_smooth(
+    method = "lm",
+    formula = y ~ x,
+    color = "grey50",
+    linetype = "dashed",
+    linewidth = .75
+  ) +
+
+  # model quadratic relationsnip
+  geom_smooth(
+    method = "lm",
+    formula = y ~ x + I(x^2),
+    color = "grey50",
+    linewidth = .75
+  )
 ```
+
+## Sociocultural Imbalances in Knowledge Production
+
+Countries with most published papers
+```{r}
+
+# Open dataframe with country data
+DF.o.w <-
+  readRDS(file = file.path(
+    data_dir,
+    "worlddata",
+    "DF.o.w.Rds"
+  ))
+
+# Calculate the number of psychology papers per country (excluding NAs)
+country_works_table <- as.data.frame(table(DF.o.w$iso3)) %>% 
+  arrange(desc(Freq))
+
+# Open the country population data set
+worlddata_pop <- read.csv(file.path(
+  data_dir,
+  "worlddata",
+  "population",
+  "btpsych24a_worlddata_pop.csv"),
+  skip = 4)
+
+# Calculate the percentage of the population average per country in the 21st century
+worlddata_pop <- worlddata_pop %>%
+  filter(Country.Code %in% country_works_table$Var1) %>% # remove non-country indicators (e.g. total world population, "WLD" )
+  rowwise() %>%
+  mutate(avg_pop = mean(c_across(X2001:X2024), na.rm = TRUE)) %>%
+  ungroup()
+
+# Separate the five countries with the most psychology papers
+worlddata_pop_topfive <- worlddata_pop %>% 
+  filter(Country.Code %in% c("USA", "GBR", "CHN", "CAN", "BRA"))
+
+# Calculate the percentage of the world population in these 5 countries in the 21st century
+sum(worlddata_pop_topfive$avg_pop, na.rm = TRUE)/
+  sum(worlddata_pop$avg_pop, na.rm = TRUE)
+
+# Calculate the percentage of papers published by these 5 countries
+sum(country_works_table$Freq[1:5])/
+  sum(country_works_table$Freq)
+
+rm(country_works_table, worlddata_pop, worlddata_pop_topfive)
+
+```
+
+## Compare global distribution to psychology first authors
+```{r}
+
+# Open country EIRD indicators
+global_RIDE <-
+  readRDS(
+    file = file.path(
+      data_dir,
+      "worlddata",
+      "tmp.Rds"
+    )
+  )
+
+
+# Run weighted Kolmogorov-Smirnov and Bayes factor test for the education indicator
+ks_test(
+  x = global_RIDE$e,
+  y = DF.o.w$e,
+  w_x = global_RIDE$pop
+)
+
+ttestBF(
+  x = global_RIDE[!is.na(global_RIDE$e), ]$e,
+  y = DF.o.w[!is.na(DF.o.w$e), ]$e
+)
+
+# Run weighted Kolmogorov-Smirnov and Bayes Factor test for the richness indicator
+ks_test(
+  x = global_RIDE$r,
+  y = DF.o.w$r,
+  w_x = global_RIDE$pop
+)
+
+ttestBF(
+  x = global_RIDE[!is.na(global_RIDE$r), ]$r,
+  y = DF.o.w[!is.na(DF.o.w$r), ]$r
+)
+
+# Run weighted Kolmogorov-Smirnov and Bayes Factor test for the democracy indicator
+ks_test(
+  x = global_RIDE$d,
+  y = DF.o.w$d,
+  w_x = global_RIDE$pop
+)
+
+ttestBF(
+  x = global_RIDE[!is.na(global_RIDE$d), ]$d,
+  y = DF.o.w[!is.na(DF.o.w$d), ]$d
+)
+
+# Run weighted Kolmogorov-Smirnov and Bayes Factor test for the industrialization indicator
+ks_test(
+  x = global_RIDE$i,
+  y = DF.o.w$i,
+  w_x = global_RIDE$pop
+)
+
+ttestBF(
+  x = global_RIDE[!is.na(global_RIDE$i), ]$i,
+  y = DF.o.w[!is.na(DF.o.w$i), ]$i
+)
+```
+
+## Examine monotonic links between team size and ride
+```{r}
+# spearman corr
+cor.test(
+  x = DF.o.w$e,
+  y = DF.o.w$authors.n,
+  method = "spearman"
+)
+
+cor.test(
+  x = DF.o.w$r,
+  y = DF.o.w$authors.n,
+  method = "spearman"
+)
+
+cor.test(
+  x = DF.o.w$d,
+  y = DF.o.w$authors.n,
+  method = "spearman"
+)
+
+cor.test(
+  x = DF.o.w$i,
+  y = DF.o.w$authors.n,
+  method = "spearman"
+)
+```
+
+### Bayesian analysis
+```{r}
+
+# Function to do this for all variables
+bayes_rank_corr_lmBF <- function(x_var, y_var, data_name = "") {
+  # Create complete cases data with ranks
+  d <- DF.o.w %>%
+    filter(!is.na(!!sym(x_var)) & !is.na(!!sym(y_var))) %>%
+    mutate(
+      x_rank = rank(!!sym(x_var)),
+      y_rank = rank(!!sym(y_var))
+    ) %>%
+    data.frame()
+
+  # Bayesian correlation test
+  bf_result <- lmBF(x_rank ~ y_rank, data = d)
+
+  cat("\n---", data_name, "---\n")
+  print(bf_result)
+  return(bf_result)
+}
+
+# Run all correlations
+bf_e_authors <- bayes_rank_corr_lmBF("e", "authors.n", "Education ~ Authors")
+bf_i_authors <- bayes_rank_corr_lmBF("i", "authors.n", "Industry ~ Authors")
+bf_r_authors <- bayes_rank_corr_lmBF("r", "authors.n", "GDP ~ Authors")
+bf_d_authors <- bayes_rank_corr_lmBF("d", "authors.n", "Democracy ~ Authors")
+
+# Store results
+bayes_corr_results <- list(
+  education = bf_e_authors,
+  industry = bf_i_authors,
+  gdp = bf_r_authors,
+  democracy = bf_d_authors
+)
+```
+
+
+
+
+
+
+
+
+# SUPPLEMENTAL ANALYSIS
+
+
+## Growth of Big Team Psychology Across Different Time Periods 
+
+## Alternative Statistical Treatments of Mentions 
+
+
+## Other Potential Units of Analysis 
+
 
 ## Sensitivity analyses
 ### Linear and non-linear regression with massive team size outliers included
@@ -1351,6 +1397,7 @@ DF.alt <- readRDS(
 )
 ```
 
+
 ```{r}
 # sensitivity analyses
 alt.sens <- DF.alt %>%
@@ -1416,7 +1463,6 @@ sens <-
   )
 ```
 
-
 ```{r}
 ## Overall, median
 DF.alt %>%
@@ -1466,6 +1512,47 @@ DF.alt %>%
   )
 ```
 
+## Division of labor (supplemental analysis)
+```{r}
+# number of records included in coding
+DF.c <-
+  # open data
+  read.csv(
+    file.path(
+      data_dir,
+      "contributorship",
+      "btpsych24a_cont_coding.csv"
+    ),
+    na.string = "N/A"
+  )
+
+nrow(DF.c)
+
+# number of records actually coded
+DF.c <- DF.c %>%
+  filter(
+    # remove instances without contributorship statements
+    !is.na(contributorship.statement),
+    contributorship.statement != "",
+
+    # remove instances where coders recommended removal
+    remove.revise != 1,
+
+    # remove instances where there wasn't anything to code
+    !(is.na(conception) &
+      is.na(execution) &
+      is.na(analysis) &
+      is.na(draft.writing) &
+      is.na(review.writing) &
+      is.na(funding)
+    )
+  ) %>%
+  # select relevant variables
+  select(id, contributorship.statement:funding)
+
+nrow(DF.c)
+```
+
 ## Big teams are mobilized (supplemental analysis)
 ```{r}
 DF.c <- readRDS(
@@ -1509,71 +1596,3 @@ DF.c %>%
   )
 ```
 
-
-## There are economic...
-First author positions
-```{r}
-# open data
-f.author <-
-  read.csv(file = file.path(
-    data_dir,
-    "worlddata",
-    "btpsych24a_f.author_gdp.csv"
-  ))
-
-# look at top contributors
-f.author %>%
-  mutate(
-    prop.n = n / sum(n),
-    prop.n = prop.n * 100
-  ) %>%
-  arrange(desc(prop.n)) %>%
-  .[1:5, ] %>%
-  mutate(total = sum(prop.n))
-
-# correlations with gdp
-cor.test(
-  f.author$n,
-  f.author$m.gdp.pc
-)
-
-cor.test(
-  f.author$n,
-  f.author$m.gdp
-)
-`
-``
-  
-Non-first author positions
-```{r}
-# open data
-s.author <-
-  read.csv(
-    file = file.path(
-      data_dir,
-      "worlddata",
-      "btpsych24a_s.author_gdp.csv"
-    )
-  )
-
-# look at top contributors
-s.author %>%
-  mutate(
-    prop.n = n / sum(n),
-    prop.n = prop.n * 100
-  ) %>%
-  arrange(desc(prop.n)) %>%
-  .[1:5, ] %>%
-  mutate(total = sum(prop.n))
-
-# correlations with gdp
-cor.test(
-  s.author$n,
-  s.author$m.gdp.pc
-)
-
-cor.test(
-  s.author$n,
-  s.author$m.gdp
-)
-```
