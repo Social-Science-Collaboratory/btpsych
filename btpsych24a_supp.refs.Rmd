@@ -1,0 +1,436 @@
+---
+title: "btpsych24a_supp.refs"
+author: "Joao Takayanagi"
+date: "2025-10-02"
+output: html_document
+---
+This code compiles the numbers quoted in the supplement
+
+# Setup
+```{r setup, include= F}
+# setup
+source("setup.R")
+
+# specify directory
+i_am("btpsych24a_paper.refs.Rmd")
+
+# specify data directory
+data_dir <- Sys.getenv("data_dir")
+
+# turn off scientific notation
+options(scipen = 999)
+```
+
+# SUPPLEMENTAL ANALYSIS
+
+
+## Growth of Big Team Psychology Across Different Time Periods 
+
+```{r}
+# Load data
+DF.oa.filter <-
+  readRDS(file.path(data_dir, "openalex", "btpsych24a_data_bib_processed.Rds"))
+
+DF <- DF.oa.filter
+```
+
+
+```{r}
+# Calculate relative growth for a given time window
+
+## Create function
+calculate_growth <- function(data, start_year, end_year) {
+  # Create time window label
+  time_window <- paste0(start_year + 1, "-", end_year - 1)
+
+  # Calculate midpoint for splitting the window
+  mid_year <- start_year + ((end_year - start_year) / 2)
+
+  growth_data <- data |>
+    # Filter to the specified time window
+    filter(publication_year > start_year, publication_year < end_year) |>
+
+    # Split into two equal periods
+    mutate(
+      pub.period = if_else(publication_year > mid_year, "later", "earlier")
+    ) |>
+
+    # Calculate counts for each size.bin and period
+    group_by(size.bin, pub.period) |>
+    summarise(n = n(), .groups = "drop") |>
+
+    # Pivot to get earlier and later columns
+    pivot_wider(
+      names_from = 'pub.period',
+      values_from = n,
+      id_cols = 'size.bin'
+    ) |>
+
+    # Calculate relative growth percentage
+    rowwise() |>
+    mutate(
+      relative_growth = if_else(
+        is.na(earlier) | earlier == 0,
+        NA_real_,
+        (later - earlier) / earlier * 100
+      ),
+      relative_growth = round(relative_growth, 1)
+    ) |>
+
+    # Add time window column and select final columns
+    mutate(time_window = time_window) |>
+    select(
+      time_window,
+      size_bin = size.bin,
+      relative_growth_pct = relative_growth
+    )
+
+  return(growth_data)
+}
+```
+
+## Sensitivity analysis: three periods
+```{r}
+# Define the three time windows
+time_windows <- list(
+  list(start = 2010, end = 2021), # 2011-2020
+  list(start = 2005, end = 2016), # 2006-2015
+  list(start = 2000, end = 2011) # 2001-2010
+)
+
+# Calculate growth for all time windows
+growth_results <- map_dfr(
+  time_windows,
+  ~ calculate_growth(DF, .x$start, .x$end)
+)
+
+# Reorder columns for final table
+sensitivity_table <- growth_results |>
+  select(
+    `Time Window` = time_window,
+    `Size Bin` = size_bin,
+    `Relative Growth (%)` = relative_growth_pct
+  )
+
+# view table
+view(sensitivity_table)
+```
+
+
+```{r}
+## Sensitivity analysis: three windows
+
+# Define the three time windows with varying widths
+width_windows <- list(
+  list(start = 2016, end = 2021, width = "4 year"), # 2017-2020
+  list(start = 2010, end = 2021, width = "10 year"), # 2011-2020
+  list(start = 2000, end = 2021, width = "20 year") # 2001-2020
+)
+
+# Calculate growth for all window widths
+width_results <- map_dfr(
+  width_windows,
+  ~ calculate_growth(DF, .x$start, .x$end)
+)
+
+# Reorder columns for final table
+width_sensitivity_table <- width_results |>
+  select(
+    `Time Window` = time_window,
+    `Size Bin` = size_bin,
+    `Relative Growth (%)` = relative_growth_pct
+  )
+
+# view table
+view(width_sensitivity_table)
+```
+
+## Alternative Statistical Treatments of Mentions 
+
+```{r}
+### Alternative statistical operationalization of impact (OpenAlex)
+
+oa.sens <- DF.oa.filter %>%
+  # examine whether record received any attention
+  mutate(
+    scholar.att = if_else(cited_by_count > 0, 1, 0)
+  ) %>%
+  # group by size bin
+  filter(!is.na(size.bin)) %>%
+  group_by(size.bin) %>%
+  # calculate relative summary statistics
+  summarise(
+    mn.yearly_scholar = mean(citation.p.y) %>%
+      round(2),
+    md.yearly_scholar = median(citation.p.y) %>%
+      round(2),
+    mn_scholar = mean(cited_by_count) %>%
+      round(2),
+    md_scholar = median(cited_by_count) %>%
+      round(2),
+    att_scholar = mean(scholar.att) %>%
+      round(2)
+  )
+```
+
+```{r}
+### Alternative statistical operationalization of impact Altmetric
+
+# open Altmetric data
+DF.alt <- readRDS(
+  file.path(
+    data_dir,
+    "altmetric",
+    "btpsych24a_altmetric_processed.Rds"
+  )
+)
+```
+
+
+```{r}
+# sensitivity analyses
+alt.sens <- DF.alt %>%
+  # examine whether record received any attention
+  mutate(
+    policy.att = if_else(Policy.mentions > 0, 1, 0),
+    news.att = if_else(news > 0, 1, 0),
+    gen.att = if_else(gen > 0, 1, 0)
+  ) %>%
+  # group by size bin
+  filter(!is.na(size.bin)) %>%
+  group_by(size.bin) %>%
+  # calculate relative summary statistics
+  summarise(
+    mn.yearly_news = mean(news.p.y) %>%
+      round(2),
+    md.yearly_news = median(news.p.y) %>%
+      round(2),
+    mn_news = mean(news) %>%
+      round(2),
+    md_news = median(news) %>%
+      round(2),
+    att_news = mean(news.att) %>%
+      round(2),
+    mn.yearly_social = mean(gen.p.y) %>%
+      round(2),
+    md.yearly_social = median(gen.p.y) %>%
+      round(2),
+    mn_social = mean(gen) %>%
+      round(2),
+    md_social = median(gen) %>%
+      round(2),
+    att_social = mean(gen.att) %>%
+      round(2),
+    mn.yearly_policy = mean(policy.p.y) %>%
+      round(2),
+    md.yearly_policy = median(policy.p.y) %>%
+      round(2),
+    mn_policy = mean(Policy.mentions) %>%
+      round(2),
+    md_policy = median(Policy.mentions) %>%
+      round(2),
+    att_policy = mean(policy.att) %>%
+      round(2)
+  )
+
+sens <-
+  full_join(oa.sens, alt.sens, by = "size.bin")
+
+view(sens)
+```
+
+```{r}
+## Overall, median
+DF.alt %>%
+  filter(!is.na(size.bin)) %>%
+  group_by(size.bin) %>%
+  summarise(
+    med.policy = median(Policy.mentions),
+    med.news = median(news),
+    med.gen = median(gen)
+  )
+
+## Yearly, median
+DF.alt %>%
+  filter(!is.na(size.bin)) %>%
+  group_by(size.bin) %>%
+  summarise(
+    med.policy = median(policy.p.y),
+    med.news = median(news.p.y),
+    med.gen = median(gen.p.y)
+  )
+
+## Likelihood of being mentioned
+DF.alt %>%
+  mutate(
+    Policy.mentions = if_else(Policy.mentions > 0, 1, 0),
+    news = if_else(news > 0, 1, 0),
+    gen = if_else(gen > 0, 1, 0)
+  ) %>%
+  filter(!is.na(size.bin)) %>%
+  group_by(size.bin) %>%
+  summarise(
+    prop.policy = mean(Policy.mentions),
+    prop.news = mean(news),
+    prop.gen = mean(gen)
+  )
+```
+
+
+```{r}
+## Monotonic relationship between team size and prestige of the journal they publish in
+
+# Test correlation between team size and journal h-index
+cor.test(x = DF$authors.n, 
+         y = DF$h_index,
+         alternative = 'greater',
+         method = 'spearman')
+```
+
+## Other Potential Units of Analysis 
+
+```{r}
+
+
+```
+
+## Division of Labor in Ultra-Large Studies
+```{r}
+# Number of records included in the author contribution coding analysis
+DF.c <-
+  # open data
+  read.csv(
+    file.path(
+      data_dir,
+      "contributorship",
+      "btpsych24a_cont_coding.csv"
+    ),
+    na.string = "N/A"
+  )
+
+nrow(DF.c)
+
+# number of records actually coded
+DF.c <- DF.c %>%
+  filter(
+    # remove instances without contributorship statements
+    !is.na(contributorship.statement),
+    contributorship.statement != "",
+
+    # remove instances where coders recommended removal
+    remove.revise != 1,
+
+    # remove instances where there wasn't anything to code
+    !(is.na(conception) &
+      is.na(execution) &
+      is.na(analysis) &
+      is.na(draft.writing) &
+      is.na(review.writing) &
+      is.na(funding))
+  ) %>%
+  # select relevant variables
+  select(id, contributorship.statement:funding)
+
+nrow(DF.c)
+```
+
+## Big teams are mobilized (supplemental analysis)
+```{r}
+
+# Load author contribution processed data
+DF.c <- readRDS(
+  file.path(
+    data_dir,
+    "contributorship",
+    "btpsych24a_cont_processed.Rds"
+  )
+)
+
+# Overall proportion of collaborators that contribute to the different tasks in a project by task category
+DF.c %>%
+  mutate(prop.n = prop.n * 100) %>%
+  group_by(category) %>%
+  summarise(
+    m = mean(prop.n, na.rm = T),
+    sd = sd(prop.n, na.rm = T)
+  )
+
+# Proportion of papers in which most authors contribute to a single/dominant task, organized by task category
+DF.c %>%
+  filter(dominant == "yes") %>%
+  group_by(category.main) %>%
+  summarise(prop = (n() / nrow(DF.c)) * 100) %>%
+  mutate(other = 100 - sum(prop))
+
+# Range of the proportion of authors that contributed to the dominant task in conception-focused papers
+DF.c %>%
+  filter(
+    category.main == "conceptualization focused (14%)",
+    dominant == "yes",
+    category == "conception"
+  ) %>%
+  summarise(
+    min = min(prop.n, na.rm = T) * 100,
+    max = max(prop.n, na.rm = T) * 100
+  )
+```
+
+
+
+## JT Not sure where to place this
+
+
+## Sensitivity analyses
+### Linear and non-linear regression with massive team size outliers included
+```{r}
+
+# Download impact dataframe
+
+DF.impact <-
+  readRDS(here(
+    "figures",
+    "impact.viz.DF.raw.Rds"
+  ))
+
+# number of papers with over 100 articles
+DF.impact %>%
+  filter(authors.n > 99) %>%
+  nrow()
+
+DF.impact$authors.n %>% max()
+
+DF.impact.full <- DF.impact %>%
+  rename(
+    "scholarly articles" = "citation.p.y",
+    "news" = "news.p.y",
+    "social media" = "gen.p.y",
+    "policy documents" = "policy.p.y"
+  ) %>%
+  pivot_longer("scholarly articles":"social media")
+
+ggplot(
+  data = DF.impact.full,
+  aes(
+    x = authors.n,
+    y = value
+  )
+) +
+  facet_wrap(~name, scales = "free") +
+  # model linear relationship
+  geom_smooth(
+    method = "lm",
+    formula = y ~ x,
+    color = "grey50",
+    linetype = "dashed",
+    linewidth = .75
+  ) +
+
+  # model quadratic relationsnip
+  geom_smooth(
+    method = "lm",
+    formula = y ~ x + I(x^2),
+    color = "grey50",
+    linewidth = .75
+  )
+```
+
