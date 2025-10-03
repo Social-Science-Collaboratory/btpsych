@@ -23,56 +23,6 @@ data_dir <- Sys.getenv("data_dir")
 options(scipen = 999)
 ```
 
-# New (unsorted)
-```{r}
-DF.o.w[DF.o.w$unique_institutions == 0, ]$unique_institutions <- NA
-DF.o.w[DF.o.w$unique_country_codes == 0, ]$unique_country_codes <- NA
-
-# plot(DF.o.w$authors.n, DF.o.w$unique_institutions)
-# plot(DF.o.w$authors.n, DF.o.w$unique_country_codes)
-
-DF.o.w %>%
-  group_by(size.bin) %>%
-  summarise(
-    mean.i = mean(unique_institutions, na.rm = T),
-    median.i = median(unique_institutions, na.rm = T),
-    mean.c = mean(unique_country_codes, na.rm = T),
-    median.c = median(unique_country_codes, na.rm = T)
-  )
-
-# calculate correlations
-cor.test(
-  DF.o.w$authors.n,
-  DF.o.w$unique_institutions,
-  method = "spearman"
-)
-
-cor.test(
-  DF.o.w$authors.n,
-  DF.o.w$unique_country_codes,
-  method = "spearman"
-)
-
-# quick thought: is team size, country, or institution a better predictor?
-cor.test(
-  DF.o.w$authors.n,
-  DF.o.w$citation.p.y,
-  method = "spearman"
-)
-
-cor.test(
-  DF.o.w$unique_institutions,
-  DF.o.w$citation.p.y,
-  method = "spearman"
-)
-
-cor.test(
-  DF.o.w$unique_country_codes,
-  DF.o.w$citation.p.y,
-  method = "spearman"
-)
-```
-
 
 # Abstract
 ```{r}

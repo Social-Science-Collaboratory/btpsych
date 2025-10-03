@@ -46,7 +46,7 @@ DF.j <-
   semi_join(y = DF.g, by = 'id')
 
 # bind files
-DF <- rbind(DF.g, DF.j) %>%
+DF.rel <- rbind(DF.g, DF.j) %>%
 
   # pivot data for processing
   pivot_longer(conception:draft.writing) %>%
@@ -72,9 +72,8 @@ DF <- rbind(DF.g, DF.j) %>%
 
 # Examine reliability
 ```{r}
-library('psych')
 ICC(
-  DF %>%
+  DF.rel  %>%
     select(G, J)
 )
 ```

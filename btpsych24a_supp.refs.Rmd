@@ -290,7 +290,87 @@ cor.test(x = DF$authors.n,
 ## Other Potential Units of Analysis 
 
 ```{r}
+# Load dataset with country and institution data
+DF.o.w <- readRDS(
+  file.path(
+    data_dir,
+    "worlddata",
+    "DF.o.w.Rds"
+  ))
 
+DF.o.w[DF.o.w$unique_institutions == 0, ]$unique_institutions <- NA
+DF.o.w[DF.o.w$unique_country_codes == 0, ]$unique_country_codes <- NA
+
+# plot(DF.o.w$authors.n, DF.o.w$unique_institutions)
+# plot(DF.o.w$authors.n, DF.o.w$unique_country_codes)
+
+DF.o.w %>%
+  group_by(size.bin) %>%
+  summarise(
+    mean.i = mean(unique_institutions, na.rm = T),
+    median.i = median(unique_institutions, na.rm = T),
+    mean.c = mean(unique_country_codes, na.rm = T),
+    median.c = median(unique_country_codes, na.rm = T)
+  )
+
+# calculate correlations between potential units of analysis
+## author number and number of unique institutions involved in the work
+cor.test(
+  DF.o.w$authors.n,
+  DF.o.w$unique_institutions,
+  method = "spearman"
+)
+
+## author number and number of unique institutions involved in the work
+cor.test(
+  DF.o.w$authors.n,
+  DF.o.w$unique_country_codes,
+  method = "spearman"
+)
+
+# Calculate the correlation between different units of analysis and variables of interest
+## correlation between number of countries involved and scholarly citations
+cor.test(
+  DF.o.w$unique_country_codes,
+  DF.o.w$citation.p.y,
+  method = "spearman"
+)
+
+## correlation between number of countries involved and scholarly citations
+cor.test(
+  DF.o.w$unique_country_codes,
+  DF.o.w$cited_by_count,
+  method = "spearman"
+)
+```
+
+
+```{r}
+
+# Join Altmetric data with institution and country data
+DF.alt.w <- 
+  left_join(DF.alt, DF.o.w, by = "id")
+
+## correlation between number of countries involved and news mentions
+cor.test(
+  DF.alt.w$unique_country_codes,
+  DF.alt.w$news,
+  method = "spearman"
+)
+
+## correlation between number of countries involved and social media mentions
+cor.test(
+  DF.alt.w$unique_country_codes,
+  DF.alt.w$gen,
+  method = "spearman"
+)
+
+## correlation between number of countries involved and social media mentions
+cor.test(
+  DF.alt.w$unique_country_codes,
+  DF.alt.w$Policy.mentions,
+  method = "spearman"
+)
 
 ```
 
@@ -334,7 +414,67 @@ DF.c <- DF.c %>%
 nrow(DF.c)
 ```
 
-## Big teams are mobilized (supplemental analysis)
+# Check Contributorship coding reliability
+```{r}
+# recoded records from second rater
+DF.rater2 <-
+  read.csv(
+    file.path(data_dir, 'contributorship', 'btpsych24a_cont_coding_rel.csv'),
+    na.string = "N/A"
+  ) %>%
+
+  # select relevant variables
+  select(id, conception:draft.writing, Coder)
+
+# original coded records
+DF.rater1 <-
+  read.csv(
+    file.path(data_dir, 'contributorship', 'btpsych24a_cont_coding.csv'),
+    na.string = "N/A"
+  ) %>%
+
+  # select relevant variables
+  select(id, conception:draft.writing, Coder) %>%
+
+  # semi join (focusing only on records that have been recoded by the second reviewer)
+  semi_join(y = DF.rater2, by = 'id')
+
+# bind files
+DF.rel <- rbind(DF.rater2, DF.rater1) %>%
+
+  # pivot data for processing
+  pivot_longer(conception:draft.writing) %>%
+
+  # count number of authors who have contributed to each category
+  mutate(
+    # if N/A leave blank, otherwise count number of commas and add 1
+    n = if_else(
+      is.na(value),
+      NA,
+
+      # otherwise, count number of commas and add 1
+      str_count(value, ",") + 1
+    )
+  ) %>%
+
+  select(-value) %>%
+
+  # pivot
+  pivot_wider(names_from = Coder, values_from = n) %>%
+  arrange(G)
+```
+
+# Examine reliability
+```{r}
+
+ICC(
+  DF.rel  %>%
+    select(G, J)
+)
+```
+
+
+## Averaging across all big team psychology efforts...
 ```{r}
 
 # Load author contribution processed data
