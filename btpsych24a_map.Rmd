@@ -74,13 +74,13 @@ saveRDS(
 )
 
 # reload
-DF.o.w <- readRDS(
-  file = file.path(
-    data_dir,
-    "worlddata",
-    "DF.o.w.Rds"
-  )
-)
+# DF.o.w <- readRDS(
+#  file = file.path(
+#    data_dir,
+#    "worlddata",
+#    "DF.o.w.Rds"
+#  )
+#)
 
 # prepare population data
 DF.pop <-
@@ -126,14 +126,14 @@ saveRDS(
   )
 )
 
-tmp <-
-  readRDS(
-    file = file.path(
-      data_dir,
-      "worlddata",
-      "tmp.Rds"
-    )
-  )
+# tmp <-
+#  readRDS(
+#    file = file.path(
+#      data_dir,
+#      "worlddata",
+#      "tmp.Rds"
+#   )
+#  )
 ```
 
 # Create plots comparing distribution across different bands of big team science

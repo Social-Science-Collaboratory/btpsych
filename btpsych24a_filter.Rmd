@@ -93,24 +93,24 @@ doi <-
 
 # export data
 ## first million records
-write.csv(doi[1:1000000, ],
-  file.path(
-    data_dir,
-    "altmetric",
-    "btpsych24a_bib_doi1.csv"
-  ),
-  row.names = F
-)
+# write.csv(doi[1:1000000, ],
+#  file.path(
+#    data_dir,
+#    "altmetric",
+#    "btpsych24a_bib_doi1.csv"
+#  ),
+#  row.names = F
+#)
 
 ## rest of records
-write.csv(doi[1000001:1936245, ],
-  file.path(
-    data_dir,
-    "altmetric",
-    "btpsych24a_bib_doi2.csv"
-  ),
-  row.names = F
-)
+# write.csv(doi[1000001:1936245, ],
+#  file.path(
+#    data_dir,
+#    "altmetric",
+#    "btpsych24a_bib_doi2.csv"
+#  ),
+#  row.names = F
+#)
 ```
 
 # Prep contributorship coding sheet
@@ -312,14 +312,14 @@ DF <- left_join(DF, OA_sources, by = "so_id")
 # Export processed OpenAlex data
 ```{r}
 # save
-saveRDS(
-  DF,
-  file.path(
-    data_dir,
-    "openalex",
-    "btpsych24a_data_bib_processed.Rds"
-  )
-)
+# saveRDS(
+#  DF,
+#  file.path(
+#    data_dir,
+#    "openalex",
+#    "btpsych24a_data_bib_processed.Rds"
+#  )
+#)
 
 # optionally re-load
 # DF <-
@@ -352,13 +352,13 @@ DF.bts <- DF %>%
   arrange(desc(size.bin), doi)
 
 # export
-DF.bts %>%
-  write.csv(
-    file.path(
-      data_dir,
-      "topic",
-      "btpsych24a_topiccoding.csv"
-    ),
-    row.names = F
-  )
+# DF.bts %>%
+#  write.csv(
+#    file.path(
+#      data_dir,
+#      "topic",
+#      "btpsych24a_topiccoding.csv"
+#    ),
+#    row.names = F
+#  )
 ```
