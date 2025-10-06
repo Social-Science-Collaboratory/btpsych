@@ -1,6 +1,6 @@
-<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/26.0.4 Chrome/128.0.6613.186 Electron/32.2.5 Safari/537.36" version="26.0.4">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36" version="28.2.4">
   <diagram name="Page-1" id="vl-IJqzXdeP4moWUP0Z_">
-    <mxGraphModel dx="1466" dy="963" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="867" dy="863" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -40,7 +40,7 @@
         <mxCell id="YlTA8Tifjdp0jEE-UWbz-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="Udg6lFjPiZcbS1DrdZ88-4" target="YlTA8Tifjdp0jEE-UWbz-1" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="fNgtFryrIoo2Fps0CPug-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="Udg6lFjPiZcbS1DrdZ88-4" target="fNgtFryrIoo2Fps0CPug-1">
+        <mxCell id="fNgtFryrIoo2Fps0CPug-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" source="Udg6lFjPiZcbS1DrdZ88-4" target="fNgtFryrIoo2Fps0CPug-1" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="Udg6lFjPiZcbS1DrdZ88-4" value="&lt;u&gt;btpsych24a_filter.Rmd&lt;/u&gt;&lt;div&gt;filters data and prepares other files&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
@@ -50,7 +50,12 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="Udg6lFjPiZcbS1DrdZ88-35" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;used for&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="Udg6lFjPiZcbS1DrdZ88-6" target="Udg6lFjPiZcbS1DrdZ88-34" edge="1">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="660" y="450" />
+              <mxPoint x="400" y="450" />
+            </Array>
+          </mxGeometry>
         </mxCell>
         <mxCell id="Udg6lFjPiZcbS1DrdZ88-6" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;&lt;u&gt;btpsych24a_data_bib_processed.Rds&lt;/u&gt;&lt;/font&gt;&lt;div&gt;cleaned OpenAlex data&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
           <mxGeometry x="560" y="280" width="200" height="40" as="geometry" />
@@ -93,7 +98,7 @@
         <mxCell id="Udg6lFjPiZcbS1DrdZ88-22" value="&lt;span style=&quot;color: rgb(0, 0, 0); text-align: left;&quot;&gt;&lt;u style=&quot;&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;btpsych24a_contributorship.Rmd&lt;/font&gt;&lt;/u&gt;&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Contributorship figure&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
           <mxGeometry x="300" y="280" width="200" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="fNgtFryrIoo2Fps0CPug-7" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;exports&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="Udg6lFjPiZcbS1DrdZ88-25" target="fNgtFryrIoo2Fps0CPug-6">
+        <mxCell id="fNgtFryrIoo2Fps0CPug-7" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;exports&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="Udg6lFjPiZcbS1DrdZ88-25" target="fNgtFryrIoo2Fps0CPug-6" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="Udg6lFjPiZcbS1DrdZ88-25" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_impact.Rmd&lt;/u&gt;&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;Impact figure&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
@@ -102,14 +107,19 @@
         <mxCell id="Udg6lFjPiZcbS1DrdZ88-30" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;&lt;u style=&quot;&quot;&gt;btpsych24a_timetopic&lt;/u&gt;&lt;/font&gt;&lt;/span&gt;&lt;/font&gt;&lt;u style=&quot;color: light-dark(rgb(0, 0, 0), rgb(0, 0, 0)); background-color: transparent;&quot;&gt;.Rmd&lt;/u&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot; color=&quot;#000000&quot;&gt;Time and topic figure&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
           <mxGeometry x="300" y="380" width="200" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="Udg6lFjPiZcbS1DrdZ88-34" value="&lt;div style=&quot;&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;u style=&quot;&quot;&gt;btpsych24a_map.Rmd&lt;/u&gt;&lt;/span&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot; color=&quot;#000000&quot;&gt;Figure of geographical distribution and links to GDP&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
-          <mxGeometry x="560" y="480" width="200" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="Udg6lFjPiZcbS1DrdZ88-37" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;used&amp;nbsp;&lt;/font&gt;&lt;div style=&quot;font-size: 10px;&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;for&lt;/font&gt;&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="Udg6lFjPiZcbS1DrdZ88-36" target="Udg6lFjPiZcbS1DrdZ88-34" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="Udg6lFjPiZcbS1DrdZ88-36" value="&lt;div style=&quot;&quot;&gt;&lt;font style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_worlddata_gdp.csv &amp;amp; ...gdp.pc.csv&lt;/u&gt;&lt;/font&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;WorldBank GDP data&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
+        <mxCell id="Udg6lFjPiZcbS1DrdZ88-34" value="&lt;div style=&quot;&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;&lt;u style=&quot;&quot;&gt;btpsych24a_map.Rmd&lt;/u&gt;&lt;/span&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot; color=&quot;#000000&quot;&gt;Figure of geographical distribution and links to EIRD indicators&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
           <mxGeometry x="300" y="480" width="200" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Udg6lFjPiZcbS1DrdZ88-37" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;used&amp;nbsp;&lt;/font&gt;&lt;div style=&quot;font-size: 10px;&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;for&lt;/font&gt;&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="Udg6lFjPiZcbS1DrdZ88-36" target="Udg6lFjPiZcbS1DrdZ88-34" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="760" y="500" />
+              <mxPoint x="760" y="500" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Udg6lFjPiZcbS1DrdZ88-36" value="&lt;div style=&quot;&quot;&gt;&lt;font style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_weird.Rmd&lt;/u&gt;&lt;/font&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;processes EIRD indicators&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="560" y="480" width="200" height="40" as="geometry" />
         </mxCell>
         <mxCell id="Udg6lFjPiZcbS1DrdZ88-38" value="&lt;div style=&quot;&quot;&gt;&lt;font style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_paper.refs.Rmd&lt;/u&gt;&lt;/font&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;Pulls in multiple central and non-central files to create computationally reproducible description of results&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
           <mxGeometry x="560" y="600" width="200" height="70" as="geometry" />
@@ -120,13 +130,13 @@
         <mxCell id="YlTA8Tifjdp0jEE-UWbz-1" value="&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_author.n.correction.csv&lt;/u&gt;&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Manually extracted authorship counts for ultra-large collaborations&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
           <mxGeometry x="560" y="180" width="200" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="fNgtFryrIoo2Fps0CPug-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="fNgtFryrIoo2Fps0CPug-1" target="fNgtFryrIoo2Fps0CPug-3">
+        <mxCell id="fNgtFryrIoo2Fps0CPug-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="fNgtFryrIoo2Fps0CPug-1" target="fNgtFryrIoo2Fps0CPug-3" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="fNgtFryrIoo2Fps0CPug-1" value="&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_topic&lt;/u&gt;&lt;/font&gt;&lt;/span&gt;&lt;u style=&quot;color: light-dark(rgb(0, 0, 0), rgb(0, 0, 0)); background-color: transparent;&quot;&gt;coding.csv&lt;/u&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;File for manual extraction of topic codes from PsycINFO&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" vertex="1" parent="1">
+        <mxCell id="fNgtFryrIoo2Fps0CPug-1" value="&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_topic&lt;/u&gt;&lt;/font&gt;&lt;/span&gt;&lt;u style=&quot;color: light-dark(rgb(0, 0, 0), rgb(0, 0, 0)); background-color: transparent;&quot;&gt;coding.csv&lt;/u&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;File for manual extraction of topic codes from PsycINFO&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
           <mxGeometry x="820" y="180" width="200" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="fNgtFryrIoo2Fps0CPug-5" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;used for&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="fNgtFryrIoo2Fps0CPug-3" target="Udg6lFjPiZcbS1DrdZ88-30">
+        <mxCell id="fNgtFryrIoo2Fps0CPug-5" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;used for&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="fNgtFryrIoo2Fps0CPug-3" target="Udg6lFjPiZcbS1DrdZ88-30" edge="1">
           <mxGeometry x="-0.56" relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="920" y="360" />
@@ -136,35 +146,106 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="fNgtFryrIoo2Fps0CPug-3" value="&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_topic.csv&lt;/u&gt;&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;File containing manually extracted topic codes from PsycINFO&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" vertex="1" parent="1">
+        <mxCell id="fNgtFryrIoo2Fps0CPug-3" value="&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_topic.csv&lt;/u&gt;&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;File containing manually extracted topic codes from PsycINFO&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
           <mxGeometry x="820" y="280" width="200" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="fNgtFryrIoo2Fps0CPug-6" value="&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_altmetric_processed.Rds&lt;/u&gt;&lt;/font&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;Saved for convenience, but not shared due to proprietary nature of data&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" vertex="1" parent="1">
+        <mxCell id="fNgtFryrIoo2Fps0CPug-6" value="&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_altmetric_processed.Rds&lt;/u&gt;&lt;/font&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;Saved for convenience, but not shared due to proprietary nature of data&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
           <mxGeometry x="40" y="480" width="200" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="fNgtFryrIoo2Fps0CPug-12" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;exports&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="fNgtFryrIoo2Fps0CPug-9" target="fNgtFryrIoo2Fps0CPug-10">
+        <mxCell id="fNgtFryrIoo2Fps0CPug-12" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;exports&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="fNgtFryrIoo2Fps0CPug-9" target="fNgtFryrIoo2Fps0CPug-10" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="fNgtFryrIoo2Fps0CPug-9" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_cont_reliability_prep.Rmd&lt;/u&gt;&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;Prepares sheets for reliability checks" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="40" y="600" width="200" height="40" as="geometry" />
+        <mxCell id="fNgtFryrIoo2Fps0CPug-9" value="&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: transparent;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_cont_reliability_prep.Rmd&lt;/u&gt;&lt;/font&gt;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(51, 51, 51), rgb(63, 63, 63));&quot;&gt;Exports sheets for reliability checks and examines the intraclass correlation coefficient&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="40" y="580" width="200" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="fNgtFryrIoo2Fps0CPug-14" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;used for&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="fNgtFryrIoo2Fps0CPug-10" target="fNgtFryrIoo2Fps0CPug-13">
+        <mxCell id="fNgtFryrIoo2Fps0CPug-14" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;used for&lt;/font&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="fNgtFryrIoo2Fps0CPug-10" target="fNgtFryrIoo2Fps0CPug-13" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="fNgtFryrIoo2Fps0CPug-10" value="&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_cont_coding_rel.csv&lt;/u&gt;&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" vertex="1" parent="1">
+        <mxCell id="fNgtFryrIoo2Fps0CPug-10" value="&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_cont_coding.csv&lt;/u&gt;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;Random sample of coded records&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
           <mxGeometry x="40" y="700" width="200" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="fNgtFryrIoo2Fps0CPug-13" value="&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_cont_coding_rel.csv&lt;/u&gt;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;Examines the reliability of contributorship coding&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" vertex="1" parent="1">
+        <mxCell id="l7h250O9yq3p8ItzPuim-17" value="used for" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="fNgtFryrIoo2Fps0CPug-13" target="fNgtFryrIoo2Fps0CPug-9" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="270" y="820" />
+              <mxPoint x="270" y="610" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="fNgtFryrIoo2Fps0CPug-13" value="&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_cont_coding_rel.csv&lt;/u&gt;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;Records recoded by a seconde reviewer&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
           <mxGeometry x="40" y="800" width="200" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="fNgtFryrIoo2Fps0CPug-18" value="exports" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="fNgtFryrIoo2Fps0CPug-15" target="fNgtFryrIoo2Fps0CPug-17">
+        <mxCell id="fNgtFryrIoo2Fps0CPug-18" value="exports" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="1" source="fNgtFryrIoo2Fps0CPug-15" target="fNgtFryrIoo2Fps0CPug-17" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="fNgtFryrIoo2Fps0CPug-15" value="&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_altmetric_scramblescript.R&lt;/u&gt;&lt;/font&gt;&lt;br&gt;&lt;/div&gt;Scrambles proprietary Altmetric data (for sharing)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" vertex="1" parent="1">
+        <mxCell id="fNgtFryrIoo2Fps0CPug-15" value="&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_altmetric_scramblescript.R&lt;/u&gt;&lt;/font&gt;&lt;br&gt;&lt;/div&gt;Scrambles proprietary Altmetric data (for sharing)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
           <mxGeometry x="300" y="600" width="200" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="fNgtFryrIoo2Fps0CPug-17" value="&lt;span style=&quot;color: rgb(0, 0, 0); text-align: left;&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;&lt;u&gt;btpsych24a_altmetric1_scrambe.csv (and 2)&lt;/u&gt;&lt;/font&gt;&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Scrambled Altmetric data&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" vertex="1" parent="1">
+        <mxCell id="fNgtFryrIoo2Fps0CPug-17" value="&lt;span style=&quot;color: rgb(0, 0, 0); text-align: left;&quot;&gt;&lt;font style=&quot;font-size: 10px;&quot;&gt;&lt;u&gt;btpsych24a_altmetric1_scrambe.csv (and 2)&lt;/u&gt;&lt;/font&gt;&lt;/span&gt;&lt;br&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Scrambled Altmetric data&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
           <mxGeometry x="300" y="700" width="200" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="l7h250O9yq3p8ItzPuim-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="l7h250O9yq3p8ItzPuim-1" target="l7h250O9yq3p8ItzPuim-2" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="l7h250O9yq3p8ItzPuim-1" value="&lt;u&gt;btpsych24a_dedup.Rmd&lt;/u&gt;&lt;div&gt;uses Min Hash to identify potential duplicates&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="820" y="10" width="200" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="l7h250O9yq3p8ItzPuim-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="l7h250O9yq3p8ItzPuim-2" target="Udg6lFjPiZcbS1DrdZ88-4" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="l7h250O9yq3p8ItzPuim-2" value="&lt;u&gt;remove_list.Rds&lt;/u&gt;&lt;div&gt;List of records to be removed due to high similarity&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="820" y="80" width="200" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="l7h250O9yq3p8ItzPuim-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="l7h250O9yq3p8ItzPuim-7" target="Udg6lFjPiZcbS1DrdZ88-36" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="l7h250O9yq3p8ItzPuim-7" value="&lt;div style=&quot;&quot;&gt;&lt;font style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_worlddata_gdp.csv &amp;amp; ...gdp.pc.csv&lt;/u&gt;&lt;/font&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;WorldBank GDP data&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="820" y="380" width="200" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="l7h250O9yq3p8ItzPuim-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="l7h250O9yq3p8ItzPuim-8" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="760" y="500" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="790" y="460" />
+              <mxPoint x="790" y="500" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7h250O9yq3p8ItzPuim-8" value="&lt;div style=&quot;&quot;&gt;&lt;font style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_demo.csv&lt;/u&gt;&lt;/font&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;Democracy index data&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="820" y="440" width="200" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="l7h250O9yq3p8ItzPuim-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="l7h250O9yq3p8ItzPuim-9" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="760" y="500" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="790" y="520" />
+              <mxPoint x="790" y="500" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7h250O9yq3p8ItzPuim-9" value="&lt;div style=&quot;&quot;&gt;&lt;font style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_edu.csv&lt;/u&gt;&lt;/font&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;Secondary school enrollment&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;by country data&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="820" y="500" width="200" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="l7h250O9yq3p8ItzPuim-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="l7h250O9yq3p8ItzPuim-10" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="759.9999999999999" y="500" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="790" y="580" />
+              <mxPoint x="790" y="500" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l7h250O9yq3p8ItzPuim-10" value="&lt;div style=&quot;&quot;&gt;&lt;font style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_gdp.sector.csv&lt;/u&gt;&lt;/font&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;Industry-based GDP data&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="820" y="560" width="200" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="l7h250O9yq3p8ItzPuim-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="l7h250O9yq3p8ItzPuim-11" target="Udg6lFjPiZcbS1DrdZ88-36" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="l7h250O9yq3p8ItzPuim-11" value="&lt;div style=&quot;&quot;&gt;&lt;font style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_worlddata_pop.csv&lt;/u&gt;&lt;/font&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;World Population Prospects&amp;nbsp;&lt;/font&gt;&lt;span style=&quot;color: rgb(0, 0, 0); background-color: transparent;&quot;&gt;data&lt;/span&gt;&lt;span style=&quot;color: light-dark(rgb(0, 0, 0), rgb(19, 19, 19)); background-color: transparent;&quot;&gt;,&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;color: light-dark(rgb(0, 0, 0), rgb(19, 19, 19)); background-color: transparent;&quot;&gt;United Nations&amp;nbsp;&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="820" y="620" width="200" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="l7h250O9yq3p8ItzPuim-18" value="&lt;div style=&quot;&quot;&gt;&lt;font style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;&lt;u&gt;btpsych24a_supp.refs.Rmd&lt;/u&gt;&lt;/font&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;Pulls in multiple files to create computationally reproducible description of the supplemental analyses&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#CCE5FF;fontColor=#333333;strokeColor=#666666;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="560" y="700" width="200" height="70" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
