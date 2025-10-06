@@ -21,11 +21,8 @@ data_dir <- Sys.getenv("data_dir")
 options(scipen = 999)
 ```
 
-# SUPPLEMENTAL ANALYSIS
-
-
 ## Growth of Big Team Psychology Across Different Time Periods 
-
+Load data
 ```{r}
 # Load data
 DF.oa.filter <-
@@ -34,11 +31,8 @@ DF.oa.filter <-
 DF <- DF.oa.filter
 ```
 
-
+Function for calculating relative growth for a given time window
 ```{r}
-# Calculate relative growth for a given time window
-
-## Create function
 calculate_growth <- function(data, start_year, end_year) {
   # Create time window label
   time_window <- paste0(start_year + 1, "-", end_year - 1)
@@ -89,7 +83,7 @@ calculate_growth <- function(data, start_year, end_year) {
 }
 ```
 
-## Sensitivity analysis: three periods
+### Sensitivity analysis: three periods
 ```{r}
 # Define the three time windows
 time_windows <- list(
@@ -113,13 +107,11 @@ sensitivity_table <- growth_results |>
   )
 
 # view table
-view(sensitivity_table)
+# view(sensitivity_table)
 ```
 
-
+### Sensitivity analysis: three windows
 ```{r}
-## Sensitivity analysis: three windows
-
 # Define the three time windows with varying widths
 width_windows <- list(
   list(start = 2016, end = 2021, width = "4 year"), # 2017-2020
@@ -142,14 +134,13 @@ width_sensitivity_table <- width_results |>
   )
 
 # view table
-view(width_sensitivity_table)
+# view(width_sensitivity_table)
 ```
 
 ## Alternative Statistical Treatments of Mentions 
-
+### Whether record received any attention
+In OpenAlex
 ```{r}
-### Alternative statistical operationalization of impact (OpenAlex)
-
 oa.sens <- DF.oa.filter %>%
   # examine whether record received any attention
   mutate(
@@ -173,10 +164,9 @@ oa.sens <- DF.oa.filter %>%
   )
 ```
 
+In Altmetric
 ```{r}
-### Alternative statistical operationalization of impact Altmetric
-
-# open Altmetric data
+# open data
 DF.alt <- readRDS(
   file.path(
     data_dir,
@@ -184,11 +174,8 @@ DF.alt <- readRDS(
     "btpsych24a_altmetric_processed.Rds"
   )
 )
-```
 
-
-```{r}
-# sensitivity analyses
+# process data
 alt.sens <- DF.alt %>%
   # examine whether record received any attention
   mutate(
@@ -233,12 +220,12 @@ alt.sens <- DF.alt %>%
       round(2)
   )
 
+# Join reults
 sens <-
   full_join(oa.sens, alt.sens, by = "size.bin")
-
-view(sens)
 ```
 
+### Medians
 ```{r}
 ## Overall, median
 DF.alt %>%
@@ -276,15 +263,16 @@ DF.alt %>%
   )
 ```
 
-
+### Links with prestige of the journal
 ```{r}
-## Monotonic relationship between team size and prestige of the journal they publish in
 
 # Test correlation between team size and journal h-index
-cor.test(x = DF$authors.n, 
-         y = DF$h_index,
-         alternative = 'greater',
-         method = 'spearman')
+cor.test(
+  x = DF$authors.n,
+  y = DF$h_index,
+  alternative = 'greater',
+  method = 'spearman'
+)
 ```
 
 ## Other Potential Units of Analysis 
@@ -296,14 +284,14 @@ DF.o.w <- readRDS(
     data_dir,
     "worlddata",
     "DF.o.w.Rds"
-  ))
+  )
+)
 
+# fix minor coding issue
 DF.o.w[DF.o.w$unique_institutions == 0, ]$unique_institutions <- NA
 DF.o.w[DF.o.w$unique_country_codes == 0, ]$unique_country_codes <- NA
 
-# plot(DF.o.w$authors.n, DF.o.w$unique_institutions)
-# plot(DF.o.w$authors.n, DF.o.w$unique_country_codes)
-
+# calculate mean and median number of institutions and countries involved in the work, by size bin
 DF.o.w %>%
   group_by(size.bin) %>%
   summarise(
@@ -335,43 +323,34 @@ cor.test(
   DF.o.w$citation.p.y,
   method = "spearman"
 )
-
-## correlation between number of countries involved and scholarly citations
-cor.test(
-  DF.o.w$unique_country_codes,
-  DF.o.w$cited_by_count,
-  method = "spearman"
-)
 ```
 
-
+Look at Altmetric data
 ```{r}
-
 # Join Altmetric data with institution and country data
-DF.alt.w <- 
+DF.alt.w <-
   left_join(DF.alt, DF.o.w, by = "id")
 
 ## correlation between number of countries involved and news mentions
 cor.test(
   DF.alt.w$unique_country_codes,
-  DF.alt.w$news,
+  DF.alt.w$news.p.y,
   method = "spearman"
 )
 
 ## correlation between number of countries involved and social media mentions
 cor.test(
   DF.alt.w$unique_country_codes,
-  DF.alt.w$gen,
+  DF.alt.w$gen.p.y,
   method = "spearman"
 )
 
-## correlation between number of countries involved and social media mentions
+## correlation between number of countries involved and policy mentions
 cor.test(
   DF.alt.w$unique_country_codes,
-  DF.alt.w$Policy.mentions,
+  DF.alt.w$policy.p.y,
   method = "spearman"
 )
-
 ```
 
 ## Division of Labor in Ultra-Large Studies
@@ -466,9 +445,8 @@ DF.rel <- rbind(DF.rater2, DF.rater1) %>%
 
 # Examine reliability
 ```{r}
-
 ICC(
-  DF.rel  %>%
+  DF.rel %>%
     select(G, J)
 )
 ```
