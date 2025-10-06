@@ -336,18 +336,8 @@ DF %>%
   group_by(publication_year) %>%
   summarise(n = n())
 
-# calculate number and percentage of papers with 10 + authors
-DF.oa.filter %>%
-  filter(authors.n > 9) %>%
-  nrow()
-
-DF.oa.filter %>%
-  filter(authors.n > 9) %>%
-  nrow() /
-  nrow(DF.oa.filter)
-
 # delete vestigial
-rm(per.DF, DF)
+rm(per.DF)
 ```
 
 ## Primary topics of inquiry
@@ -697,7 +687,7 @@ impact.by.size[impact.by.size$size.bin == "30 - 39", ] %>% View()
 #####################
 # citation comparison
 #####################
-8.90 / 0.927
+8.95 / 0.927
 mes(
   n.2 = impact.by.size[17, ]$n,
   m.2 = impact.by.size[17, ]$m,

@@ -75,7 +75,7 @@ DF <-
 ```
 
 # Prep Altmetric DOIs
-The below code was used to export DOIs, which were used by JT to export Altmetric files in batches of 25,000 
+The below code was used to export DOIs, which were used by JT to export Altmetric files in batches of 20,000 
 ```{r altmetric.prep, include = F, eval = F}
 # bind id information
 ids <-
@@ -114,6 +114,7 @@ doi <-
 ```
 
 # Prep contributorship coding sheet
+Extract 1000 records for author contributorship statement analysis
 ```{r eval = F}
 DF %>%
   # isolate largest team efforts
@@ -163,7 +164,7 @@ rm(DF.na)
 ```
 
 # Correct author counts for records with > 100 authors
-The OpenAlex API labels these papers as only having 100 authors.
+The OpenAlex API labels these papers as only having 100 authors. We manually accessed and checked the number of authors for these entries.
 ```{r}
 # create file if it doesn't already exist (it should)
 if (!file.exists(file.path(
@@ -329,7 +330,7 @@ DF <- left_join(DF, OA_sources, by = "so_id")
 ```
 
 
-# Export list of big team efforts for topic coding
+# Export list of big team efforts for topic coding according to APA's PsycInfo categorization
 ```{r eval = F}
 DF.bts <- DF %>%
   # select random sample
