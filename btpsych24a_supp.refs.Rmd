@@ -454,7 +454,6 @@ ICC(
 
 ## Averaging across all big team psychology efforts...
 ```{r}
-
 # Load author contribution processed data
 DF.c <- readRDS(
   file.path(
