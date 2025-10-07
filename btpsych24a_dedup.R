@@ -85,8 +85,8 @@ identify_duplicates <- function(df, minhash) {
 # To speed up min hashing, we divided the data set in batches.
 # Note: similarity comparisons are only made within a batch.
 # Because of that, we sorted the entries by first author name
-# and added a 50% overlap among batches
-# to minimize the risk that duplicates end up in different batches
+# and added a 50% overlap among batches to minimize the risk 
+# that duplicates end up in different batches
 
 # set up number of batches
 n_batch <- 10
@@ -111,9 +111,7 @@ numCores <- 10
 #Create cluster
 cl <- makeCluster(numCores)
 # Export the data frame list and min hash custom function to each cluster
-print(start_export <- Sys.time())
 clusterExport(cl, varlist = c("identify_duplicates", "df_list", "minhash"))
-print(finish_export <- Sys.time() - start_export)
 
 #Load the libraries in all clusters
 clusterEvalQ(cl, {

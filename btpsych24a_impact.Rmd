@@ -317,6 +317,7 @@ viz.DF2 <-
   ))
 ```
 
+# Plot linear and quadratic models of outcomes of interest by team size
 ```{r}
 panel.figs <-
   lapply(
@@ -374,37 +375,3 @@ ggdraw() +
   draw_plot(panel.figs[[3]], x = .1, y = .3, width = .18, height = .18) +
   draw_plot(panel.figs[[4]], x = .575, y = .3, width = .18, height = .18)
 ```
-
-# New (exploratory): Look at links between country and impact
-```{r}
-# add institution data to DF.alt
-DF.alt2 <- DF %>%
-  # remove https://doi.org/ from doi
-  mutate(
-    doi = str_replace(
-      doi,
-      "https://doi.org/",
-      ""
-    )
-  ) %>%
-  select(doi, unique_country_codes) %>%
-  right_join(
-    x = .,
-    y = DF.alt %>% rename(doi = DOI),
-    by = "doi"
-  )
-
-# cor tests
-## citations
-cor.test(DF$unique_country_codes, DF$citation.p.y, method = "spearman")
-
-## policy
-cor.test(DF.alt2$unique_country_codes, DF.alt2$policy.p.y, method = "spearman")
-
-# news
-cor.test(DF.alt2$unique_country_codes, DF.alt2$news.p.y, method = "spearman")
-
-# social media
-cor.test(DF.alt2$unique_country_codes, DF.alt2$gen.p.y, method = "spearman")
-```
-

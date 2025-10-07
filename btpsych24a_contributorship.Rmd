@@ -24,7 +24,7 @@ options(scipen = 999)
 
 # Open OpenAlex data
 ```{r open.alex, include = F}
-DF.oa <-
+DF.oa.filter <-
   # open data
   readRDS(file.path(
     data_dir,
@@ -70,10 +70,10 @@ DF.c <-
 
 # Merge OpenAlex and contributorship data
 ```{r}
-DF <-
+DF.oa.c <-
   inner_join(
-    DF.c, #JT: changed to inner join to analyze with partial data set
-    DF.oa,
+    DF.c,
+    DF.oa.filter,
     by = "id"
   )
 
@@ -82,7 +82,7 @@ DF <-
 
 # Identify number of contributors per category
 ```{r}
-DF <- DF %>%
+DF.oa.c <- DF.oa.c %>%
   # pivot longer for easier processing
   pivot_longer(
     cols = c(conception:funding),
@@ -134,7 +134,7 @@ DF <- DF %>%
 
 # identify dominant contribution category
 tmp <-
-  DF %>%
+  DF.oa.c %>%
 
   # process each paper separately
   group_by(id) %>%
@@ -164,14 +164,14 @@ tmp2 <- tmp %>%
   filter(dominant == "yes") %>%
   group_by(category.main) %>%
   summarise(
-    category.main.prop = n() / (DF$id %>% unique %>% length), # divided by number of unique records
+    category.main.prop = n() / (DF.oa.c$id %>% unique %>% length), # divided by number of unique records
     category.main.prop = round(category.main.prop, 2) * 100
   )
 
 # merge data with its descriptives
-DF.2 <-
+DF.oa.c <-
   # merge dataframe (DF) and category descriptives (tmp)
-  left_join(DF, tmp, by = "id") %>%
+  left_join(DF.oa.c, tmp, by = "id") %>%
 
   # merge dominant category descriptives (tmp2)
   left_join(., tmp2, by = "category.main") %>%
@@ -197,18 +197,21 @@ DF.2 <-
   select(-citation.p.y)
 
 # export processed data
-saveRDS(
-  DF.2,
-  file.path(data_dir, 'contributorship', 'btpsych24a_cont_processed.Rds')
-)
+# saveRDS(
+#  DF.oa.c,
+#  file.path(data_dir, 'contributorship', 'btpsych24a_cont_processed.Rds')
+# )
 ```
 
 # Create figure
 ## Plot the percentage of contributing authors within each category
 Prep data
 ```{r}
+
+#DF.oa.c <- readRDS(file.path(data_dir, 'contributorship', 'btpsych24a_cont_processed.Rds'))
+
 overall.fig.DF <-
-  DF.2 %>%
+  DF.oa.c %>%
   group_by(category) %>%
   summarise(
     M = mean(prop.n, na.rm = T),
@@ -226,7 +229,7 @@ overall.fig <-
 
   # violin and box plots
   geom_violin(
-    data = DF.2,
+    data = DF.oa.c,
     aes(fill = category),
     alpha = .5,
     color = NA,
@@ -234,7 +237,7 @@ overall.fig <-
   ) +
 
   geom_boxplot(
-    data = DF.2,
+    data = DF.oa.c,
     width = 0.1,
     color = "grey70",
     alpha = 0.5,
@@ -256,8 +259,7 @@ overall.fig <-
 Prep data
 ```{r}
 # focus on instances where a collaboration was focused on a specific type of contribution
-#JT: suggestion: select cases where a specific contribution category predominated in number of author contributions
-sub.fig.DF <- DF.2 %>%
+sub.fig.DF <- DF.oa.c %>%
   filter(dominant == 'yes')
 ```
 
@@ -292,4 +294,6 @@ combined.fig <-
     rel_heights = c(4, 6),
     labels = c("A", "B")
   )
+
+  print(combined.fig)
 ```

@@ -107,7 +107,7 @@ sensitivity_table <- growth_results |>
   )
 
 # view table
-# view(sensitivity_table)
+view(sensitivity_table)
 ```
 
 ### Sensitivity analysis: three windows
@@ -134,7 +134,7 @@ width_sensitivity_table <- width_results |>
   )
 
 # view table
-# view(width_sensitivity_table)
+ view(width_sensitivity_table)
 ```
 
 ## Alternative Statistical Treatments of Mentions 
@@ -441,10 +441,8 @@ DF.rel <- rbind(DF.rater2, DF.rater1) %>%
   # pivot
   pivot_wider(names_from = Coder, values_from = n) %>%
   arrange(G)
-```
 
 # Examine reliability
-```{r}
 ICC(
   DF.rel %>%
     select(G, J)
@@ -492,5 +490,95 @@ DF.c %>%
   )
 ```
 
+## Plot the percentage of contributing authors within each category
+
+```{r}
+# Prep data
+DF.oa.c <- readRDS(file.path(data_dir, 'contributorship', 'btpsych24a_cont_processed.Rds'))
+
+overall.fig.DF <-
+  DF.oa.c %>%
+  group_by(category) %>%
+  summarise(
+    M = mean(prop.n, na.rm = T),
+    sd = sd(prop.n, na.rm = T),
+    n = length(unique(id)),
+    se = sd / sqrt(n)
+  ) %>%
+  rename('prop.n' = 'M')
+
+# Plot the violin and box plots
+overall.fig <-
+  ggplot(overall.fig.DF, aes(x = category, y = prop.n)) +
+
+  # violin and box plots
+  geom_violin(
+    data = DF.oa.c,
+    aes(fill = category),
+    alpha = .5,
+    color = NA,
+    width = 1.2
+  ) +
+
+  geom_boxplot(
+    data = DF.oa.c,
+    width = 0.1,
+    color = "grey70",
+    alpha = 0.5,
+    fill = NA,
+    outlier.shape = NA
+  ) +
+
+  # improve aesthetics
+  theme(legend.position = "none") +
+  labs(x = "", y = "proportion of authors") +
+  scale_x_discrete(
+    labels = c('conceptualization', 'execution', 'analysis', 'writing')
+  ) +
+  scale_fill_brewer(palette = "Pastel2") +
+  scale_color_brewer(palette = "Pastel2")
+```
+
+## Plot the contribution patterns of articles with a dominant contribution category
+Prep data
+```{r}
+# focus on instances where a collaboration was focused on a specific type of contribution
+sub.fig.DF <- DF.oa.c %>%
+  filter(dominant == 'yes')
+
+# Plot the contribution patterns of category-focused collaborations
+
+sub.fig <-
+  ggplot(sub.fig.DF, aes(x = category, y = prop.n)) +
+
+  # wrap by category
+  facet_wrap(vars(category.main)) +
+
+  # create line graphs
+  geom_line(aes(group = id, color = category.main), alpha = .2, linewidth = 1) +
+
+  # improve aesthetics
+  theme(legend.position = "none") +
+  labs(x = "type of contribution", y = "proportion of authors") +
+  scale_x_discrete(
+    labels = c('conceptualization', 'execution', 'analysis', 'writing')
+  ) +
+  scale_fill_brewer(palette = "Pastel2") +
+  scale_color_brewer(palette = "Pastel2")
+```
+
+## Combine figures
+```{r}
+combined.fig <-
+  plot_grid(
+    overall.fig,
+    sub.fig,
+    nrow = 2,
+    rel_heights = c(4, 6),
+    labels = c("A", "B")
+  )
+
+  print(combined.fig)
+```
 
 

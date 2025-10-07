@@ -7,7 +7,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-This code creates a spreadsheet for checking the reliability of contributorship coding.
+This code creates a spreadsheet for checking the reliability of contributorship coding and examines the Intraclass Correlation Coefficient of coding by JT and GG
 
 ```{r}
 # load libaries
@@ -78,4 +78,65 @@ if (
   )
 }
 ```
+
+# GG manually coded the 20 entries and saved them in btpsych24a_cont_coding_rel.csv
+
+# Open and process coded contributorship data
+```{r}
+# recoded records from GG
+DF.g <-
+  read.csv(
+    file.path(data_dir, 'contributorship', 'btpsych24a_cont_coding_rel.csv'),
+    na.string = "N/A"
+  ) %>%
+
+  # select relevant variables
+  select(id, conception:draft.writing, Coder)
+
+# original coded records
+DF.j <-
+  read.csv(
+    file.path(data_dir, 'contributorship', 'btpsych24a_cont_coding.csv'),
+    na.string = "N/A"
+  ) %>%
+
+  # select relevant variables
+  select(id, conception:draft.writing, Coder) %>%
+
+  # semi join (focusing only on records that have been recoded by GG)
+  semi_join(y = DF.g, by = 'id')
+
+# bind files
+DF.rel <- rbind(DF.g, DF.j) %>%
+
+  # pivot data for processing
+  pivot_longer(conception:draft.writing) %>%
+
+  # count number of authors who have contributed to each category
+  mutate(
+    # if N/A leave blank, otherwise count number of commas and add 1
+    n = if_else(
+      is.na(value),
+      NA,
+
+      # otherwise, count number of commas and add 1
+      str_count(value, ",") + 1
+    )
+  ) %>%
+
+  select(-value) %>%
+
+  # pivot
+  pivot_wider(names_from = Coder, values_from = n) %>%
+  arrange(G)
+```
+
+# Examine reliability
+```{r}
+ICC(
+  DF.rel  %>%
+    select(G, J)
+)
+```
+
 

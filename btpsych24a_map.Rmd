@@ -64,23 +64,19 @@ DF.o.w <-
   left_join(DF.o, DF.w, by = "iso3")
 
 # export
-saveRDS(
-  DF.o.w,
-  file = file.path(
-    data_dir,
-    "worlddata",
-    "DF.o.w.Rds"
-  )
-)
-
-# reload
-# DF.o.w <- readRDS(
+# saveRDS(
+#  DF.o.w,
 #  file = file.path(
 #    data_dir,
 #    "worlddata",
-#    "DF.o.w.Rds"
-#  )
-#)
+#    "DF.o.w.Rds"))
+
+# reload
+ DF.o.w <- readRDS(
+  file = file.path(
+    data_dir,
+    "worlddata",
+    "DF.o.w.Rds"))
 
 # prepare population data
 DF.pop <-
@@ -116,24 +112,21 @@ tmp <- DF.pop %>%
   rename("iso3" = "Country.Code") %>%
   left_join(DF.w2, by = "iso3")
 
-# export
-saveRDS(
-  tmp,
-  file = file.path(
-    data_dir,
-    "worlddata",
-    "tmp.Rds"
-  )
-)
+# optional: export RIDE indicators dataset
+# saveRDS(
+#  tmp,
+#  file = file.path(
+#    data_dir,
+#    "worlddata",
+#    "tmp.Rds"))
 
-# tmp <-
-#  readRDS(
-#    file = file.path(
-#      data_dir,
-#      "worlddata",
-#      "tmp.Rds"
-#   )
-#  )
+# optional: reload RIDE indicators dataset
+ tmp <-
+  readRDS(
+    file = file.path(
+      data_dir,
+      "worlddata",
+      "tmp.Rds"))
 ```
 
 # Create plots comparing distribution across different bands of big team science
@@ -307,12 +300,8 @@ dummy_plot <-
     legend.text = element_text(size = 9)
   )
 
-# Extract the guide-box from the dummy plot, and remove any zeroGrob[NULL] elements to get the legend
-all_guides <-
-  cowplot:::get_plot_component(dummy_plot, "guide-box", return_all = TRUE)
-
-legend <- all_guides[[which(!sapply(all_guides, inherits, "zeroGrob"))]]
-rm(all_guides)
+# Extract the legend from the dummy plot
+legend <- cowplot::get_legend(dummy_plot)
 
 # Combine the legend extracted from the dummy plot to the base figure
 legend_plot <-
@@ -537,4 +526,6 @@ final.fig <- plot_grid(
   rel_heights = c(4.5, 0.5, 5),
   labels = c("A", "B", "")
 )
+
+print(final.fig)
 ```
