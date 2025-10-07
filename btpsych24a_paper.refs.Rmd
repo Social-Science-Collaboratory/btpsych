@@ -980,6 +980,13 @@ ggplot(
 ### Bayesian alternatives
 "In these analyses, including a quadratic parameter improved model fit ..."
 ```{r bayes, message=FALSE, warning=FALSE}
+# create standardized predictors
+DF.oa.filter <- DF.oa.filter |>
+  mutate(
+    a_s = scale(authors.n)[, 1], # standardized author count
+    a_s2 = a_s^2 # squared sstandardized term
+  )
+
 # set weakly-informative priors for standardized predictors
 priors_standard <- c(
   prior(normal(0, 1), class = "b"), # slope
