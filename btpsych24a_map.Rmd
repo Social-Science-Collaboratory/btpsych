@@ -99,7 +99,7 @@ DF.pop <- DF.pop %>%
   select(Country.Code, pop)
 
 # prepare merge with other indicators
-DF.w2 <- DF.w %>%
+DF.w2 <- DF.o.w %>%
   group_by(iso3) %>%
   summarise(
     r = mean(r, na.rm = T),
@@ -111,22 +111,6 @@ DF.w2 <- DF.w %>%
 tmp <- DF.pop %>%
   rename("iso3" = "Country.Code") %>%
   left_join(DF.w2, by = "iso3")
-
-# optional: export RIDE indicators dataset
-# saveRDS(
-#  tmp,
-#  file = file.path(
-#    data_dir,
-#    "worlddata",
-#    "tmp.Rds"))
-
-# optional: reload RIDE indicators dataset
- tmp <-
-  readRDS(
-    file = file.path(
-      data_dir,
-      "worlddata",
-      "tmp.Rds"))
 ```
 
 # Create plots comparing distribution across different bands of big team science
@@ -300,9 +284,15 @@ dummy_plot <-
     legend.text = element_text(size = 9)
   )
 
-# Extract the legend from the dummy plot
-legend <- cowplot::get_legend(dummy_plot)
+# convert to grob
+dummy_plot <- ggplotGrob(dummy_plot)
 
+# Extract legend
+legend <- dummy_plot$grobs[grep("guide-box", sapply(dummy_plot$grobs, function(x) x$name))]
+
+# plot legend
+legend <- plot_grid(plotlist = legend, ncol = 1)
+  
 # Combine the legend extracted from the dummy plot to the base figure
 legend_plot <-
   plot_grid(base_plot, legend, nrow = 2, rel_heights = c(1, 0.2))
