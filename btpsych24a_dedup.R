@@ -1,11 +1,7 @@
-####################################
-#### Minhash and locality-sensitive hashing
-#### https://cran.r-project.org/web/packages/textreuse/vignettes/textreuse-minhash.html
-####################################
+# Minhash and locality-sensitive hashing
+# https://cran.r-project.org/web/packages/textreuse/vignettes/textreuse-minhash.html
 
-####################################
-##### set-up
-####################################
+# set-up
 source("setup.R")
 
 # specify data directory
@@ -17,9 +13,8 @@ df <-
     file.path(data_dir, 'openalex', 'btpsych24a_data_bib_processed.Rds')
   )
 
-####################################
-##### normalize and remove duplicate titles
-####################################
+
+# normalize and remove duplicate titles
 df <- df %>%
   # remove non-normalized titles (less data to process)
   distinct(title, .keep_all = T) %>%
@@ -45,10 +40,7 @@ df <- df %>%
   # (OpenAlex ID, clean title, first author name and id, number of citations)
   select(id, clean_title, first_author, first_author_id, cited_by_count)
 
-####################################
-# Generate MinHash signatures
-####################################
-# generate minhash function
+# generate MinHash function
 minhash <- minhash_generator(seed = 1967)
 
 # custom function to apply minhash, locally-sensitive hashing, and flag duplicate candidates
@@ -73,7 +65,6 @@ identify_duplicates <- function(df, minhash) {
   candidates <-
     lsh_candidates(buckets)
 
-  ####################################
   # identify similar candidates and set lower limit of 0.05 similarity
   similarities <-
     lsh_compare(candidates, corpus, jaccard_similarity) %>%
@@ -206,7 +197,7 @@ similarities <- readRDS(file.path(
 ))
 
 # -------------
-# NC addition: check whether it is accurate to filter based on first author ID
+# Check whether it is accurate to filter based on first author ID
 similarities %>%
 
   # filter records that have high title similarity scores

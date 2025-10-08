@@ -37,7 +37,7 @@ DF.oa.filter <-
 ```
 
 # Open and process contributorship data
-Keep in mind that there are some instances where you couldn't actually code
+Keep in mind that there are some instances where we couldn't actually code
 ```{r}
 DF.c <-
   # open data

@@ -1,7 +1,7 @@
 ###
 # title: "Scramble proprietary Altmetric data for sharing"
-# author: "John Takayanagi"
-# reviewer: "Nicholas A. Coles"
+# author: "Anonymized for peer review (JT)"
+# reviewer: "Anonymized for peer review (NC)"
 ###
 
 # setup
