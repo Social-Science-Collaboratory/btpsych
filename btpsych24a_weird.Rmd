@@ -6,7 +6,7 @@ output: word_document
 editor_options: 
   chunk_output_type: console
 ---
-This code loads and processes data sets with Education, Industrialization, Richness, and Democracy indicators and exports a data set for analyses of WEIRDness in big team psychology papers
+This code loads and processes data sets with Education, Industrialization, Richness, and Democracy indicators and exports a data set for analyses of WEIRDness in big team psychology papers.
 
 # Setup
 ```{r setup, include= F}

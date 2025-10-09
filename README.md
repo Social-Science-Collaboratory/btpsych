@@ -20,21 +20,29 @@ To further support efforts to assess the computational reproducibility of our wo
 # Description of major files
 
 ## Main directory
+
+•	btpsych_altmetric_scramblescript.R: This code scrambles proprietary data from Altmetric and produces a data set with a similar structure, for code reproducibility purposes
 •	btpsych24a_api.Rmd: This code downloads all psychology papers published between 2000 and 2023 from OpenAlex using their API package. It then merges these files and exports as a .RDS file.
-•	btpsych24a_cont_reliability_prep.Rmd: This code creates a spreadsheet for checking the reliability of contributorship coding.
-•	btpsych24a_cont_reliability.Rmd: This code examines the reliability of contributorship coding by JT and GG.
+•	btpsych24a_cont_reliability_prep.Rmd: This code creates a spreadsheet for checking the reliability of contributorship coding examines the reliability of contributorship coding by JT and GG.
 •	btpsych24a_contributorship.Rmd: This code creates the contributorship figure
+•	btpsych24a_dedup.R: This code identifies potential duplicates among OpenAlex entries by analyzing the similarity between the paper's titles using a MinHash technique
 •	btpsych24a_filter.Rmd: This code processes OpenAlex data and prepares other essential data files.
+•	btpsych24a_geocode.Rmd: This code processes big team psychology geographical distribution and participation rates data
 •	btpsych24a_impact.Rmd: This code prepares a figure that illustrates links between team size and multiple measures of impact.
-•	btpsych24a_map.Rmd: This code creates a figure that (a) illustrates the geographical distribution of big team leadership and participation rates in psychology, and (b) examines links between those rates and indicators of economic wealth (GDP).
+•	btpsych24a_map.Rmd: This code creates a figure that (a) illustrates the geographical distribution of big team leadership and participation rates in psychology, and (b) examines links between those rates and country Education, Industrialization, Richness, and Democracy indicators.
 •	btpsych24a_paper.refs.Rmd: This code compiles the numbers quoted in the paper.
-•	btpsych24a_SessionInfo.txt: Session info for the main computing device used to develop and run the code.
+•	btpsych24a_supp.refs.Rmd: This code compiles the numbers quoted in the supplement.
 •	btpsych24a_timetopic.Rmd: This code creates a figure illustrating (a) frequency of big team psychology efforts over time, and (b) the topics they study.
+•	btpsych24a_weird.Rmd: This code loads and processes data sets with Education, Industrialization, Richness, and Democracy indicators and exports a data set for analyses of WEIRDness in big team psychology papers.
+•	setup.R: This code contains all libraries and options settings needed for the other scripts
 
 ### admin folder
 •	btpsych24a_FileOrganization.png: This figure illustrates the project’s computational workflow, highlighting the main scripts and data sets that were used in our analysis. 
 •	DataRetentionGuidelines_012625.pdf: Copy of Data Retention Guidelines at the corresponding authors’ institution.
 •	PsycInfo_AcceptableUse.pdf: Confirmation of permissible re-use of PsycInfo topic labels.
+•	btpsych24a_SessionInfo.txt: Session info for the main computing device used to develop and run the code.
+•	btpsych24a_DataTransparencyGuidelines.docx: This document contains the Data Retention Guidelines for third-party resources requested by the Psychological Science journal
+
 
 ### data folder
 •	btpsych24a_codebook.xlsx: This spreadsheet is a codebook with variable descriptions for each of the spreadsheets within the data folder.  
@@ -52,6 +60,12 @@ To further support efforts to assess the computational reproducibility of our wo
 •	btpsych24a_cont_coding.csv: this spreadsheet contains a set of 1000 psychology papers, their identifying information extracted from OpenAlex, their extracted contribution statements, and the categories of their authors’ contributions coded by the researchers.
 •	btpsych24a_cont_processed.Rds: This R object contains the processed contributorship data coded by the researchers and recorded in btpsych24a_cont_coding.csv.
 
+#### deduplication subfolder
+•	remove_list.Rds:
+•	similarities_10batches_5%sim.Rds: This R object contains the final product of the MinHash title similarity analysis. For this analysis, the data set was divided in 10 batches, and we kept only title pairs with a Jaccard similarity of at least 5%
+•	similarities_validation_10batches.csv: This spreadsheet contains a random sample of 200 title pairs from the similarities_10batches_5%sim.Rds object, equally distributed among 10 score bins(5%-10%, 10%-20%, 20%-30%, etc.), to check the validity of flagging entries with a Jaccard similarity of 80% or more.  
+•	similarities_validation_10batches_J.csv: This is a coded version of the similarities_validation_10batches.csv, with a rating from J indicating whether the entries in a similarity pair were duplicates or not. 
+
 #### location subfolder
 •	btpsych24a_geocode.Rds: This R object contains geographical data from the authors of big team psychology paper and their affiliated institutions.
 
@@ -68,14 +82,40 @@ To further support efforts to assess the computational reproducibility of our wo
 •	btpsych24a_topiccoding.csv: This spreadsheet contains a set of 2193 psychology papers randomly extracted from the OpenAlex dataset and stratified by team size, which was used to create btpsych24a_topic.csv.
 
 #### worlddata subfolder
+•	btpsych24a_weird.Rds: This R object compiles data from country-level estimates of WEIRD indicators: (1) secondary school gross enrollment rates (UNESCO Institute of Statistics, 2024), (2) industrialization (% of Gross Domestic Product ascribed to industry activity; World Development Indicators, 2025), (3) wealth (Gross Domestic Product per capita; World Bank, 2025), and (4) democratic tendencies (the Democracy Index; Economist Intelligence Unit, 2025).
+•	btpsych24a_DF.o.w.Rds: This R object is a combination of the OpenAlex processed dataset (btpsych24a_data_bib_processed.Rds) and the WEIRD indicators dataset (btpsych24a_weird.Rds).
+
+##### demo subfolder
+•	btpsych24a_demo.csv: This spreadsheet contains data about democracy index by year and country
+•	btpsych24a_demo_codebook1.md: This document contains information about the Democracy Index data by the Economist Intelligence Unit.
+•	btpsych24a_demo_codebook2.json: This document contains information about the Democracy Index data by the Economist Intelligence Unit.
+
+##### edu subfolder
+•	btpsych24a_edu.csv: This spreadsheet contains data about secondary school gross enrollment rates by year and country.
+•	btpsych24a_edu_codebook1.csv: This spreadsheet is the first codebook with variable descriptions for each of the btpsych24a_edu.csv spreadsheet.  Exported from UNESCO Institute of Statistics
+•	btpsych24a_edu_codebook2.csv: This spreadsheet is the second codebook with variable descriptions for each of the btpsych24a_edu.csv spreadsheet.  Exported from UNESCO Institute of Statistics
+
+
+##### gdp subfolder
 •	btpsych24a_f.author_gdp.csv: This spreadsheet contains data about GDP, GDP per capita, and the number of first authors of big team psychology papers by country. 
 •	btpsych24a_s.author_gdp.csv: This spreadsheet contains data about GDP, GDP per capita, and the number of non-first authors of big team psychology papers by country.
 •	btpsych24a_worlddata_gdp.csv: This spreadsheet contains GDP data for most countries and was obtained from the WorldBank GDP data.
+•	btpsych24a_worlddata_gdp_codebook1.csv: This spreadsheet is the first codebook for the btpsych24a_worlddata_gdp.csv file. Exported from WorldBank.
+•	btpsych24a_worlddata_gdp_codebook2.csv: This spreadsheet is the second codebook for the btpsych24a_worlddata_gdp.csv file. Exported from WorldBank.
+
+##### gdp.pc subfolder
 •	btpsych24a_worlddata_gdp_pc.csv: This spreadsheet contains data of GDP per capita for most countries and was obtained from the WorldBank GDP data.
 •	btpsych24a_worlddata_gdp.pc_codebook1.csv: This spreadsheet is the first codebook for the btpsych24a_worlddata_gdp_pc.csv file. Exported from WorldBank.
 •	btpsych24a_worlddata_gdp.pc_codebook2.csv: This spreadsheet is the second codebook for the btpsych24a_worlddata_gdp_pc.csv file. Exported from WorldBank.
-•	btpsych24a_worlddata_gdp_codebook1.csv: This spreadsheet is the first codebook for the btpsych24a_worlddata_gdp.csv file. Exported from WorldBank.
-•	btpsych24a_worlddata_gdp_codebook2.csv: This spreadsheet is the second codebook for the btpsych24a_worlddata_gdp.csv file. Exported from WorldBank.
+
+##### gdp.sector subfolder
+•	btpsych24a_gdp.sector.csv: This spreadsheet contains data of the percentage of GDP ascribed to industry activity and was obtained from the World Development Indicators data.
+•	btpsych24a_gdp.sector_codebook1.csv: This spreadsheet is the  codebook for the btpsych24a_gdp_sector.csv file. Exported from World Development Indicators.
+
+##### population subfolder
+•	btpsych24a_worlddata_pop.csv: This spreadsheet contains data of the world's population size by country and year and was obtained from the World Development Indicators data.
+•	btpsych24a_worlddata_pop_codebook1.csv: This spreadsheet is the first codebook for the btpsych24a_worlddata_pop.csv file. Exported from World Development Indicators.
+•	btpsych24a_worlddata_pop_codebook2.csv: This spreadsheet is the second codebook for the btpsych24a_worlddata_pop.csv file. Exported from World Development Indicators.
 
 ### writing folder
 •	btpsych_manuscript.docx: This document contains the pre-submission version of the manuscript 

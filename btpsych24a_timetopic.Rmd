@@ -277,7 +277,7 @@ tmp <- DF %>%
 f.label <- unique(DF$bin.label)
 names(f.label) <- unique(DF$size.bin)
 
-# reorder labels (move "5 - 9" to second position and "100 +" to end)  #JT: adjusted text
+# reorder labels (move "5 - 9" to second position and "100 +" to end)
 time.DF <- DF %>%
   mutate(bin.label = factor(bin.label)) %>%
   mutate(

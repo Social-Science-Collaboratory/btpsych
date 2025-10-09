@@ -4,7 +4,7 @@ author: "Joao Takayanagi"
 date: "2025-10-02"
 output: html_document
 ---
-This code compiles the numbers quoted in the supplement
+This code compiles the numbers quoted in the supplement.
 
 # Setup
 ```{r setup, include= F}

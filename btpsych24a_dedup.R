@@ -1,6 +1,9 @@
 # Minhash and locality-sensitive hashing
 # https://cran.r-project.org/web/packages/textreuse/vignettes/textreuse-minhash.html
 
+# This code identifies potential duplicates among OpenAlex entries 
+# by analyzing the similarity between the paper's titles using MinHash
+
 # set-up
 source("setup.R")
 

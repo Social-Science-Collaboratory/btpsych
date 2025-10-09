@@ -5,6 +5,8 @@ editor_options:
   chunk_output_type: console
 ---
 
+This code creates a figure that (a) illustrates the geographical distribution of big team leadership and participation rates in psychology, and (b) examines links between those rates and country Education, Industrialization, Richness, and Democracy indicators.
+
 # Setup
 ```{r setup, include= F}
 # specify data directory

@@ -7,7 +7,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-This code creates a figure that (a) illustrates the geographical distribution of big team leadership and participation rates in psychology, and (b) examines links between those rates and indicators of economic wealth (GDP)
+This code processes big team psychology geographical distribution and participation rates data
 
 # Setup
 ```{r include= F}
