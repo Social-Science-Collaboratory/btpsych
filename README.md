@@ -76,6 +76,7 @@ To further support efforts to assess the computational reproducibility of our wo
 •	btpsych24a_data_bib_processed_SMALLER.Rds:  This R object contains a 5% sample of btpsych24a_data_bib_processed.Rds, for less computationally intensive reproduction of results.
 •	btpsych24a_data_bib_raw.Rds: This R object contains the raw data of all the psychology papers extracted from OpenAlex.
 •	btpsych24a_data_bib_raw_SMALLER.Rds: This R object contains a 5% sample of btpsych24a_data_bib_raw.Rds, for less computationally intensive reproduction of results.
+•	OA_sources.Rds: This R object contains information about OpenAlex sources (e.g. scientific journals), their H-index and the number of works they published. Obtained from OpenAlex. 
 
 #### topic subfolder
 •	btpsych24a_APAPsycInfo ClassificationCodes.pdf: This document describes the classification system used by APA’s PsycINFO database.
