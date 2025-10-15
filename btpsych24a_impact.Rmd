@@ -40,6 +40,128 @@ DF <-
   ))
 ```
 
+New tmp from Nick
+```{r}
+# identify urgent events
+DF_filtered <- DF |>
+  mutate(
+    urgency = if_else(id %in% DF.mob$id, "urgent", "nonurgent")
+  )
+
+# calculate weights
+DF_filtered <- DF_filtered %>%
+  count(authors.n, name = "n_authors") %>%
+  mutate(inv_freq_weight = 1 / n_authors) %>%
+  right_join(DF_filtered, by = "authors.n") %>%
+  mutate(w = inv_freq_weight / mean(inv_freq_weight, na.rm = TRUE))
+
+# links between team size and scientific impact go away during urgent events
+lm(citation.p.y ~ authors.n * urgency, data = DF_filtered, weight = w) |>
+  summary()
+
+lm(
+  citation.p.y ~ authors.n,
+  weight = w,
+  data = DF_filtered %>% filter(urgency == 'urgent')
+) |>
+  summary()
+
+lm(
+  citation.p.y ~ authors.n,
+  weight = w,
+  data = DF_filtered %>% filter(urgency == 'nonurgent')
+) |>
+  summary()
+
+ggplot(DF_filtered, aes(x = authors.n, y = citation.p.y)) +
+  facet_wrap(vars(urgency), scales = 'free') +
+  geom_smooth()
+```
+
+New tmp from Nick
+```{r}
+# identify urgent events
+DF_filtered.alt <- DF.alt |>
+  mutate(
+    urgency = if_else(id %in% DF.mob$id, "urgent", "nonurgent")
+  )
+
+DF_filtered.alt <- DF_filtered.alt %>%
+  count(authors.n, name = "n_authors") %>%
+  mutate(inv_freq_weight = 1 / n_authors) %>%
+  right_join(DF_filtered.alt, by = "authors.n") %>%
+  mutate(w = inv_freq_weight / mean(inv_freq_weight, na.rm = TRUE))
+
+# policy
+# links between team size and policy coverage are much stronger during urgent events
+lm(policy.p.y ~ authors.n * urgency, data = DF_filtered.alt, weight = w) |>
+  summary()
+
+lm(
+  policy.p.y ~ authors.n,
+  weight = w,
+  data = DF_filtered.alt %>% filter(urgency == 'urgent')
+) |>
+  summary()
+
+lm(
+  policy.p.y ~ authors.n,
+  weight = w,
+  data = DF_filtered.alt %>% filter(urgency == 'nonurgent')
+) |>
+  summary()
+
+# news
+# links between team size and news coverage are slightly stronger during urgent events
+lm(news.p.y ~ authors.n * urgency, data = DF_filtered.alt, weight = w) |>
+  summary()
+
+lm(
+  news.p.y ~ authors.n,
+  weight = w,
+  data = DF_filtered.alt %>% filter(urgency == 'urgent')
+) |>
+  summary()
+
+lm(
+  news.p.y ~ authors.n,
+  weight = w,
+  data = DF_filtered.alt %>% filter(urgency == 'nonurgent')
+) |>
+  summary()
+
+# social media
+# links between team size and news coverage are 3x stronger during urgent events
+lm(gen.p.y ~ authors.n * urgency, data = DF_filtered.alt, weight = w) |>
+  summary()
+
+lm(
+  gen.p.y ~ authors.n,
+  weight = w,
+  data = DF_filtered.alt %>% filter(urgency == 'urgent')
+) |>
+  summary()
+
+lm(
+  gen.p.y ~ authors.n,
+  weight = w,
+  data = DF_filtered.alt %>% filter(urgency == 'nonurgent')
+) |>
+  summary()
+
+ggplot(DF_filtered, aes(x = authors.n, y = policy.p.y)) +
+  facet_wrap(vars(urgency), scales = 'free') +
+  geom_smooth()
+
+ggplot(DF_filtered, aes(x = authors.n, y = news.p.y)) +
+  facet_wrap(vars(urgency), scales = 'free') +
+  geom_smooth()
+
+ggplot(DF_filtered, aes(x = authors.n, y = gen.p.y)) +
+  facet_wrap(vars(urgency), scales = 'free') +
+  geom_smooth()
+```
+
 ## Altmetric
 Important note: Altmetric data is proprietary. However, we have provided scrambled copies of the data so that computational reproducibility can be assessed.
 
