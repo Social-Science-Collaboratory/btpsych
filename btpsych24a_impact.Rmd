@@ -149,15 +149,15 @@ lm(
 ) |>
   summary()
 
-ggplot(DF_filtered, aes(x = authors.n, y = policy.p.y)) +
-  facet_wrap(vars(urgency), scales = 'free') +
+ggplot(DF_filtered.alt, aes(x = authors.n, y = policy.p.y)) +
+  facet_wrap(vars(urgency)) +
   geom_smooth()
 
-ggplot(DF_filtered, aes(x = authors.n, y = news.p.y)) +
-  facet_wrap(vars(urgency), scales = 'free') +
+ggplot(DF_filtered.alt, aes(x = authors.n, y = news.p.y)) +
+  facet_wrap(vars(urgency)) +
   geom_smooth()
 
-ggplot(DF_filtered, aes(x = authors.n, y = gen.p.y)) +
+ggplot(DF_filtered.alt, aes(x = authors.n, y = gen.p.y)) +
   facet_wrap(vars(urgency), scales = 'free') +
   geom_smooth()
 ```
