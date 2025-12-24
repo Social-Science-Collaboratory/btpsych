@@ -1,4 +1,4 @@
-<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.1.2 Chrome/138.0.7204.243 Electron/37.4.0 Safari/537.36" version="28.1.2">
+<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.0.3 Chrome/140.0.7339.249 Electron/38.7.0 Safari/537.36" version="29.0.3">
   <diagram name="Mechanism" id="8GAw0jobU0_pIFRNUd0c">
     <mxGraphModel dx="1018" dy="679" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -227,7 +227,7 @@
         <mxCell id="Vr80zx1zmRr2NjJ--V2T-49" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D9898F;strokeColor=#D9898F;" parent="1" vertex="1">
           <mxGeometry x="58.75" y="60" width="20" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="Vr80zx1zmRr2NjJ--V2T-50" value="There are sociocultural imbalances in who leads psychology research, some that are more pronounced among larger teams" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#333333;" parent="1" vertex="1">
+        <mxCell id="Vr80zx1zmRr2NjJ--V2T-50" value="There are imbalances in the current sociocultural embeddings of the first authors of psychology papers, some that are more pronounced among larger teams" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontColor=#333333;" parent="1" vertex="1">
           <mxGeometry x="98.75" y="100" width="661.25" height="20" as="geometry" />
         </mxCell>
         <mxCell id="Vr80zx1zmRr2NjJ--V2T-51" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F2D88D;strokeColor=#F2D88D;" parent="1" vertex="1">
