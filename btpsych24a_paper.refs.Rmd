@@ -581,7 +581,7 @@ impact.by.size[impact.by.size$size.bin == "10 - 19", ]
 #####################
 # citation comparison
 #####################
-3.36 / 0.927
+3.38 / 0.929
 
 mes(
   n.2 = impact.by.size[9, ]$n,
@@ -626,7 +626,7 @@ ttestBF(
 #####################
 # social media comparison
 #####################
-3.62 / 1.43
+3.63 / 1.43
 
 mes(
   n.2 = impact.by.size[9, ]$n,
@@ -687,7 +687,7 @@ impact.by.size[impact.by.size$size.bin == "30 - 39", ] %>% View()
 #####################
 # citation comparison
 #####################
-8.95 / 0.927
+8.95 / 0.929
 mes(
   n.2 = impact.by.size[17, ]$n,
   m.2 = impact.by.size[17, ]$m,
@@ -753,7 +753,7 @@ ttestBF(
 #####################
 # policy comparison
 #####################
-0.0636 / 0.00758
+0.0637 / 0.00758
 
 mes(
   n.2 = impact.by.size[17, ]$n,
@@ -971,7 +971,7 @@ ggplot(
 "In these analyses, including a quadratic parameter improved model fit ..."
 ```{r bayes, message=FALSE, warning=FALSE}
 # create standardized predictors
-DF.oa.filter <- DF.oa.filter |>
+DF.100 <- DF.100 |>
   mutate(
     a_s = scale(authors.n)[, 1], # standardized author count
     a_s2 = a_s^2 # squared sstandardized term
@@ -996,14 +996,14 @@ bayes_results <- lapply(outcomes, function(out) {
 
   m_lin <- brm(
     f_lin,
-    data = DF.oa.filter,
+    data = DF.100,
     family = gaussian(),
     prior = priors_standard
   )
 
   m_quad <- brm(
     f_quad,
-    data = DF.oa.filter,
+    data = DF.100,
     family = gaussian(),
     prior = priors_standard
   )
@@ -1098,7 +1098,7 @@ global_RIDE <-
     file = file.path(
       data_dir,
       "worlddata",
-      "tmp.Rds"
+      "btpsych24a_global_RIDE.Rds"
     )
   )
 

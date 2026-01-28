@@ -110,9 +110,15 @@ DF.w2 <- DF.o.w %>%
     e = mean(e, na.rm = T)
   )
 
-tmp <- DF.pop %>%
+global_RIDE <- DF.pop %>%
   rename("iso3" = "Country.Code") %>%
   left_join(DF.w2, by = "iso3")
+
+saveRDS(global_RIDE, 
+        file = file.path(
+          data_dir,
+          "worlddata",
+          "btpsych24a_global_RIDE.Rds"))
 ```
 
 # Create plots comparing distribution across different bands of big team science
@@ -153,7 +159,7 @@ DataViz2 <- function(outcome, label, adjust = 1) {
 
     # actual distribution
     geom_density(
-      data = tmp,
+      data = global_RIDE,
       aes(weight = pop),
       linetype = "dotted",
       adjust = adjust,
@@ -499,7 +505,7 @@ globe.fig <- ggplot() +
     legend.title = element_blank(),
     legend.text = element_text(size = 8),
     legend.justification = "center",
-    panel.grid.major = element_line(size = .3)
+    panel.grid.major = element_line(linewidth = .3)
   ) +
   guides(
     color = guide_legend(override.aes = list(size = 3, alpha = 1), nrow = 2)
