@@ -52,8 +52,8 @@ DF[DF$size.bin == "1 - 4", ]$bin.label <-
       filter(authors.n >= 1, authors.n < 5) %>%
       slice_max(perc) %>%
       max %>%
-      round(0),
-    " percentile"
+      round(2),
+    " %ile"
   )
 
 # create label for size.bin == 5 - 9
@@ -63,14 +63,14 @@ DF[DF$size.bin == "5 - 9", ]$bin.label <-
       filter(authors.n >= 5, authors.n < 10) %>%
       slice_min(perc) %>%
       max %>%
-      round(0),
+      round(2),
     " - ",
     per.DF %>%
       filter(authors.n >= 5, authors.n < 10) %>%
       slice_max(perc) %>%
       max %>%
-      round(1),
-    " percentile"
+      round(2),
+    " %ile"
   )
 
 # create label for size.bin == 10 - 19
@@ -80,14 +80,14 @@ DF[DF$size.bin == "10 - 19", ]$bin.label <-
       filter(authors.n >= 10, authors.n < 20) %>%
       slice_min(perc) %>%
       max %>%
-      round(1),
+      round(2),
     " - ",
     per.DF %>%
       filter(authors.n >= 10, authors.n < 20) %>%
       slice_max(perc) %>%
       max %>%
       round(2),
-    " percentile"
+    " %ile"
   )
 
 # create label for size.bin == 20 - 29
@@ -104,7 +104,7 @@ DF[DF$size.bin == "20 - 29", ]$bin.label <-
       slice_max(perc) %>%
       max %>%
       round(2),
-    " percentile"
+    " %ile"
   )
 
 # create label for size.bin == 30 - 39
@@ -114,14 +114,14 @@ DF[DF$size.bin == "30 - 39", ]$bin.label <-
       filter(authors.n >= 30, authors.n < 40) %>%
       slice_min(perc) %>%
       max %>%
-      round(3),
+      round(2),
     " - ",
     per.DF %>%
       filter(authors.n >= 30, authors.n < 40) %>%
       slice_max(perc) %>%
       max %>%
-      round(3),
-    " percentile"
+      round(2),
+    " %ile"
   )
 
 # create label for size.bin == 40 - 49
@@ -131,114 +131,41 @@ DF[DF$size.bin == "40 - 49", ]$bin.label <-
       filter(authors.n >= 40, authors.n < 50) %>%
       slice_min(perc) %>%
       max %>%
-      round(3),
+      round(2),
     " - ",
     per.DF %>%
       filter(authors.n >= 40, authors.n < 50) %>%
       slice_max(perc) %>%
       max %>%
-      round(3),
-    " percentile"
+      round(2),
+    " %ile"
   )
 
 # create label for size.bin == 50 - 59
 DF[DF$size.bin == "50 - 59", ]$bin.label <-
-  paste0(
-    per.DF %>%
-      filter(authors.n >= 50, authors.n < 60) %>%
-      slice_min(perc) %>%
-      max %>%
-      round(3),
-    " - ",
-    per.DF %>%
-      filter(authors.n >= 50, authors.n < 60) %>%
-      slice_max(perc) %>%
-      max %>%
-      round(3),
-    " percentile"
-  )
+  paste0("> 99 %ile")
 
 # create label for size.bin == 60 - 69
 DF[DF$size.bin == "60 - 69", ]$bin.label <-
-  paste0(
-    per.DF %>%
-      filter(authors.n >= 60, authors.n < 70) %>%
-      slice_min(perc) %>%
-      max %>%
-      round(3),
-    " - ",
-    per.DF %>%
-      filter(authors.n >= 60, authors.n < 70) %>%
-      slice_max(perc) %>%
-      max %>%
-      round(3),
-    " percentile"
-  )
+  paste0("> 99 %ile")
 
 # create label for size.bin == 70 - 79
 DF[DF$size.bin == "70 - 79", ]$bin.label <-
-  paste0(
-    per.DF %>%
-      filter(authors.n >= 70, authors.n < 80) %>%
-      slice_min(perc) %>%
-      max %>%
-      round(3),
-    " - ",
-    per.DF %>%
-      filter(authors.n >= 70, authors.n < 80) %>%
-      slice_max(perc) %>%
-      max %>%
-      round(3),
-    " percentile"
-  )
+  paste0("> 99 %ile")
 
 # create label for size.bin == 80 - 89
 DF[DF$size.bin == "80 - 89", ]$bin.label <-
-  paste0(
-    per.DF %>%
-      filter(authors.n >= 80, authors.n < 90) %>%
-      slice_min(perc) %>%
-      max %>%
-      round(3),
-    " - ",
-    per.DF %>%
-      filter(authors.n >= 80, authors.n < 90) %>%
-      slice_max(perc) %>%
-      max %>%
-      round(3),
-    " percentile"
-  )
+  paste0("> 99 %ile")
 
 # create label for size.bin == 90 - 99
 DF[DF$size.bin == "90 - 99", ]$bin.label <-
-  paste0(
-    per.DF %>%
-      filter(authors.n >= 90, authors.n < 100) %>%
-      slice_min(perc) %>%
-      max %>%
-      round(3),
-    " - ",
-    per.DF %>%
-      filter(authors.n >= 90, authors.n < 100) %>%
-      slice_max(perc) %>%
-      max %>%
-      round(3),
-    " percentile"
-  )
+  paste0("> 99 %ile")
 
 # create label for size.bin == 100 +
 DF[DF$size.bin == "100 +", ]$bin.label <-
-  paste0(
-    " < ",
-    per.DF %>%
-      filter(authors.n >= 100) %>%
-      slice_min(perc) %>%
-      max %>%
-      round(3),
-    " percentile"
-  )
+  paste0("> 99 %ile")
 
-# combine percentile and bin size information
+# combine %ile and bin size information
 DF <- DF %>%
   mutate(bin.label = paste0(size.bin, " co-authors", "\n", bin.label))
 
@@ -364,7 +291,8 @@ rm(label.data, label.pos)
 ## Create time figure
 ```{r time.fig}
 fig.tim <-
-  ggplot(data = time.DF, aes(x = publication_year, y = ..count..)) +
+  ggplot(data = time.DF, 
+         aes(x = publication_year, y = ..count..)) +
 
   # facet by size.bin
   facet_wrap(~bin.label, scales = "free_y") +
@@ -384,7 +312,7 @@ fig.tim <-
     aes(x = 2000.5, y = Inf, label = paste0("N = ", n)),
     hjust = 0,
     vjust = 1.5,
-    size = 2.75
+    size = 9 / .pt
   ) +
 
   # add growth labels
@@ -393,7 +321,7 @@ fig.tim <-
     aes(x = 2000.5, y = Inf, label = paste0(per.growth, "% growth")),
     hjust = 0,
     vjust = 4,
-    size = 2.75
+    size = 9 / .pt
   ) +
 
   # add percent growth annotation
@@ -430,13 +358,16 @@ fig.tim <-
     aes(x = 2015, y = y.mid - 10000),
     label = '10-year\ngrowth',
     color = "grey50",
-    size = 2.5
+    size = 9 / .pt
   ) +
 
   # add index lag annotation
   geom_segment(
     data = label.coord.lag,
-    aes(x = x.pos, xend = x.pos, y = y.pos, yend = -Inf),
+    aes(x = x.pos, 
+        xend = x.pos, 
+        y = y.pos - 20000, 
+        yend = -Inf),
     linetype = 'dotted',
     linewidth = .5,
     color = "grey50"
@@ -453,10 +384,10 @@ fig.tim <-
 
   geom_text(
     data = label.coord.lag,
-    aes(x = x.pos, y = y.pos - 50000),
+    aes(x = x.pos, y = y.pos - 83000),
     label = 'indexing\nlag',
     color = "grey50",
-    size = 2.5
+    size = 9 / .pt
   ) +
 
   # improve aesthetics
@@ -465,7 +396,9 @@ fig.tim <-
   theme(
     legend.position = "none",
     legend.title = element_blank(),
-    strip.text = element_text(size = 8)
+    strip.text = element_text(size = 9),
+    axis.text = element_text(size = 9),
+    axis.title = element_text(size = 10)
   ) +
   guides(color = guide_legend(override.aes = list(size = 7))) +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) +
@@ -574,10 +507,13 @@ topic.fig.se <- topic.fig.DF %>%
   mutate(se = sqrt((total.prop * (1 - total.prop)) / sum(total.n)))
 
 topic.fig <-
-  ggplot(data = topic.fig.DF, aes(y = topic.trunc, x = prop)) +
+  ggplot(data = topic.fig.DF, 
+         aes(y = topic.trunc, x = prop)) +
 
   # bar chart
-  geom_bar(aes(fill = size.bin), stat = 'identity', alpha = .4) +
+  geom_bar(aes(fill = size.bin), 
+           stat = 'identity', 
+           alpha = .4) +
 
   # error bars
   geom_errorbar(
@@ -593,18 +529,33 @@ topic.fig <-
   theme(
     axis.line.y = element_blank(),
     axis.ticks.y = element_blank(),
-    legend.position = 'none'
+    legend.position = 'none',
+    axis.text = element_text(size = 9),
+    axis.title = element_text(size = 10)
   )
 ```
 
 # Combine plots
 ```{r}
-plot_grid(
+fig.combined <- plot_grid(
   fig.tim,
   topic.fig,
   nrow = 2,
   ncol = 1,
-  rel_heights = c(.65, .35),
+  rel_heights = c(.6, .4),
   labels = c("A", "B")
 )
+
+
+ggsave(
+  filename = "figures/Coles_Fig1.tif",
+  plot     = fig.combined,
+  device   = ragg::agg_tiff,  # high-quality rasterizer
+  width    = 6.5,
+  height   = 7.6,
+  units    = "in",
+  dpi      = 600,             # or 300 if the journal specifies
+  compression = "lzw"         # lossless; journal-friendly
+)
+
 ```
