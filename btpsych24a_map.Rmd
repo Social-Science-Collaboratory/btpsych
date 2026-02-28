@@ -119,6 +119,13 @@ saveRDS(global_RIDE,
           data_dir,
           "worlddata",
           "btpsych24a_global_RIDE.Rds"))
+
+global_RIDE <- 
+  readRDS(file.path(
+    data_dir,
+    "worlddata",
+    "btpsych24a_global_RIDE.Rds")
+    )
 ```
 
 # Create plots comparing distribution across different bands of big team science
@@ -171,7 +178,9 @@ DataViz2 <- function(outcome, label, adjust = 1) {
     theme(
       axis.text.y = element_blank(),
       axis.ticks.y = element_blank(),
-      axis.title.y = element_blank()
+      axis.title.y = element_blank(),
+      axis.text.x = element_text(size = 9),
+      axis.title.x = element_text(size = 10)
     )
 }
 ```
@@ -503,7 +512,7 @@ globe.fig <- ggplot() +
   theme(
     legend.position = "bottom",
     legend.title = element_blank(),
-    legend.text = element_text(size = 8),
+    legend.text = element_text(size = 9),
     legend.justification = "center",
     panel.grid.major = element_line(linewidth = .3)
   ) +
@@ -525,5 +534,16 @@ final.fig <- plot_grid(
   labels = c("A", "B", "")
 )
 
-print(final.fig)
+# print(final.fig)
+
+ggsave(
+  filename = "figures/Coles_Fig3.tif",
+  plot     = final.fig,
+  device   = ragg::agg_tiff,
+  width    = 6.5,
+  height   = 6.9,
+  units    = "in",
+  dpi      = 1200,
+  compression = "lzw"         
+)
 ```
