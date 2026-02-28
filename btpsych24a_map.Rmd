@@ -537,13 +537,13 @@ final.fig <- plot_grid(
 # print(final.fig)
 
 ggsave(
-  filename = "figures/Coles_Fig3.tif",
+  filename = "figures/Coles_Fig3_lofi.tif",
   plot     = final.fig,
   device   = ragg::agg_tiff,
   width    = 6.5,
   height   = 6.9,
   units    = "in",
-  dpi      = 1200,
+  dpi      = 800,
   compression = "lzw"         
 )
 ```
